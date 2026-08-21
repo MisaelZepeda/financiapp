@@ -1,12 +1,42 @@
-const CACHE_NAME = 'dashpro-cache-v2'; // Cambiamos a v2 para que tu teléfono detecte la actualización
+const CACHE_NAME = 'dashpro-cache-v3'; // v3: rediseño completo + nuevos módulos JS/CSS
 
-const urlsToCache = [ 
-    './', 
-    './index.html', 
-    './styles.css', 
-    './app.js', 
+const urlsToCache = [
+    './',
+    './index.html',
+    './manifest.json',
     './logo.svg',
-    './manifest.json' // Agregado para proteger la instalación PWA
+    './css/tokens.css',
+    './css/base.css',
+    './css/components.css',
+    './js/main.js',
+    './js/firebase-init.js',
+    './js/state.js',
+    './js/data/cuentas.js',
+    './js/data/transacciones.js',
+    './js/data/presupuestos.js',
+    './js/data/perfil.js',
+    './js/data/metas.js',
+    './js/data/recurrentes.js',
+    './js/data/mantenimiento.js',
+    './js/render/resumen.js',
+    './js/render/reportes.js',
+    './js/render/presupuestos.js',
+    './js/render/cuentas.js',
+    './js/render/perfil.js',
+    './js/render/metas.js',
+    './js/render/recurrentes.js',
+    './js/render/notificaciones.js',
+    './js/ui/modals.js',
+    './js/ui/nav.js',
+    './js/ui/charts.js',
+    './js/ui/bank-card.js',
+    './js/ui/registro-sheet.js',
+    './js/ui/extra-sheets.js',
+    './js/utils/format.js',
+    './js/utils/demo-data.js',
+    './js/utils/share-card.js',
+    './js/utils/csv-export.js',
+    './js/utils/pdf-export.js',
 ];
 
 // Instalación: Guardar archivos esenciales

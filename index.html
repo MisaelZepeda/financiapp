@@ -4,435 +4,491 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard Pro</title>
+    <script>
+        (function () {
+            var saved = localStorage.getItem('dashpro_theme');
+            var dark = saved ? saved === 'dark' : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="logo.svg">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
     <link rel="manifest" href="manifest.json">
-    <style>
-        /* ESTILOS PARA MODO PRIVACIDAD */
-        body.privacy-mode .money-blur { filter: blur(6px); opacity: 0.7; user-select: none; pointer-events: none; transition: filter 0.3s ease; }
-        .search-bar { width: 100%; padding: 10px 15px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); margin-bottom: 15px; outline: none; }
-        .search-bar:focus { border-color: var(--primary); }
-    </style>
+    <meta name="theme-color" content="#141a2a">
 </head>
-<body data-theme="light">
-    <!-- PANTALLA DE CARGA -->
-    <div id="loader" style="display: none;">
+<body>
+    <!-- LOADER -->
+    <div id="loader">
         <div class="loading-wrapper">
-            <img src="logo.svg" alt="Logo" style="width: 80px; height: 80px; margin-bottom: 10px; animation: pulse 2s infinite;">
-            <div class="loading-text">LOADING...</div>
-            <div class="progress-capsule">
-                <div class="progress-segment"></div>
-                <div class="progress-segment"></div>
-                <div class="progress-segment"></div>
-                <div class="progress-segment"></div>
-                <div class="progress-segment"></div>
-            </div>
-            <p id="fraseMotivadora" style="margin-top: 30px; font-style: italic; color: var(--text); text-align: center; max-width: 80%; padding: 10px; font-size: 14px; font-weight: 500;"></p>
+            <div class="loading-mark"><img src="logo.svg" alt=""></div>
+            <div class="loading-text">Dashboard Pro</div>
+            <div class="progress-track"><div class="progress-fill"></div></div>
+            <p id="fraseMotivadora" class="loader-quote"></p>
         </div>
     </div>
 
-    <!-- PANTALLA DE AUTENTICACIÓN -->
-    <div id="loginScreen" class="auth-container" style="display: none;">
-        <div class="auth-card">
-            <img src="logo.svg" alt="Dashboard Pro Logo" style="width: 70px; height: 70px; margin-bottom: 15px;">
-            <h2>Dashboard Pro 2.0</h2>
-            
-            <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
-                <input type="email" id="logEmail" placeholder="Correo Electrónico" required>
-                <input type="password" id="logPass" placeholder="Contraseña" required>
-                <button type="submit" class="btn-primary">Ingresar</button>
-                <p class="auth-link" onclick="toggleAuthForm('register')">¿No tienes cuenta? Regístrate</p>
-                <p class="auth-link" onclick="toggleAuthForm('reset')">¿Olvidaste tu contraseña?</p>
-            </form>
+    <!-- AUTENTICACIÓN -->
+    <div id="loginScreen" class="auth-shell" style="display:none;">
+        <div class="auth-brand-panel">
+            <div class="blob" style="width:300px;height:300px;top:-100px;left:-80px;"></div>
+            <div class="blob" style="width:220px;height:220px;bottom:-60px;right:-40px;"></div>
+            <div class="auth-brand-logo"><img src="logo.svg" alt=""><span>Dashboard Pro</span></div>
+            <div class="auth-brand-copy">
+                <h1>Tu dinero, bajo control total.</h1>
+                <p>Cuentas, tarjetas, presupuestos, metas de ahorro y pagos recurrentes en un solo lugar — con reportes claros y datos siempre sincronizados.</p>
+            </div>
+            <div style="position:relative; z-index:2; font-size:12px; opacity:0.7;">© <span id="anioFooter"></span> Dashboard Pro</div>
+        </div>
 
-            <form id="registerForm" style="display: none;" onsubmit="event.preventDefault(); handleRegistro();">
-                <input type="text" id="regNombre" placeholder="Tu Nombre" required>
-                <input type="email" id="regEmail" placeholder="Correo Electrónico" required>
-                <input type="password" id="regPass" placeholder="Crea una Contraseña" required>
-                <label style="font-size: 12px; color: var(--muted); margin-bottom: 5px; display:block;">Foto de perfil (Opcional):</label>
-                <input type="file" id="regFoto" accept="image/*" style="margin-bottom: 15px;">
-                <button type="submit" class="btn-primary">Crear Cuenta</button>
-                <p class="auth-link" onclick="toggleAuthForm('login')">Volver a Ingresar</p>
-            </form>
+        <div class="auth-form-panel">
+            <div class="auth-form-wrap">
+                <div class="mobile-logo"><img src="logo.svg" alt=""></div>
 
-            <form id="resetForm" style="display: none;" onsubmit="event.preventDefault(); handleResetPassword();">
-                <input type="email" id="resetEmail" placeholder="Correo Electrónico" required>
-                <button type="submit" class="btn-primary">Recuperar Contraseña</button>
-                <p class="auth-link" onclick="toggleAuthForm('login')">Volver a Ingresar</p>
-            </form>
+                <form id="loginForm">
+                    <h2>Bienvenido de vuelta</h2>
+                    <p class="auth-lede">Ingresa a tu cuenta para continuar</p>
+                    <div class="field"><label>Correo electrónico</label><input type="email" id="logEmail" placeholder="tu@correo.com" required></div>
+                    <div class="field"><label>Contraseña</label><input type="password" id="logPass" placeholder="••••••••" required></div>
+                    <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
+                    <p class="auth-link" data-action="toggleAuthForm" data-form="register">¿No tienes cuenta? Regístrate</p>
+                    <p class="auth-link" data-action="toggleAuthForm" data-form="reset">¿Olvidaste tu contraseña?</p>
+                    <div class="auth-divider">o</div>
+                    <button type="button" class="btn btn-ghost btn-block" data-action="entrarModoDemo">✨ Ver Demo sin cuenta</button>
+                </form>
+
+                <form id="registerForm" style="display:none;">
+                    <h2>Crea tu cuenta</h2>
+                    <p class="auth-lede">Empieza a organizar tus finanzas hoy</p>
+                    <div class="field"><label>Tu nombre</label><input type="text" id="regNombre" placeholder="¿Cómo te llamas?" required></div>
+                    <div class="field"><label>Correo electrónico</label><input type="email" id="regEmail" placeholder="tu@correo.com" required></div>
+                    <div class="field"><label>Contraseña</label><input type="password" id="regPass" placeholder="Mínimo 6 caracteres" required></div>
+                    <div class="field"><label>Foto de perfil (opcional)</label><input type="file" id="regFoto" accept="image/*"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Crear cuenta</button>
+                    <p class="auth-link" data-action="toggleAuthForm" data-form="login">Volver a ingresar</p>
+                </form>
+
+                <form id="resetForm" style="display:none;">
+                    <h2>Recuperar acceso</h2>
+                    <p class="auth-lede">Te enviaremos un correo para restablecer tu contraseña</p>
+                    <div class="field"><label>Correo electrónico</label><input type="email" id="resetEmail" placeholder="tu@correo.com" required></div>
+                    <button type="submit" class="btn btn-primary btn-block">Enviar enlace</button>
+                    <p class="auth-link" data-action="toggleAuthForm" data-form="login">Volver a ingresar</p>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- APLICACIÓN PRINCIPAL -->
-    <div id="appDashboard" class="dashboard" style="display: none;">
-        <header class="header">
-            <div style="display: flex; align-items: center; gap: 10px; cursor: pointer; max-width: 70%;" onclick="toggleUserMenu(event)">
-                <img id="headerFoto" src="" alt="Perfil" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
-                <div style="display: flex; flex-direction: column; overflow: hidden;">
-                    <h2 id="headerGreeting" style="font-size: 15px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Hola!</h2>
-                    <span style="font-size: 11px; color: var(--primary); font-weight: bold;">☰ Menú y Opciones ▼</span>
-                </div>
+    <!-- APP -->
+    <div id="appDashboard" class="app-shell" style="display:none;">
+        <aside class="app-sidebar">
+            <div class="sidebar-brand"><img src="logo.svg" alt=""><span>Dashboard Pro</span></div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-link active" data-tab="resumen"><span class="ico">🏠</span>Resumen</div>
+                <div class="sidebar-link" data-tab="reportes"><span class="ico">📋</span>Movimientos</div>
+                <div class="sidebar-link" data-tab="presupuestos"><span class="ico">📊</span>Presupuesto</div>
+                <div class="sidebar-link" data-tab="metas"><span class="ico">🎯</span>Metas</div>
+                <div class="sidebar-link" data-tab="recurrentes"><span class="ico">🔁</span>Recurrentes</div>
+                <div class="sidebar-link" data-tab="cuentas"><span class="ico">🏦</span>Cuentas</div>
+                <div class="sidebar-link" data-tab="perfil"><span class="ico">⚙️</span>Configuración</div>
+            </nav>
+            <div class="sidebar-foot">
+                <div class="sidebar-link" data-action="exportarBackup"><span class="ico">💾</span>Respaldar datos</div>
+                <div class="sidebar-link" data-action="handleLogout" style="color:var(--danger);"><span class="ico">🚪</span>Cerrar sesión</div>
             </div>
-            
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <span id="btnPrivacy" onclick="togglePrivacy()" style="font-size: 20px; cursor: pointer; user-select: none;">👁️</span>
-                <label class="theme-switch">
-                    <input type="checkbox" id="themeToggle" onchange="toggleThemeSwitch(this)" checked>
-                    <span class="slider round">
-                        <span class="icon moon">🌙</span>
-                        <span class="icon sun">☀️</span>
-                    </span>
-                </label>
-            </div>
-            
-            <div id="userMenu" class="user-menu-dropdown">
-                <p onclick="cambiarTab('perfil'); closeDropdowns();">⚙️ Configuración</p>
-                <p onclick="cambiarTab('cuentas'); closeDropdowns();">🏦 Lista de Cuentas</p>
-                <p id="btnInstalarApp" style="display:none; font-weight:bold; color:var(--primary);">📱 Instalar App</p>
-                <p onclick="exportarBackup()">💾 Respaldar Datos</p>
-                <p onclick="handleLogout()" style="color: var(--danger);">🚪 Cerrar Sesión</p>
-            </div>
-        </header>
+        </aside>
 
-        <main class="main-content" onclick="closeDropdowns()">
-            <!-- RESUMEN -->
-            <section id="tab-resumen" class="tab-content active">
-                <div class="card patrimonio-card">
-                    <div class="patrimonio-content">
-                        <p class="pat-subtitle">PATRIMONIO TOTAL</p>
-                        <h1 id="valPatrimonio" class="money-blur" style="margin: 5px 0 10px 0; font-size: 32px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">$0.00</h1>
-                        <p class="pat-message">Mantienes buen ritmo financiero mensual.</p>
-                        <div class="pat-bottom">
-                            <div>
-                                <small style="opacity: 0.8;">Activos</small><br>
-                                <b id="valTengo" class="money-blur" style="font-size: 15px;">$0.00</b>
+        <div class="app-main">
+            <header class="app-header">
+                <div class="header-user" data-action="toggleUserMenu">
+                    <img id="headerFoto" class="header-avatar" src="" alt="">
+                    <div class="header-user-text">
+                        <h2 id="headerGreeting" class="header-greeting">Hola!</h2>
+                        <span class="header-sub">Menú y opciones ▾</span>
+                    </div>
+                    <span id="demoBadge" class="badge badge-warning" style="display:none; margin-left:4px;">DEMO</span>
+                </div>
+                <div class="header-actions">
+                    <div class="icon-btn" id="btnPrivacy" data-action="togglePrivacy" title="Modo privacidad">👁️</div>
+                    <div class="icon-btn" data-action="toggleNotifPanel" title="Notificaciones"><span id="notifDot" class="dot" style="display:none;"></span>🔔</div>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="themeToggle" data-action="toggleTheme" checked>
+                        <span class="theme-slider"><span class="ico">🌙</span><span class="ico">☀️</span></span>
+                    </label>
+                </div>
+
+                <div id="userMenu" class="dropdown-panel">
+                    <div class="dd-item" data-tab="perfil">⚙️ Configuración</div>
+                    <div class="dd-item" id="btnInstalarApp" style="display:none; color:var(--primary); font-weight:800;">📱 Instalar App</div>
+                    <div class="dd-item" data-action="exportarBackup">💾 Respaldar datos</div>
+                    <div class="dd-divider"></div>
+                    <div class="dd-item danger" data-action="handleLogout">🚪 Cerrar sesión</div>
+                </div>
+
+                <div id="notifPanel" class="dropdown-panel">
+                    <div class="notif-head"><span>Notificaciones</span></div>
+                    <div id="notifList"></div>
+                </div>
+            </header>
+
+            <main class="app-content" data-action-scope="close-dropdowns">
+                <!-- RESUMEN -->
+                <section id="tab-resumen" class="tab-content active">
+                    <div class="hero-card">
+                        <div class="hero-blob" style="width:220px;height:220px;top:-70px;right:-50px;"></div>
+                        <div class="hero-blob" style="width:150px;height:150px;bottom:-40px;left:-20px;"></div>
+                        <div class="hero-content">
+                            <p class="hero-eyebrow">Patrimonio total</p>
+                            <h1 id="heroTotal" class="money-blur hero-total">$0.00</h1>
+                            <p id="heroMessage" class="hero-message">Cargando tu panorama financiero…</p>
+                            <div class="hero-stats">
+                                <div><small>Activos</small><br><b id="heroTengo" class="money-blur">$0.00</b></div>
+                                <div style="text-align:center;"><small>Capacidad crédito</small><br><b id="heroCapacidad" class="money-blur">$0.00</b></div>
+                                <div style="text-align:right;"><small>Deudas</small><br><b id="heroDebo" class="money-blur">$0.00</b></div>
                             </div>
-                            <div style="text-align: center;">
-                                <small style="opacity: 0.8;">Capacidad Crédito</small><br>
-                                <b id="valCapacidadCredito" class="money-blur" style="font-size: 15px;">$0.00</b>
+                        </div>
+                        <div class="hero-chart-container"><canvas id="chartPatrimonio"></canvas></div>
+                    </div>
+
+                    <div class="grid-2" style="margin-top:var(--space-4);">
+                        <div class="stat-tile">
+                            <div class="stat-label" style="color:var(--success);">Ingresos</div>
+                            <div id="homeIngresos" class="money-blur stat-value">$0.00</div>
+                            <div class="stat-foot"><small id="pctIngresos" class="stat-pct">↑ 0.0%</small><div style="width:52px;height:26px;"><canvas id="sparklineIngresos"></canvas></div></div>
+                        </div>
+                        <div class="stat-tile">
+                            <div class="stat-label" style="color:var(--danger);">Gastos</div>
+                            <div id="homeGastos" class="money-blur stat-value">$0.00</div>
+                            <div class="stat-foot"><small id="pctGastos" class="stat-pct">↑ 0.0%</small><div style="width:52px;height:26px;"><canvas id="sparklineGastos"></canvas></div></div>
+                        </div>
+                    </div>
+
+                    <div class="section-heading"><h3>Mis cuentas y tarjetas</h3></div>
+                    <div class="card">
+                        <small style="color:var(--text-muted); font-weight:800; border-bottom:2px solid var(--primary); padding-bottom:6px; display:block; margin-bottom:14px;">DÉBITO / EFECTIVO</small>
+                        <div id="railDebitos" class="cards-rail"></div>
+                        <small style="color:var(--text-muted); font-weight:800; border-bottom:2px solid var(--danger); padding-bottom:6px; display:block; margin:18px 0 14px;">CRÉDITO</small>
+                        <div id="railCreditos" class="cards-rail"></div>
+                    </div>
+
+                    <div class="section-heading"><h3>Distribución de gastos</h3></div>
+                    <div class="card"><div style="height:250px; position:relative;"><canvas id="chartGastos"></canvas></div></div>
+
+                    <div class="section-heading"><h3>Histórico (últimos 6 meses)</h3></div>
+                    <div class="card"><div style="height:200px; position:relative;"><canvas id="chartAnual"></canvas></div></div>
+
+                    <div class="section-heading"><h3>Pago para no generar intereses</h3></div>
+                    <div class="card">
+                        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Calculado desde la última fecha de corte, incluyendo compras a MSI.</p>
+                        <div id="listaPagosTDC" class="stack" style="gap:10px;"></div>
+                        <div style="border-top:1px solid var(--line); margin-top:15px; padding-top:15px; text-align:right;">
+                            <small style="color:var(--text-muted);">Pago total mensual estimado</small>
+                            <h3 id="totalEstimadoTDC" class="money-blur" style="color:var(--danger); margin-top:5px;">$0.00</h3>
+                        </div>
+                    </div>
+
+                    <div class="section-heading"><h3>Reportes y datos</h3></div>
+                    <div class="card">
+                        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Descarga tu estado de cuenta o exporta tus datos a Excel.</p>
+                        <div class="field"><input type="month" id="mesReporte"></div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn btn-primary" style="flex:1;" data-action="generarPDFMes">📄 PDF Estado de cuenta</button>
+                            <button class="btn btn-success" style="flex:1;" data-action="exportarCSV">📊 Exportar CSV</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- REPORTES / MOVIMIENTOS -->
+                <section id="tab-reportes" class="tab-content">
+                    <div class="card" style="margin-bottom:var(--space-4); background:var(--brand-gradient-soft); border-color:var(--primary-soft);">
+                        <p id="insightText" style="font-size:13.5px; line-height:1.5;">Analizando tus movimientos…</p>
+                    </div>
+                    <div class="card">
+                        <div class="segmented">
+                            <button id="btnRepGastos" class="active" data-action="setReportMode" data-mode="gastos">Gastos</button>
+                            <button id="btnRepIngresos" data-action="setReportMode" data-mode="ingresos">Ingresos</button>
+                            <button id="btnRepMovs" data-action="setReportMode" data-mode="movimientos">Pagos</button>
+                        </div>
+
+                        <div id="rep-gastos-view">
+                            <div class="search-bar">🔍<input type="text" id="searchGastos" placeholder="Buscar gasto o categoría..." data-action="renderListas"></div>
+                            <div id="listaGastos" class="tx-list"></div>
+                            <div id="btnMasGastos" style="text-align:center; margin-top:15px; display:none;"><button class="btn btn-ghost btn-block" data-action="loadMore" data-tipo="gastos">Cargar más registros</button></div>
+                        </div>
+                        <div id="rep-ingresos-view" style="display:none;">
+                            <div class="search-bar">🔍<input type="text" id="searchIngresos" placeholder="Buscar ingreso..." data-action="renderListas"></div>
+                            <div id="listaIngresos" class="tx-list"></div>
+                            <div id="btnMasIngresos" style="text-align:center; margin-top:15px; display:none;"><button class="btn btn-ghost btn-block" data-action="loadMore" data-tipo="ingresos">Cargar más registros</button></div>
+                        </div>
+                        <div id="rep-movs-view" style="display:none;">
+                            <div class="search-bar">🔍<input type="text" id="searchMovs" placeholder="Buscar movimiento..." data-action="renderListas"></div>
+                            <div id="listaMovimientos" class="tx-list"></div>
+                            <div id="btnMasMovs" style="text-align:center; margin-top:15px; display:none;"><button class="btn btn-ghost btn-block" data-action="loadMore" data-tipo="movimientos">Cargar más registros</button></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PRESUPUESTOS -->
+                <section id="tab-presupuestos" class="tab-content">
+                    <div id="presupuestoGlobalCard" class="card global-budget-card" style="border-color:var(--primary); display:none;">
+                        <p style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:6px;">Presupuesto global del mes</p>
+                        <h2 id="globalPresupText" class="money-blur" style="margin-bottom:12px;">$0 / $0</h2>
+                        <div class="progress-bar-track"><div id="globalPresupBar" class="progress-bar-fill" style="width:0%;"></div></div>
+                    </div>
+
+                    <div class="section-heading"><h3>Estado de presupuestos</h3></div>
+                    <div id="presupuestosGrid" class="budget-rail"></div>
+
+                    <div class="card" style="margin-top:var(--space-4);">
+                        <h3 class="card-title">Ajustar límites</h3>
+                        <form id="formPresupuestosLimpio" data-action="guardarPresupuestos">
+                            <div id="contenedorInputsPresupuesto" class="grid-2"></div>
+                            <button type="submit" class="btn btn-primary btn-block" style="margin-top:15px;">Guardar límites</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- METAS -->
+                <section id="tab-metas" class="tab-content">
+                    <div class="section-heading"><h3>Metas de ahorro</h3><span class="link" data-action="nuevaMeta">+ Nueva meta</span></div>
+                    <div id="metasGrid" class="grid-2"></div>
+                </section>
+
+                <!-- RECURRENTES -->
+                <section id="tab-recurrentes" class="tab-content">
+                    <div id="recurrentesVencidosBanner" class="card" style="display:none; border-color:var(--info); background:var(--info-soft); align-items:center; gap:12px; flex-direction:row;">
+                        <span style="font-size:22px;">🔁</span>
+                        <p id="recurrentesVencidosTexto" style="flex:1; font-size:13px;"></p>
+                        <button class="btn btn-sm btn-primary" data-action="generarVencidos">Generar</button>
+                    </div>
+                    <div class="section-heading"><h3>Pagos e ingresos recurrentes</h3><span class="link" data-action="nuevoRecurrente">+ Nuevo</span></div>
+                    <div id="recurrentesLista" class="stack" style="gap:0;"></div>
+                </section>
+
+                <!-- CUENTAS -->
+                <section id="tab-cuentas" class="tab-content">
+                    <div class="card">
+                        <h3 id="cuentaFormTitle" class="card-title">Registrar cuenta</h3>
+                        <form id="formCuenta" data-action="guardarCuenta">
+                            <div class="field"><input type="text" id="cuNombre" placeholder="Nombre de la cuenta (ej. Mi Nómina)" required></div>
+                            <div class="field"><input type="text" id="cuBanco" placeholder="Banco (ej. BBVA, Nu, Efectivo)" required></div>
+                            <div class="field" id="grupoIcon" style="display:none;"><input type="url" id="cuIcon" placeholder="Enlace del logo (opcional)"></div>
+                            <div class="field"><select id="cuTipo" required data-action="toggleCamposCuenta"><option value="debito">Débito</option><option value="credito">Crédito</option><option value="efectivo">Efectivo</option></select></div>
+                            <div id="grupoDigitos">
+                                <div class="field"><input type="text" id="cuDigitos" placeholder="Últimos 4 dígitos de tarjeta" maxlength="4" pattern="\d{4}"></div>
+                                <div class="field"><input type="text" id="cuClabe" placeholder="CLABE interbancaria (opcional)" maxlength="18" pattern="\d{18}"></div>
                             </div>
-                            <div style="text-align: right;">
-                                <small style="opacity: 0.8;">Deudas</small><br>
-                                <b id="valDebo" class="money-blur" style="font-size: 15px;">$0.00</b>
+                            <div class="field-row" style="margin-bottom:var(--space-4);">
+                                <input type="number" id="cuSaldo" placeholder="Saldo actual ($)" step="0.01" required>
+                                <input type="number" id="cuLimite" placeholder="Límite (TDC)" step="0.01" style="display:none;">
                             </div>
-                        </div>
+                            <div id="grupoFechas" class="field-row" style="display:none; margin-bottom:var(--space-4);">
+                                <input type="number" id="cuCorte" placeholder="Día de corte" min="1" max="31">
+                                <input type="number" id="cuPago" placeholder="Día de pago" min="1" max="31">
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <button type="submit" class="btn btn-primary" style="flex:2;" id="btnGuardarCuenta">Añadir cuenta</button>
+                                <button type="button" class="btn btn-ghost" style="flex:1; display:none;" id="btnCancelarEdicionCuenta" data-action="cancelarEdicionCuenta">Cancelar</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="patrimonio-chart-container">
-                        <canvas id="chartPatrimonio"></canvas>
-                    </div>
-                </div>
+                    <div class="section-heading"><h3>Lista maestra de cuentas</h3></div>
+                    <div id="listaMaestraCuentas" class="cards-grid"></div>
+                </section>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
-                    <!-- Tarjeta Ingresos Fintech -->
-                    <div class="card" style="margin:0; background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: none; padding: 15px;">
-                        <div style="color:#16a34a; font-weight:bold; font-size:13px; margin-bottom: 5px;">Ingresos</div>
-                        <h3 id="homeIngresos" class="money-blur" style="margin:0; font-size: 20px; color: #0f172a;">$0.00</h3>
-                        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px;">
-                            <small id="pctIngresos" style="color:#16a34a; font-weight:bold; font-size:12px;">↑ 0.0%</small>
-                            <div style="width: 50px; height: 25px;"><canvas id="sparklineIngresos"></canvas></div>
-                        </div>
-                    </div>
-                    <!-- Tarjeta Gastos Fintech -->
-                    <div class="card" style="margin:0; background: linear-gradient(135deg, #fef2f2, #fee2e2); border: none; padding: 15px;">
-                        <div style="color:#dc2626; font-weight:bold; font-size:13px; margin-bottom: 5px;">Gastos</div>
-                        <h3 id="homeGastos" class="money-blur" style="margin:0; font-size: 20px; color: #0f172a;">$0.00</h3>
-                        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px;">
-                            <small id="pctGastos" style="color:#dc2626; font-weight:bold; font-size:12px;">↑ 0.0%</small>
-                            <div style="width: 50px; height: 25px;"><canvas id="sparklineGastos"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h4 style="margin-bottom: 15px;">Mis Cuentas y Tarjetas</h4>
-                    <div style="display:flex; flex-direction: column; gap:20px;">
-                        <div>
-                            <small style="color:var(--muted); font-weight:bold; border-bottom: 2px solid var(--primary); padding-bottom: 3px; display: block; margin-bottom: 15px;">DÉBITO / EFECTIVO</small>
-                            <div id="widgetDebitos" class="tarjetas-slider"></div>
-                        </div>
-                        <div>
-                            <small style="color:var(--muted); font-weight:bold; border-bottom: 2px solid var(--danger); padding-bottom: 3px; display: block; margin-bottom: 15px;">CRÉDITO</small>
-                            <div id="widgetCreditos" class="tarjetas-slider"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h4>Distribución de Gastos</h4>
-                    <div style="height: 250px; margin-top: 15px; position:relative;"><canvas id="chartGastos"></canvas></div>
-                </div>
-
-                <!-- NUEVA GRÁFICA ANUAL -->
-                <div class="card" style="margin-top: 20px;">
-                    <h4>Histórico (Últimos 6 Meses)</h4>
-                    <div style="height: 200px; margin-top: 15px; position:relative;"><canvas id="chartAnual"></canvas></div>
-                </div>
-                
-                <!-- TARJETA: PAGO PARA NO GENERAR INTERESES -->
-                <div class="card" id="cardPagoNoIntereses" style="margin-top: 20px;">
-                    <h4>Pago para no generar intereses</h4>
-                    <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">Calculado desde la última fecha de corte incluyendo MSI.</p>
-                    <div id="listaPagosTDC" style="display:flex; flex-direction:column; gap:10px; margin-top: 15px;"></div>
-                    <div style="border-top: 1px solid var(--line); margin-top: 15px; padding-top: 15px; text-align: right;">
-                        <small style="color:var(--muted);">Pago Total Mensual Estimado</small>
-                        <h3 id="totalEstimadoTDC" class="money-blur" style="color:var(--danger); margin-top:5px;">$0.00</h3>
-                    </div>
-                </div>
-
-                <!-- NUEVOS BOTONES DE REPORTES Y CSV -->
-                <div class="card" style="margin-top: 20px;">
-                    <h4 style="color: var(--primary);">📄 Reportes y Datos</h4>
-                    <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">Descarga tu Estado de Cuenta o exporta tus datos a Excel.</p>
-                    <input type="month" id="mesReporte" style="margin-bottom: 10px; width: 100%;">
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-primary" style="flex: 1; padding: 10px; font-size: 14px;" onclick="generarPDFMes()">PDF Estado Cuenta</button>
-                        <button class="btn-primary" style="flex: 1; padding: 10px; font-size: 14px; background: var(--success);" onclick="exportarCSV()">Exportar CSV (Excel)</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PRESUPUESTOS -->
-            <section id="tab-presupuestos" class="tab-content">
-                <div id="presupuestoGlobalCard" class="card" style="text-align: center; border: 1px solid var(--primary); display: none;">
-                    <p style="font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Presupuesto Global del Mes</p>
-                    <h2 id="globalPresupText" class="money-blur" style="margin-bottom: 10px;">$0 / $0</h2>
-                    <div style="background:var(--line); height:8px; border-radius:4px; overflow:hidden; width: 100%;">
-                        <div id="globalPresupBar" style="background:var(--primary); width:0%; height:100%; transition: width 0.5s ease-out;"></div>
-                    </div>
-                </div>
-
-                <div style="margin: 20px 0;">
-                    <h4 style="margin-bottom: 15px; color: var(--text); padding-left: 5px;">Estado de Presupuestos</h4>
-                    <div id="presupuestosGrid" class="presupuestos-slider"></div>
-                </div>
-
-                <div class="card" style="margin-top: 20px;">
-                    <h3>Ajustar Límites</h3>
-                    <form id="formPresupuestosLimpio" onsubmit="handleGuardarPresupuesto(event)">
-                        <div id="contenedorInputsPresupuesto" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                            <!-- Dinámico -->
-                        </div>
-                        <button type="submit" class="btn-primary" style="margin-top:15px;">Guardar Límites</button>
-                    </form>
-                </div>
-            </section>
-
-            <!-- NUEVA PESTAÑA: REPORTES CONSOLIDADOS -->
-            <section id="tab-reportes" class="tab-content">
-                <div class="card">
-                    <div style="display:flex; gap:10px; margin-bottom:15px; border-bottom: 1px solid var(--line); padding-bottom: 15px;">
-                        <button id="btnRepGastos" class="btn-primary" style="flex:1; background:var(--danger);" onclick="setReportMode('gastos')">Gastos</button>
-                        <button id="btnRepIngresos" class="btn-primary" style="flex:1; background:var(--muted);" onclick="setReportMode('ingresos')">Ingresos</button>
-                        <button id="btnRepMovs" class="btn-primary" style="flex:1; background:var(--muted);" onclick="setReportMode('movimientos')">Pagos</button>
-                    </div>
-                    
-                    <div id="rep-gastos-view">
-                        <input type="text" id="searchGastos" class="search-bar" placeholder="🔍 Buscar gasto o categoría..." oninput="renderListas()">
-                        <div id="listaGastos"></div>
-                        <div id="btnMasGastos" style="text-align:center; margin-top:15px; display:none;">
-                            <button class="tb-action-btn" style="color:var(--text); width:100%; border:1px solid var(--line); background:var(--surface);" onclick="loadMore('gastos')">Cargar más registros</button>
-                        </div>
+                <!-- PERFIL / CONFIGURACIÓN -->
+                <section id="tab-perfil" class="tab-content">
+                    <div class="card" style="text-align:center;">
+                        <img id="perfDisplayFoto" src="" alt="" style="width:84px; height:84px; border-radius:50%; object-fit:cover; margin-bottom:12px; box-shadow:var(--shadow-2);">
+                        <h3 id="perfDisplayNombre">Usuario</h3>
+                        <form id="formPerfil" data-action="guardarPerfil" style="text-align:left; margin-top:var(--space-5);">
+                            <div class="field"><label>Nombre</label><input type="text" id="perfNombre" required></div>
+                            <div class="field"><label>Foto</label><input type="file" id="perfFile" accept="image/*"></div>
+                            <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin:10px 0 8px;">Color de tema</label>
+                            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:var(--space-5); justify-content:center;">
+                                <div class="color-swatch" style="background:#7c3aed;" data-action="selectColor" data-color="#7c3aed"></div>
+                                <div class="color-swatch" style="background:#059669;" data-action="selectColor" data-color="#059669"></div>
+                                <div class="color-swatch" style="background:#e11d48;" data-action="selectColor" data-color="#e11d48"></div>
+                                <div class="color-swatch" style="background:#0284c7;" data-action="selectColor" data-color="#0284c7"></div>
+                                <div class="color-swatch" style="background:#d97706;" data-action="selectColor" data-color="#d97706"></div>
+                                <div class="color-swatch" style="background:#db2777;" data-action="selectColor" data-color="#db2777"></div>
+                                <div class="color-swatch" style="background:#14b8a6;" data-action="selectColor" data-color="#14b8a6"></div>
+                                <div class="color-swatch" style="background:#475569;" data-action="selectColor" data-color="#475569"></div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Guardar perfil</button>
+                        </form>
                     </div>
 
-                    <div id="rep-ingresos-view" style="display:none;">
-                        <input type="text" id="searchIngresos" class="search-bar" placeholder="🔍 Buscar ingreso..." oninput="renderListas()">
-                        <div id="listaIngresos"></div>
-                        <div id="btnMasIngresos" style="text-align:center; margin-top:15px; display:none;">
-                            <button class="tb-action-btn" style="color:var(--text); width:100%; border:1px solid var(--line); background:var(--surface);" onclick="loadMore('ingresos')">Cargar más registros</button>
-                        </div>
+                    <div class="card" style="margin-top:var(--space-4);">
+                        <h3 class="card-title">Etiquetas extra</h3>
+                        <form id="formCatCustom" data-action="agregarCategoriaCustom" style="display:flex; gap:10px; margin-bottom:15px;">
+                            <input type="text" id="nuevaCatInput" placeholder="Ej. Mascotas..." required style="margin:0;">
+                            <button type="submit" class="btn btn-primary" style="width:auto; padding:0 20px;">Añadir</button>
+                        </form>
+                        <div id="listaCatCustom" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
                     </div>
 
-                    <div id="rep-movs-view" style="display:none;">
-                        <input type="text" id="searchMovs" class="search-bar" placeholder="🔍 Buscar movimiento..." oninput="renderListas()">
-                        <div id="listaMovimientos"></div>
-                        <div id="btnMasMovs" style="text-align:center; margin-top:15px; display:none;">
-                            <button class="tb-action-btn" style="color:var(--text); width:100%; border:1px solid var(--line); background:var(--surface);" onclick="loadMore('movimientos')">Cargar más registros</button>
+                    <div class="card" style="border-color:var(--danger); margin-top:var(--space-4);">
+                        <h3 style="color:var(--danger); margin-bottom:15px;">Mantenimiento y respaldo</h3>
+                        <div style="background:var(--surface-alt); padding:15px; border-radius:var(--radius-md); margin-bottom:15px; text-align:center; border:1px dashed var(--line-strong);">
+                            <p style="font-size:12px; font-weight:700; margin-bottom:10px;">Cargar datos desde un respaldo (.json)</p>
+                            <input type="file" id="fileRestore" accept=".json" style="display:none;">
+                            <button type="button" class="btn btn-primary btn-sm" data-action="seleccionarRestore">📂 Seleccionar archivo y restaurar</button>
                         </div>
+                        <button class="btn btn-danger btn-block" style="margin-bottom:10px;" data-action="resetearCuenta">Borrar movimientos ($0)</button>
+                        <button class="btn btn-outline-danger btn-block" data-action="eliminarUsuario">Eliminar cuenta definitivamente</button>
                     </div>
-                </div>
-            </section>
+                </section>
+            </main>
 
-            <!-- CUENTAS -->
-            <section id="tab-cuentas" class="tab-content">
-                <div class="card">
-                    <h3 id="cuentaFormTitle">Registrar Cuenta</h3>
-                    <form id="formCuenta" onsubmit="handleNuevaCuenta(event)">
-                        <input type="text" id="cuNombre" placeholder="Nombre de la Cuenta (Ej. Mi Nómina)" required>
-                        <input type="text" id="cuBanco" placeholder="Banco (Ej. BBVA, Nu, Efectivo)" required>
-                        <input type="url" id="cuIcon" placeholder="Enlace del Logo URL (Opcional)" style="display:none; margin-bottom: 15px;">
-                        <select id="cuTipo" required onchange="toggleCamposCuenta()">
-                            <option value="debito">Débito</option>
-                            <option value="credito">Crédito</option>
-                            <option value="efectivo">Efectivo</option>
-                        </select>
-                        <div id="grupoDigitos" style="display:block; margin-bottom: 15px;">
-                            <input type="text" id="cuDigitos" placeholder="Últimos 4 dígitos de tarjeta" maxlength="4" pattern="\d{4}" style="margin-bottom: 10px;">
-                            <input type="text" id="cuClabe" placeholder="CLABE Interbancaria (Opcional)" maxlength="18" pattern="\d{18}" style="display:block;">
-                        </div>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 15px;">
-                            <input type="number" id="cuSaldo" placeholder="Saldo Actual ($)" step="0.01" required>
-                            <input type="number" id="cuLimite" placeholder="Límite (TDC)" step="0.01" style="display:none;">
-                        </div>
-                        <div id="grupoFechas" style="display:none; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 15px;">
-                            <input type="number" id="cuCorte" placeholder="Día de Corte" min="1" max="31">
-                            <input type="number" id="cuPago" placeholder="Día de Pago" min="1" max="31">
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button type="submit" class="btn-primary" style="flex: 2;" id="btnGuardarCuenta">Añadir Cuenta</button>
-                            <button type="button" class="btn-primary" style="flex: 1; background: var(--muted); display: none;" id="btnCancelarEdicionCuenta" onclick="cancelarEdicionCuenta()">Cancelar</button>
-                        </div>
-                    </form>
+            <div class="fab-container" id="fabContainerMain">
+                <div class="fab-menu" id="fabMenu">
+                    <button class="fab-item" style="background:var(--success);" data-action="abrirRegistro" data-tipo="ingreso">📈 Ingreso</button>
+                    <button class="fab-item" style="background:var(--danger);" data-action="abrirRegistro" data-tipo="gasto">📉 Gasto</button>
+                    <button class="fab-item" style="background:var(--primary);" data-action="abrirRegistro" data-tipo="movimiento">💳 Pago</button>
                 </div>
-                <div class="card">
-                    <h4 style="margin-bottom: 15px;">Lista Maestra de Cuentas</h4>
-                    <div id="listaMaestraCuentas" class="tarjetas-grid"></div>
-                </div>
-            </section>
-
-            <!-- CONFIGURACIÓN -->
-            <section id="tab-perfil" class="tab-content">
-                <div class="card" style="text-align: center;">
-                    <img id="perfDisplayFoto" src="" alt="Perfil" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:10px;">
-                    <h3 id="perfDisplayNombre">Usuario</h3>
-                    
-                    <form onsubmit="handleGuardarPerfil(event)" style="text-align:left; margin-top: 20px;">
-                        <label style="font-size:12px; color:var(--muted);">Nombre:</label>
-                        <input type="text" id="perfNombre" required>
-                        <label style="font-size:12px; color:var(--muted);">Foto:</label>
-                        <input type="file" id="perfFile" accept="image/*">
-                        <label style="font-size:12px; color:var(--muted); display:block; margin: 10px 0 5px;">Tema de Color:</label>
-                        <div style="display:flex; flex-wrap: wrap; gap:10px; margin-bottom:20px; justify-content: center;">
-                            <div class="color-swatch" style="background:#3b82f6;" onclick="selectColor('#3b82f6', this)"></div>
-                            <div class="color-swatch" style="background:#10b981;" onclick="selectColor('#10b981', this)"></div>
-                            <div class="color-swatch" style="background:#ef4444;" onclick="selectColor('#ef4444', this)"></div>
-                            <div class="color-swatch" style="background:#8b5cf6;" onclick="selectColor('#8b5cf6', this)"></div>
-                            <div class="color-swatch" style="background:#f59e0b;" onclick="selectColor('#f59e0b', this)"></div>
-                            <div class="color-swatch" style="background:#ec4899;" onclick="selectColor('#ec4899', this)"></div>
-                            <div class="color-swatch" style="background:#14b8a6;" onclick="selectColor('#14b8a6', this)"></div>
-                            <div class="color-swatch" style="background:#64748b;" onclick="selectColor('#64748b', this)"></div>
-                        </div>
-                        <button type="submit" class="btn-primary">Guardar Perfil</button>
-                    </form>
-                </div>
-
-                <div class="card" style="margin-top: 20px;">
-                    <h3>Etiquetas Extras</h3>
-                    <form onsubmit="handleAddCatCustom(event)" style="display:flex; gap:10px; margin-bottom:15px;">
-                        <input type="text" id="nuevaCatInput" placeholder="Ej. Mascotas..." required style="margin:0;">
-                        <button type="submit" class="btn-primary" style="width: auto; padding: 0 20px;">Añadir</button>
-                    </form>
-                    <div id="listaCatCustom" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
-                </div>
-
-                <div class="card" style="border: 1px solid var(--danger); margin-top: 20px;">
-                    <h3 style="color:var(--danger); margin-bottom: 15px;">Mantenimiento y Respaldo</h3>
-                    
-                    <div style="background: var(--bg); padding:15px; border-radius:10px; margin-bottom:15px; text-align: center; border: 1px dashed var(--muted);">
-                        <p style="font-size:12px; color:var(--text); font-weight:bold; margin-bottom: 10px;">Cargar datos desde un Respaldo (.json)</p>
-                        <input type="file" id="fileRestore" accept=".json" style="display:none;" onchange="importarBackup(event)">
-                        <button class="btn-primary" style="padding: 10px; font-size: 13px;" onclick="document.getElementById('fileRestore').click()">📂 Seleccionar Archivo y Restaurar</button>
-                    </div>
-
-                    <button class="btn-primary" style="background:var(--danger); margin-bottom:10px;" onclick="resetearCuenta()">Borrar Movimientos ($0)</button>
-                    <button class="btn-primary" style="background:none; color:var(--danger); border:1px solid var(--danger); margin-top:10px;" onclick="eliminarUsuario()">Eliminar Cuenta Definitivamente</button>
-                </div>
-            </section>
-        </main>
-        
-        <div class="fab-container" id="fabContainerMain">
-            <div class="fab-menu" id="fabMenu">
-                <button class="fab-item" style="background: var(--success);" onclick="abrirModalRegistro('ingreso'); toggleFab();">📈 Ingreso</button>
-                <button class="fab-item" style="background: var(--danger);" onclick="abrirModalRegistro('gasto'); toggleFab();">📉 Gasto</button>
-                <button class="fab-item" style="background: var(--primary);" onclick="abrirModalRegistro('movimiento'); toggleFab();">💳 Pago</button>
+                <button class="fab-main" id="fabMain" data-action="toggleFab">+</button>
             </div>
-            <button class="fab-main" id="fabMain" onclick="toggleFab()">+</button>
+
+            <nav class="bottom-nav">
+                <button class="nav-item active" data-tab="resumen"><span class="ico">🏠</span>Inicio</button>
+                <button class="nav-item" data-tab="reportes"><span class="ico">📋</span>Movs</button>
+                <button class="nav-item" data-tab="metas"><span class="ico">🎯</span>Metas</button>
+                <button class="nav-item" data-tab="presupuestos"><span class="ico">📊</span>Presup.</button>
+                <button class="nav-item" data-action="openMoreSheet"><span class="ico">☰</span>Más</button>
+            </nav>
         </div>
-
-       <nav class="nav-bar">
-            <button class="nav-item active" onclick="cambiarTab('resumen', this)"><span>🏠</span>Resumen</button>
-            <button class="nav-item" onclick="cambiarTab('reportes', this)"><span>📋</span>Reportes</button>
-            <button class="nav-item" onclick="cambiarTab('presupuestos', this)"><span>📊</span>Presupuesto</button>
-        </nav>
     </div>
 
-    <!-- CUSTOM ALERTS MODAL -->
-    <div id="customModalOverlay" class="custom-modal-overlay" style="display: none;">
-        <div class="custom-modal">
-            <div id="cmIconWrapper" class="cm-icon-wrapper">
-                <span id="cmIcon">✔️</span>
+    <!-- MÁS (móvil) -->
+    <div id="moreSheetOverlay" class="sheet-overlay" style="display:none;">
+        <div class="sheet-card">
+            <span class="sheet-close" data-action="closeMoreSheet">&times;</span>
+            <h3 class="sheet-title">Más opciones</h3>
+            <div class="stack" style="gap:4px;">
+                <div class="sidebar-link" data-tab="cuentas" style="color:var(--text);"><span class="ico">🏦</span>Cuentas</div>
+                <div class="sidebar-link" data-tab="recurrentes" style="color:var(--text);"><span class="ico">🔁</span>Recurrentes</div>
+                <div class="sidebar-link" data-tab="perfil" style="color:var(--text);"><span class="ico">⚙️</span>Configuración</div>
+                <div class="dd-divider"></div>
+                <div class="sidebar-link" data-action="exportarBackup" style="color:var(--text);"><span class="ico">💾</span>Respaldar datos</div>
+                <div class="sidebar-link" data-action="handleLogout" style="color:var(--danger);"><span class="ico">🚪</span>Cerrar sesión</div>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL ALERTA / CONFIRMACIÓN -->
+    <div id="cmOverlay" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <div id="cmIconWrap" class="modal-icon-wrap"><span id="cmIcon">✔️</span></div>
             <h3 id="cmTitle">Título</h3>
             <p id="cmText">Mensaje aquí</p>
-            <div class="cm-buttons" id="cmButtonsContainer">
-                <button id="cmBtnCancel" class="cm-btn cm-btn-cancel">Cancelar</button>
-                <button id="cmBtnConfirm" class="cm-btn cm-btn-confirm">Aceptar</button>
+            <div class="modal-btns" id="cmButtons">
+                <button id="cmBtnCancel" class="btn btn-ghost" style="flex:1;">Cancelar</button>
+                <button id="cmBtnConfirm" class="btn btn-success" style="flex:1;">Aceptar</button>
             </div>
         </div>
     </div>
 
-    <!-- CUSTOM INPUT/PROMPT MODAL -->
-    <div id="customPromptOverlay" class="custom-modal-overlay" style="display: none;">
-        <div class="custom-modal" style="padding-top: 30px;">
-            <h3 id="cpTitle" style="margin-bottom: 5px;">Título</h3>
-            <p id="cpText" style="margin-bottom: 15px; font-size: 14px; color: var(--muted);">Mensaje</p>
-            <input type="number" id="cpInput" placeholder="0.00" step="0.01" style="margin-bottom: 20px; text-align: center; font-size: 18px; font-weight: bold; width: 100%;">
-            <div class="cm-buttons">
-                <button id="cpBtnCancel" class="cm-btn cm-btn-cancel">Cancelar</button>
-                <button id="cpBtnConfirm" class="cm-btn cm-btn-confirm">Aceptar</button>
+    <!-- MODAL PROMPT -->
+    <div id="cpOverlay" class="modal-overlay" style="display:none;">
+        <div class="modal-card" style="padding-top:34px;">
+            <h3 id="cpTitle" style="margin-bottom:6px;">Título</h3>
+            <p id="cpText" style="margin-bottom:16px;">Mensaje</p>
+            <input type="number" id="cpInput" placeholder="0.00" step="0.01" style="margin-bottom:20px; text-align:center; font-size:18px; font-weight:800;">
+            <div class="modal-btns">
+                <button id="cpBtnCancel" class="btn btn-ghost" style="flex:1;">Cancelar</button>
+                <button id="cpBtnConfirm" class="btn btn-primary" style="flex:1;">Aceptar</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL POPUP PARA REGISTROS NUEVOS -->
-    <div id="modalRegistroOverlay" class="custom-modal-overlay" style="display: none;">
-        <div class="custom-modal" style="width: 100%; max-width: 500px; padding: 25px 20px; text-align: left; position: relative; border-radius: 25px 25px 15px 15px; margin: 0 10px;">
-            <span onclick="cerrarModalRegistro()" style="position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: var(--muted);">&times;</span>
-            <h3 id="modalRegTitle" style="margin-bottom: 15px;">Registro</h3>
-            
-            <!-- FORMULARIO GASTO -->
-            <div id="formGastoContainer" style="display: none;">
-                <form id="formGasto" onsubmit="handleGasto(event)">
-                    <input type="number" id="gaMonto" placeholder="Monto ($)" step="0.01" required>
-                    <input type="text" id="gaDesc" placeholder="¿En qué gastaste?" required>
-                    <select id="gaCat" required></select>
-                    <select id="gaFuente" required onchange="handleGaFuenteChange(this.value)"><option value="">Selecciona la cuenta...</option></select>
-                    <div id="msiContainer" style="display:none; margin-top: 0px; margin-bottom: 15px; background: var(--bg); padding: 10px; border-radius: 10px; border: 1px dashed var(--muted);">
-                        <label style="font-size: 13px; color: var(--text); display:flex; align-items:center; gap:8px;">
-                            <input type="checkbox" id="gaIsMSI" style="width: 18px; height: 18px; margin: 0;" onchange="document.getElementById('gaMesesContainer').style.display = this.checked ? 'block' : 'none'"> Compra a Meses (MSI)
+    <!-- SHEET REGISTRO (gasto/ingreso/movimiento) -->
+    <div id="sheetRegistroOverlay" class="sheet-overlay" style="display:none;">
+        <div class="sheet-card">
+            <span class="sheet-close" data-action="cerrarModalRegistro">&times;</span>
+            <h3 id="modalRegTitle" class="sheet-title">Registro</h3>
+
+            <div id="formGastoContainer" style="display:none;">
+                <form id="formGasto" data-action="handleGasto">
+                    <div class="field"><input type="number" id="gaMonto" placeholder="Monto ($)" step="0.01" required></div>
+                    <div class="field"><input type="text" id="gaDesc" placeholder="¿En qué gastaste?" required></div>
+                    <div class="field"><select id="gaCat" required></select></div>
+                    <div class="field"><select id="gaFuente" required data-action="handleGaFuenteChange"><option value="">Selecciona la cuenta...</option></select></div>
+                    <div id="msiContainer" style="display:none; margin-bottom:15px; background:var(--surface-alt); padding:12px; border-radius:var(--radius-md); border:1px dashed var(--line-strong);">
+                        <label style="font-size:13px; display:flex; align-items:center; gap:8px; font-weight:600;">
+                            <input type="checkbox" id="gaIsMSI" style="width:18px; height:18px; margin:0;" data-action="toggleMesesMSI"> Compra a meses (MSI)
                         </label>
-                        <div id="gaMesesContainer" style="display:none; margin-top: 10px;">
-                            <input type="number" id="gaMeses" placeholder="¿A cuántos meses?" min="2" max="48" style="margin-bottom:0;">
-                        </div>
+                        <div id="gaMesesContainer" style="display:none; margin-top:10px;"><input type="number" id="gaMeses" placeholder="¿A cuántos meses?" min="2" max="48" style="margin-bottom:0;"></div>
                     </div>
-                    <button type="submit" class="btn-primary" style="background: var(--danger);">Guardar Gasto</button>
+                    <button type="submit" class="btn btn-danger btn-block">Guardar gasto</button>
                 </form>
             </div>
 
-            <!-- FORMULARIO INGRESO -->
-            <div id="formIngresoContainer" style="display: none;">
-                <form id="formIngreso" onsubmit="handleIngreso(event)">
-                    <input type="number" id="inMonto" placeholder="Monto ($)" step="0.01" required>
-                    <input type="text" id="inDesc" placeholder="Concepto" required>
-                    <select id="inCuenta" required><option value="">¿A qué cuenta entró?</option></select>
-                    <button type="submit" class="btn-primary" style="background: var(--success);">Guardar Ingreso</button>
+            <div id="formIngresoContainer" style="display:none;">
+                <form id="formIngreso" data-action="handleIngreso">
+                    <div class="field"><input type="number" id="inMonto" placeholder="Monto ($)" step="0.01" required></div>
+                    <div class="field"><input type="text" id="inDesc" placeholder="Concepto" required></div>
+                    <div class="field"><select id="inCuenta" required><option value="">¿A qué cuenta entró?</option></select></div>
+                    <button type="submit" class="btn btn-success btn-block">Guardar ingreso</button>
                 </form>
             </div>
 
-            <!-- FORMULARIO PAGO/TRASPASO -->
-            <div id="formMovContainer" style="display: none;">
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
-                    <button id="btnModoPago" type="button" class="btn-primary" style="flex:1;" onclick="setMovMode('pago')">Pagar Tarjeta</button>
-                    <button id="btnModoTras" type="button" class="btn-primary" style="flex:1; background:var(--muted);" onclick="setMovMode('traspaso')">Traspaso</button>
+            <div id="formMovContainer" style="display:none;">
+                <div class="segmented">
+                    <button type="button" id="btnModoPago" class="active" data-action="setMovMode" data-mode="pago">Pagar tarjeta</button>
+                    <button type="button" id="btnModoTras" data-action="setMovMode" data-mode="traspaso">Traspaso</button>
                 </div>
-                <form id="formMovimiento" onsubmit="handleMovimiento(event)">
-                    <label style="font-size:12px; color:var(--muted);">Origen:</label>
-                    <select id="movOrigen" required><option value="">Cargando...</option></select>
-                    <label id="lblDestino" style="font-size:12px; color:var(--muted);">Destino:</label>
-                    <select id="movDestino" required><option value="">Cargando...</option></select>
-                    <input type="number" id="movMonto" placeholder="Monto ($)" step="0.01" required>
-                    <button type="submit" class="btn-primary">Procesar Movimiento</button>
+                <form id="formMovimiento" data-action="handleMovimiento">
+                    <div class="field"><label id="lblOrigen">Origen</label><select id="movOrigen" required><option value="">Cargando...</option></select></div>
+                    <div class="field"><label id="lblDestino">Destino (Crédito):</label><select id="movDestino" required><option value="">Cargando...</option></select></div>
+                    <div class="field"><input type="number" id="movMonto" placeholder="Monto ($)" step="0.01" required></div>
+                    <button type="submit" class="btn btn-primary btn-block">Procesar movimiento</button>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- SHEET META -->
+    <div id="sheetMetaOverlay" class="sheet-overlay" style="display:none;">
+        <div class="sheet-card">
+            <span class="sheet-close" data-action="cerrarSheetMeta">&times;</span>
+            <h3 id="sheetMetaTitle" class="sheet-title">Nueva Meta de Ahorro</h3>
+            <form id="formMeta" data-action="guardarMeta">
+                <input type="hidden" id="metaEditId">
+                <div class="field-row" style="margin-bottom:var(--space-4);">
+                    <select id="metaEmoji" style="max-width:90px;"></select>
+                    <input type="text" id="metaNombre" placeholder="Nombre de la meta" required>
+                </div>
+                <div class="field"><label>Monto objetivo ($)</label><input type="number" id="metaObjetivo" step="0.01" required></div>
+                <div class="field"><label>Monto ahorrado ya (opcional)</label><input type="number" id="metaActual" step="0.01" value="0"></div>
+                <div class="field"><label>Fecha límite (opcional)</label><input type="date" id="metaFecha"></div>
+                <button type="submit" class="btn btn-primary btn-block">Guardar meta</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SHEET RECURRENTE -->
+    <div id="sheetRecurrenteOverlay" class="sheet-overlay" style="display:none;">
+        <div class="sheet-card">
+            <span class="sheet-close" data-action="cerrarSheetRecurrente">&times;</span>
+            <h3 id="sheetRecurrenteTitle" class="sheet-title">Nuevo Recurrente</h3>
+            <form id="formRecurrente" data-action="guardarRecurrente">
+                <input type="hidden" id="recEditId">
+                <div class="field"><label>Tipo</label><select id="recTipo" data-action="toggleCampoCategoria"><option value="gasto">Gasto</option><option value="ingreso">Ingreso</option></select></div>
+                <div class="field"><label>Descripción</label><input type="text" id="recDesc" placeholder="Ej. Netflix, Renta, Nómina..." required></div>
+                <div class="field"><label>Monto ($)</label><input type="number" id="recMonto" step="0.01" required></div>
+                <div class="field" id="recCatWrap"><label>Categoría</label><select id="recCat"></select></div>
+                <div class="field"><label>Cuenta</label><select id="recCuenta" required></select></div>
+                <div class="field-row">
+                    <div class="field"><label>Frecuencia</label><select id="recFrecuencia"><option value="mensual">Mensual</option><option value="quincenal">Quincenal</option><option value="semanal">Semanal</option></select></div>
+                    <div class="field"><label>Día aproximado</label><input type="number" id="recDia" min="1" max="31" placeholder="Ej. 15"></div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Guardar recurrente</button>
+            </form>
         </div>
     </div>
 
@@ -442,6 +498,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>

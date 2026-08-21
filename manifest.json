@@ -3,11 +3,11 @@
   "short_name": "DashPro",
   "id": "/?source=pwa",
   "orientation": "portrait",
-  "description": "Controla tus ingresos, gastos, presupuestos y mantén un ritmo financiero saludable de forma privada y segura.",
+  "description": "Controla tus cuentas, gastos, presupuestos, metas de ahorro y pagos recurrentes en un solo lugar, de forma privada y segura.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#3b82f6",
+  "background_color": "#0a0c14",
+  "theme_color": "#141a2a",
   "icons": [
     {
       "src": "icon-192x192.png",
