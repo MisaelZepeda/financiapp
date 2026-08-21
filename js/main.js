@@ -148,6 +148,11 @@ document.getElementById('resetForm').addEventListener('submit', (e) => {
 
 function handleLogout() {
     if (state.isDemo) { window.location.reload(); return; }
+    // Limpiar el respaldo local de datos financieros antes de salir: en un
+    // equipo compartido, si no se borra, la siguiente persona que use el
+    // navegador podría leerlo desde localStorage aunque ya no haya sesión.
+    const uid = auth.currentUser?.uid;
+    if (uid) localStorage.removeItem(`dashpro_data_${uid}`);
     auth.signOut().then(() => window.location.reload());
 }
 
@@ -386,7 +391,7 @@ document.addEventListener('click', (e) => {
             case 'eliminarCategoriaCustom': mostrarConfirmacion('Borrar Categoría', `¿Eliminar la etiqueta "${actionEl.dataset.cat}"?`, () => withPromise(guardarCategoriasCustom(state.categoriasCustom.filter(c => c !== actionEl.dataset.cat)), 'Eliminada', 'Categoría removida.', null)); break;
             case 'seleccionarRestore': document.getElementById('fileRestore').click(); break;
             case 'resetearCuenta': mostrarConfirmacion('Mantenimiento Mayor', 'Esto borrará TODO tu historial de movimientos y dejará los saldos de todas las cuentas en $0. ¿Estás seguro?', () => withPromise(resetearCuenta(), 'Limpio', 'Saldos restablecidos a cero.', null)); break;
-            case 'eliminarUsuario': mostrarConfirmacion('¡Peligro extremo!', 'Esto eliminará tu cuenta y TODOS tus datos permanentemente. No hay marcha atrás. ¿Seguro?', () => { eliminarUsuario().then(() => window.location.reload()).catch(err => mostrarAlerta('Error', 'Debes volver a iniciar sesión para hacer esto.', 'error')); }); break;
+            case 'eliminarUsuario': mostrarConfirmacion('¡Peligro extremo!', 'Esto eliminará tu cuenta y TODOS tus datos permanentemente. No hay marcha atrás. ¿Seguro?', () => { const uidPrevio = auth.currentUser?.uid; eliminarUsuario().then(() => { if (uidPrevio) localStorage.removeItem(`dashpro_data_${uidPrevio}`); window.location.reload(); }).catch(err => mostrarAlerta('Error', 'Debes volver a iniciar sesión para hacer esto.', 'error')); }); break;
             case 'generarPDFMes': generarPDFMes(); break;
             case 'exportarCSV': exportarCSV(); break;
             case 'nuevaMeta': abrirSheetMeta(); break;

@@ -1,5 +1,6 @@
 import { state, todasLasCategorias, iconosMeta } from '../state.js';
 import { icon } from '../utils/icons.js';
+import { escapeHtml } from '../utils/format.js';
 
 /* ---------- META (ahorro) ---------- */
 export function seleccionarIconoMeta(nombre) {
@@ -34,9 +35,9 @@ export function cerrarSheetMeta() { document.getElementById('sheetMetaOverlay').
 /* ---------- RECURRENTE ---------- */
 export function actualizarSelectsRecurrente() {
     const sel = document.getElementById('recCuenta');
-    if (sel) sel.innerHTML = state.cuentas.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    if (sel) sel.innerHTML = state.cuentas.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join('');
     const cat = document.getElementById('recCat');
-    if (cat) cat.innerHTML = todasLasCategorias().map(c => `<option value="${c}">${c}</option>`).join('');
+    if (cat) cat.innerHTML = todasLasCategorias().map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
     toggleCampoCategoria();
 }
 

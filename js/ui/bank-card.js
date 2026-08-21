@@ -1,4 +1,4 @@
-import { money, moneyRounded, getBankColorsArray } from '../utils/format.js';
+import { money, moneyRounded, getBankColorsArray, escapeHtml } from '../utils/format.js';
 import { icon } from '../utils/icons.js';
 
 // Construye el HTML de una fila de cuenta (débito/crédito/efectivo), estilo
@@ -28,11 +28,15 @@ export function bankCardHTML(c, { mostrarAcciones = false, mostrarCompartir = fa
         const disponible = c.limite - c.saldo;
         limiteInfo = `<div class="acc-limit"><div>Límite: ${moneyRounded(c.limite)}</div><div class="money-blur">Disp: ${money(disponible)}</div></div>`;
     }
-    const digitosHtml = c.tipo !== 'efectivo' ? `<div class="acc-digits">•••• ${c.digitos || '0000'}</div>` : '';
+    const digitosHtml = c.tipo !== 'efectivo' ? `<div class="acc-digits">•••• ${escapeHtml(c.digitos) || '0000'}</div>` : '';
     const accentColor = getBankColorsArray(c.banco)[0];
+    const inicial = escapeHtml((c.banco || '?').charAt(0).toUpperCase());
+    // Sin JS embebido con datos del usuario en el atributo onerror: el
+    // texto de respaldo se lee de un data-attribute (ya escapado), nunca se
+    // concatena directo al código del manejador de error.
     const monogram = c.icon
-        ? `<img src="${c.icon}" onerror="this.onerror=null; this.replaceWith(document.createTextNode('${(c.banco || '?').charAt(0).toUpperCase()}'));" alt="" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;">`
-        : (c.banco || '?').charAt(0).toUpperCase();
+        ? `<img src="${escapeHtml(c.icon)}" data-fallback="${inicial}" onerror="this.onerror=null; this.replaceWith(document.createTextNode(this.dataset.fallback));" alt="" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;">`
+        : inicial;
     const shareIcon = mostrarCompartir ? `<div class="acc-share" data-action="compartirTarjeta" data-id="${c.id}">${icon('share')}</div>` : '';
 
     const acciones = mostrarAcciones ? `<div class="acc-actions">
@@ -46,7 +50,7 @@ export function bankCardHTML(c, { mostrarAcciones = false, mostrarCompartir = fa
             <div class="acc-id">
                 <div class="acc-monogram">${monogram}</div>
                 <div style="min-width:0;">
-                    <div class="acc-name">${c.banco.toUpperCase()}</div>
+                    <div class="acc-name">${escapeHtml(c.banco.toUpperCase())}</div>
                     ${digitosHtml}
                 </div>
             </div>
@@ -57,7 +61,7 @@ export function bankCardHTML(c, { mostrarAcciones = false, mostrarCompartir = fa
             <div class="acc-balance money-blur tabular-nums">${money(c.saldo)}</div>
         </div>
         <div class="acc-bottom">
-            <div><div class="acc-owner">${c.nombre}</div>${aviso}</div>
+            <div><div class="acc-owner">${escapeHtml(c.nombre)}</div>${aviso}</div>
             <div style="display:flex; align-items:flex-end; gap:10px;">${limiteInfo}${shareIcon}</div>
         </div>
         ${acciones}

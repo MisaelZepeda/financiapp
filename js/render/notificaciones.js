@@ -1,5 +1,5 @@
 import { state, todasLasCategorias } from '../state.js';
-import { money } from '../utils/format.js';
+import { money, escapeHtml } from '../utils/format.js';
 import { icon } from '../utils/icons.js';
 import { calcularVencidos } from '../data/recurrentes.js';
 
@@ -54,7 +54,7 @@ export function renderNotificaciones() {
     if (dot) dot.style.display = items.length > 0 ? 'block' : 'none';
     if (!lista) return items.length;
     lista.innerHTML = items.length
-        ? items.map(n => `<div class="notif-item"><div class="notif-ico" style="background:${n.bg}; color:${n.color};">${icon(n.ico)}</div><div class="notif-text"><b>${n.titulo}</b><span>${n.sub}</span></div></div>`).join('')
+        ? items.map(n => `<div class="notif-item"><div class="notif-ico" style="background:${n.bg}; color:${n.color};">${icon(n.ico)}</div><div class="notif-text"><b>${escapeHtml(n.titulo)}</b><span>${escapeHtml(n.sub)}</span></div></div>`).join('')
         : `<div class="empty-state" style="padding:24px 16px;">${icon('bell')}Sin notificaciones por ahora.</div>`;
     return items.length;
 }

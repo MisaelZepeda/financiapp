@@ -1,5 +1,5 @@
 import { state, getIconCategoria } from '../state.js';
-import { money, formatFecha } from '../utils/format.js';
+import { money, formatFecha, escapeHtml } from '../utils/format.js';
 import { icon } from '../utils/icons.js';
 
 let limits = { gastos: 15, ingresos: 15, movimientos: 15 };
@@ -27,8 +27,8 @@ function txItemHTML(t) {
     return `<div class="tx-item">
         <div class="tx-ico" style="background:${esIngreso ? 'var(--success-soft)' : 'var(--danger-soft)'}; color:${esIngreso ? 'var(--success)' : 'var(--danger)'};">${icon(nombreIcono)}</div>
         <div class="tx-body">
-            <div class="tx-desc">${t.desc}</div>
-            <div class="tx-meta">${formatFecha(t.fecha)}${t.cat ? ' · ' + t.cat : ''}</div>
+            <div class="tx-desc">${escapeHtml(t.desc)}</div>
+            <div class="tx-meta">${formatFecha(t.fecha)}${t.cat ? ' · ' + escapeHtml(t.cat) : ''}</div>
         </div>
         <b class="tx-amount ${esIngreso ? 'pos' : 'neg'} money-blur tabular-nums">${esIngreso ? '+' : '-'}${money(t.monto)}</b>
         <div class="tx-actions">

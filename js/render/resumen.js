@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { money } from '../utils/format.js';
+import { money, escapeHtml } from '../utils/format.js';
 import { icon } from '../utils/icons.js';
 import { bankCardHTML } from '../ui/bank-card.js';
 import { renderPatrimonioChart, renderSparkline, renderDonutGastos, renderBarAnual } from '../ui/charts.js';
@@ -110,7 +110,7 @@ export function renderResumen() {
         });
         totalEstimado += pago;
         tarjetasHtml += `<div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--surface-alt); border-radius:var(--radius-md); border:1px solid var(--line);">
-            <span style="font-weight:700; font-size:13.5px;">${c.nombre}</span>
+            <span style="font-weight:700; font-size:13.5px;">${escapeHtml(c.nombre)}</span>
             <span class="money-blur" style="font-weight:800;">${money(pago)}</span>
         </div>`;
     });

@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { money, formatFecha } from '../utils/format.js';
+import { money, formatFecha, escapeHtml } from '../utils/format.js';
 import { icon } from '../utils/icons.js';
 
 const COLORES = ['var(--primary-soft)', 'var(--success-soft)', 'var(--warning-soft)', 'var(--info-soft)'];
@@ -19,7 +19,7 @@ export function renderMetas() {
             <div class="goal-top">
                 <div class="goal-emoji" style="background:${COLORES[i % COLORES.length]}; color:${TEXTOS[i % TEXTOS.length]};">${icon(m.emoji || 'target')}</div>
                 <div style="min-width:0;">
-                    <div class="goal-name">${m.nombre}</div>
+                    <div class="goal-name">${escapeHtml(m.nombre)}</div>
                     <div class="goal-sub">${m.fechaLimite ? 'Meta: ' + formatFecha(m.fechaLimite) : 'Sin fecha límite'}</div>
                 </div>
             </div>

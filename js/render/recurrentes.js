@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { money } from '../utils/format.js';
+import { money, escapeHtml } from '../utils/format.js';
 import { icon } from '../utils/icons.js';
 import { calcularVencidos } from '../data/recurrentes.js';
 
@@ -18,8 +18,8 @@ export function renderRecurrentes() {
         return `<div class="recur-item" style="opacity:${r.activo === false ? 0.55 : 1};">
             <div class="tx-ico" style="background:${esIngreso ? 'var(--success-soft)' : 'var(--danger-soft)'}; color:${esIngreso ? 'var(--success)' : 'var(--danger)'};">${icon(esIngreso ? 'coin' : 'repeat')}</div>
             <div style="flex:1; min-width:0;">
-                <div style="font-weight:700; font-size:13.5px;">${r.desc}</div>
-                <div class="tx-meta">${cuenta ? cuenta.nombre : 'Cuenta eliminada'} · <span class="recur-freq">${FRECUENCIA_LABEL[r.frecuencia] || r.frecuencia}</span></div>
+                <div style="font-weight:700; font-size:13.5px;">${escapeHtml(r.desc)}</div>
+                <div class="tx-meta">${cuenta ? escapeHtml(cuenta.nombre) : 'Cuenta eliminada'} · <span class="recur-freq">${FRECUENCIA_LABEL[r.frecuencia] || r.frecuencia}</span></div>
             </div>
             <b class="tx-amount ${esIngreso ? 'pos' : 'neg'} money-blur tabular-nums">${money(r.monto)}</b>
             <div class="tx-actions">

@@ -1,12 +1,12 @@
 import { state, todasLasCategorias, getIconCategoria } from '../state.js';
-import { money, moneyRounded } from '../utils/format.js';
+import { money, moneyRounded, escapeHtml } from '../utils/format.js';
 import { icon } from '../utils/icons.js';
 
 export function renderFormularioPresupuestos() {
     const cats = todasLasCategorias();
     document.getElementById('contenedorInputsPresupuesto').innerHTML = cats.map(c => {
         const val = state.presupuestos[c] || '';
-        return `<div class="field"><label style="display:flex; align-items:center; gap:6px;">${icon(getIconCategoria(c))}${c}</label><input type="number" data-cat="${c}" value="${val}" placeholder="$0" step="0.01"></div>`;
+        return `<div class="field"><label style="display:flex; align-items:center; gap:6px;">${icon(getIconCategoria(c))}${escapeHtml(c)}</label><input type="number" data-cat="${escapeHtml(c)}" value="${val}" placeholder="$0" step="0.01"></div>`;
     }).join('');
 }
 
@@ -43,7 +43,7 @@ export function renderPresupuestos() {
                 <div class="budget-ring" style="--pct:${Math.min(pct, 100)}; --ring-color:${ringColor};">
                     <div class="budget-icon">${icon(getIconCategoria(c))}</div>
                 </div>
-                <div class="budget-title">${c}</div>
+                <div class="budget-title">${escapeHtml(c)}</div>
                 <div class="budget-amounts tabular-nums">${moneyRounded(gastado)} / ${moneyRounded(limite)}</div>
                 <div class="budget-pct ${sobregiro ? 'over' : ''}" style="${sobregiro ? '' : `color:${ringColor};`}">${pct.toFixed(0)}%</div>
             </div>`;

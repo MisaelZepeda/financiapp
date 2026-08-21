@@ -1,5 +1,5 @@
 import { state, todasLasCategorias } from '../state.js';
-import { money } from '../utils/format.js';
+import { money, escapeHtml } from '../utils/format.js';
 
 let currentEditId = null;
 let currentMovMode = 'pago';
@@ -9,9 +9,9 @@ export function setEditId(v) { currentEditId = v; }
 export function getMovMode() { return currentMovMode; }
 
 export function actualizarSelectsRegistro() {
-    const optDeb = state.cuentas.filter(c => c.tipo === 'debito' || c.tipo === 'efectivo').map(c => `<option value="${c.id}">${c.nombre} (${money(c.saldo)})</option>`).join('');
-    const optCre = state.cuentas.filter(c => c.tipo === 'credito').map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
-    const optAll = state.cuentas.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    const optDeb = state.cuentas.filter(c => c.tipo === 'debito' || c.tipo === 'efectivo').map(c => `<option value="${c.id}">${escapeHtml(c.nombre)} (${money(c.saldo)})</option>`).join('');
+    const optCre = state.cuentas.filter(c => c.tipo === 'credito').map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join('');
+    const optAll = state.cuentas.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join('');
 
     const inCuenta = document.getElementById('inCuenta'); if (inCuenta) inCuenta.innerHTML = optDeb;
     const gaFuente = document.getElementById('gaFuente'); if (gaFuente) gaFuente.innerHTML = optAll;
@@ -19,7 +19,7 @@ export function actualizarSelectsRegistro() {
     const movDestino = document.getElementById('movDestino'); if (movDestino) movDestino.innerHTML = currentMovMode === 'pago' ? optCre : optDeb;
 
     const gaCat = document.getElementById('gaCat');
-    if (gaCat) gaCat.innerHTML = todasLasCategorias().map(c => `<option value="${c}">${c}</option>`).join('');
+    if (gaCat) gaCat.innerHTML = todasLasCategorias().map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
 }
 
 export function handleGaFuenteChange(accountId) {
