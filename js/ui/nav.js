@@ -1,4 +1,4 @@
-// Navegación: cambio de tabs, menús desplegables, FAB y hoja "Más" (móvil).
+// Navegación: cambio de tabs, menús desplegables y hoja "Más" (móvil).
 
 const onTabChange = new Set();
 
@@ -9,9 +9,6 @@ export function cambiarTab(id) {
     document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
     const section = document.getElementById('tab-' + id);
     if (section) section.classList.add('active');
-
-    const fabContainer = document.getElementById('fabContainerMain');
-    if (fabContainer) fabContainer.style.display = (id === 'cuentas') ? 'none' : 'flex';
 
     closeDropdowns();
     closeMoreSheet();
@@ -34,15 +31,10 @@ export function toggleNotifPanel(e) {
 export function closeDropdowns() {
     document.getElementById('userMenu')?.classList.remove('show');
     document.getElementById('notifPanel')?.classList.remove('show');
-    const fabMain = document.getElementById('fabMain');
-    const fabMenu = document.getElementById('fabMenu');
-    if (fabMain?.classList.contains('active')) { fabMain.classList.remove('active'); fabMenu.classList.remove('show'); }
 }
 
-export function toggleFab() {
-    document.getElementById('fabMain')?.classList.toggle('active');
-    document.getElementById('fabMenu')?.classList.toggle('show');
-}
+export function abrirMenuRegistro() { const el = document.getElementById('addMenuOverlay'); if (el) el.style.display = 'flex'; }
+export function cerrarMenuRegistro() { const el = document.getElementById('addMenuOverlay'); if (el) el.style.display = 'none'; }
 
 export function openMoreSheet() { document.getElementById('moreSheetOverlay')?.style.setProperty('display', 'flex'); }
 export function closeMoreSheet() { const el = document.getElementById('moreSheetOverlay'); if (el) el.style.display = 'none'; }
@@ -67,6 +59,6 @@ export function initThemePreference() {
 export function togglePrivacy() {
     document.body.classList.toggle('privacy-mode');
     const active = document.body.classList.contains('privacy-mode');
-    const btn = document.getElementById('btnPrivacy');
-    if (btn) btn.innerText = active ? '🙈' : '👁️';
+    const use = document.querySelector('#btnPrivacy use');
+    if (use) use.setAttribute('href', active ? '#i-eye-off' : '#i-eye');
 }

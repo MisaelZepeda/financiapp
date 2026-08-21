@@ -1,19 +1,27 @@
 import { state, todasLasCategorias, iconosMeta } from '../state.js';
+import { icon } from '../utils/icons.js';
 
 /* ---------- META (ahorro) ---------- */
-export function poblarSelectEmojiMeta() {
-    const sel = document.getElementById('metaEmoji');
-    if (sel) sel.innerHTML = iconosMeta.map(e => `<option value="${e}">${e}</option>`).join('');
+export function seleccionarIconoMeta(nombre) {
+    document.getElementById('metaEmoji').value = nombre;
+    document.querySelectorAll('#metaIconPicker .icon-swatch').forEach(el => el.classList.toggle('active', el.dataset.icon === nombre));
+}
+
+function poblarPickerIconoMeta(seleccionado) {
+    const cont = document.getElementById('metaIconPicker');
+    if (!cont) return;
+    cont.innerHTML = iconosMeta.map(nombre => `<button type="button" class="icon-swatch ${nombre === seleccionado ? 'active' : ''}" data-action="seleccionarIconoMeta" data-icon="${nombre}">${icon(nombre)}</button>`).join('');
 }
 
 export function abrirSheetMeta(meta = null) {
     document.getElementById('formMeta').reset();
-    poblarSelectEmojiMeta();
     document.getElementById('metaEditId').value = meta ? meta.id : '';
     document.getElementById('sheetMetaTitle').innerText = meta ? 'Editar Meta' : 'Nueva Meta de Ahorro';
+    const iconoInicial = (meta && meta.emoji) || 'target';
+    poblarPickerIconoMeta(iconoInicial);
+    document.getElementById('metaEmoji').value = iconoInicial;
     if (meta) {
         document.getElementById('metaNombre').value = meta.nombre;
-        document.getElementById('metaEmoji').value = meta.emoji || '🎯';
         document.getElementById('metaObjetivo').value = meta.montoObjetivo;
         document.getElementById('metaActual').value = meta.montoActual || 0;
         document.getElementById('metaFecha').value = meta.fechaLimite || '';

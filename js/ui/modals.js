@@ -1,18 +1,24 @@
 // Sistema de modales propio (alerta/confirmación/prompt) — mismo comportamiento
-// que la versión anterior, solo con la marcación y estilos nuevos.
+// que la versión anterior, solo con la marcación y estilos nuevos. El ícono
+// del modal es el <svg id="cmIcon"><use></svg> del sprite: se cambia el
+// símbolo referenciado, nunca texto/emoji.
+
+function setModalIcon(nombre) {
+    const use = document.querySelector('#cmIcon use');
+    if (use) use.setAttribute('href', `#i-${nombre}`);
+}
 
 export function mostrarAlerta(titulo, mensaje, tipo = 'success') {
     const overlay = document.getElementById('cmOverlay');
     const iconWrap = document.getElementById('cmIconWrap');
-    const icon = document.getElementById('cmIcon');
     const btns = document.getElementById('cmButtons');
 
     document.getElementById('cmTitle').innerText = titulo;
     document.getElementById('cmText').innerText = mensaje;
     btns.style.display = 'none';
 
-    if (tipo === 'success') { iconWrap.style.background = 'var(--success)'; icon.innerText = '✔️'; }
-    else if (tipo === 'error') { iconWrap.style.background = 'var(--danger)'; icon.innerText = '✖️'; }
+    if (tipo === 'success') { iconWrap.style.background = 'var(--success)'; setModalIcon('check'); }
+    else if (tipo === 'error') { iconWrap.style.background = 'var(--danger)'; setModalIcon('x'); }
 
     overlay.style.display = 'flex';
     setTimeout(() => { overlay.style.display = 'none'; btns.style.display = 'flex'; }, 1400);
@@ -21,7 +27,6 @@ export function mostrarAlerta(titulo, mensaje, tipo = 'success') {
 export function mostrarConfirmacion(titulo, mensaje, callback) {
     const overlay = document.getElementById('cmOverlay');
     const iconWrap = document.getElementById('cmIconWrap');
-    const icon = document.getElementById('cmIcon');
     const btns = document.getElementById('cmButtons');
     const btnConfirm = document.getElementById('cmBtnConfirm');
     const btnCancel = document.getElementById('cmBtnCancel');
@@ -40,7 +45,7 @@ export function mostrarConfirmacion(titulo, mensaje, callback) {
     btnConfirm.className = 'btn';
     btnConfirm.style.background = 'var(--warning)';
     btnConfirm.style.color = '#fff';
-    icon.innerText = '⚠️';
+    setModalIcon('alert-triangle');
 
     overlay.style.display = 'flex';
 }

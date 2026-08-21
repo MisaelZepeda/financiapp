@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dashpro-cache-v3'; // v3: rediseño completo + nuevos módulos JS/CSS
+const CACHE_NAME = 'dashpro-cache-v4'; // v4: nueva dirección visual (sidebar morado + tarjetas redondeadas)
 
 const urlsToCache = [
     './',
@@ -33,6 +33,7 @@ const urlsToCache = [
     './js/ui/registro-sheet.js',
     './js/ui/extra-sheets.js',
     './js/utils/format.js',
+    './js/utils/icons.js',
     './js/utils/demo-data.js',
     './js/utils/share-card.js',
     './js/utils/csv-export.js',

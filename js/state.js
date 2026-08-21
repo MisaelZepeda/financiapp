@@ -4,7 +4,7 @@
 export const state = {
     uid: null,
     isDemo: false,
-    perfil: { nombre: "Usuario", foto: "https://via.placeholder.com/100", color: "#7c3aed" },
+    perfil: { nombre: "Usuario", foto: "https://via.placeholder.com/100", color: "#6c63ff" },
     cuentas: [],
     transacciones: [],
     presupuestos: {},
@@ -12,17 +12,19 @@ export const state = {
     metas: [],
     recurrentes: [],
     currentBase64: "",
-    selectedColor: "#7c3aed",
+    selectedColor: "#6c63ff",
 };
 
 export const categoriasBase = ['Comida', 'Servicios', 'Transporte', 'Vivienda', 'Ocio', 'Otros'];
 
+// Nombres de símbolos del sprite SVG (ver <symbol id="i-NOMBRE"> en index.html),
+// no emojis: así el ícono se ve idéntico en cualquier dispositivo.
 export const iconosCategoria = {
-    'Comida': '🍔', 'Servicios': '⚡', 'Transporte': '🚗', 'Vivienda': '🏠', 'Ocio': '🍿',
-    'Otros': '📦', 'Mascotas': '🐶', 'Salud': '💊', 'Ropa': '👕', 'Suscripciones': '📺', 'Gimnasio': '🏋️'
+    'Comida': 'utensils', 'Servicios': 'zap', 'Transporte': 'car', 'Vivienda': 'home', 'Ocio': 'film',
+    'Otros': 'box', 'Mascotas': 'heart', 'Salud': 'heart', 'Ropa': 'tag', 'Suscripciones': 'repeat', 'Gimnasio': 'zap'
 };
 
-export const iconosMeta = ['🎯', '✈️', '🏠', '🚗', '💍', '🎓', '💻', '🏖️', '🛡️', '🎁'];
+export const iconosMeta = ['target', 'shield', 'home', 'car', 'coin', 'box', 'heart', 'calendar'];
 
 export const frasesFinancieras = [
     "Ser bueno con el dinero no significa acumularlo, sino saber cuándo dejarlo ir.",
@@ -41,5 +43,5 @@ export function todasLasCategorias() {
 }
 
 export function getIconCategoria(cat) {
-    return iconosCategoria[cat] || '🏷️';
+    return iconosCategoria[cat] || 'tag';
 }

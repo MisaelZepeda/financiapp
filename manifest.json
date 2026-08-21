@@ -6,8 +6,8 @@
   "description": "Controla tus cuentas, gastos, presupuestos, metas de ahorro y pagos recurrentes en un solo lugar, de forma privada y segura.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0a0c14",
-  "theme_color": "#141a2a",
+  "background_color": "#e6e9fb",
+  "theme_color": "#6c63ff",
   "icons": [
     {
       "src": "icon-192x192.png",

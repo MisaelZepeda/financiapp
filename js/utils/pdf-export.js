@@ -23,7 +23,7 @@ export async function generarPDFMes() {
         const prefijoMes = `${year}-${(fechaObjetivo.getMonth() + 1).toString().padStart(2, '0')}`;
         const userName = limpiar(document.getElementById('perfDisplayNombre')?.innerText || '');
         const userPhotoBase64 = document.getElementById('perfDisplayFoto')?.src;
-        const colorPrimarioHex = getComputedStyle(document.body).getPropertyValue('--primary').trim() || '#7c3aed';
+        const colorPrimarioHex = getComputedStyle(document.body).getPropertyValue('--primary').trim() || '#6c63ff';
         const hexToRgb = (hex) => { let c = hex.trim().substring(1).split(''); if (c.length === 3) c = [c[0], c[0], c[1], c[1], c[2], c[2]]; c = '0x' + c.join(''); return [(c >> 16) & 255, (c >> 8) & 255, c & 255]; };
         const rgbPrimario = hexToRgb(colorPrimarioHex);
 

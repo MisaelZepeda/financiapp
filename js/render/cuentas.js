@@ -1,9 +1,10 @@
 import { state } from '../state.js';
 import { bankCardHTML } from '../ui/bank-card.js';
+import { icon } from '../utils/icons.js';
 
 export function renderCuentasMaestro() {
     const html = state.cuentas.map(c => bankCardHTML(c, { mostrarAcciones: true })).join('');
-    document.getElementById('listaMaestraCuentas').innerHTML = html || `<div class="empty-state"><span class="icon">🏦</span>Aún no registras ninguna cuenta.</div>`;
+    document.getElementById('listaMaestraCuentas').innerHTML = html || `<div class="empty-state">${icon('landmark')}Aún no registras ninguna cuenta.</div>`;
 }
 
 export function toggleCamposCuenta() {
@@ -27,7 +28,7 @@ export function poblarFormularioCuenta(c) {
     document.getElementById('cuLimite').value = c.limite || '';
     document.getElementById('cuPago').value = c.diaPago || '';
     document.getElementById('cuCorte').value = c.diaCorte || '';
-    document.getElementById('cuIcon').style.display = 'block';
+    document.getElementById('grupoIcon').style.display = 'block';
     document.getElementById('cuIcon').value = c.icon || '';
     toggleCamposCuenta();
 }
@@ -37,7 +38,7 @@ export function limpiarFormularioCuenta() {
     document.getElementById('cuentaFormTitle').innerText = 'Registrar Cuenta';
     document.getElementById('btnGuardarCuenta').innerText = 'Añadir Cuenta';
     document.getElementById('btnCancelarEdicionCuenta').style.display = 'none';
-    document.getElementById('cuIcon').style.display = 'none';
+    document.getElementById('grupoIcon').style.display = 'none';
     document.getElementById('cuIcon').value = '';
     toggleCamposCuenta();
 }

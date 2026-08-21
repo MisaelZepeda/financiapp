@@ -19,9 +19,66 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#141a2a">
+    <meta name="theme-color" content="#6c63ff">
 </head>
 <body>
+    <!-- ====================================================================
+         SPRITE DE ÍCONOS — fuente única para toda la app. Nada de emojis:
+         cada símbolo es una forma vectorial simple (24x24, trazo 2px) que se
+         referencia con <svg class="icon"><use href="#i-NOMBRE"></use></svg>
+         y hereda color vía CSS `currentColor`, así que se ve idéntico en
+         cualquier dispositivo/SO y respeta el tema claro/oscuro.
+         ==================================================================== -->
+    <svg style="display:none" aria-hidden="true">
+        <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7"/><path d="M6 9.5V20h5v-5h2v5h5V9.5"/></symbol>
+        <symbol id="i-list" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></symbol>
+        <symbol id="i-bar-chart" viewBox="0 0 24 24"><line x1="5" y1="20" x2="5" y2="11"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="15"/></symbol>
+        <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol>
+        <symbol id="i-repeat" viewBox="0 0 24 24"><polyline points="17 2 21 6 17 10"/><path d="M3 12V9a4 4 0 0 1 4-4h14"/><polyline points="7 22 3 18 7 14"/><path d="M21 12v3a4 4 0 0 1-4 4H3"/></symbol>
+        <symbol id="i-landmark" viewBox="0 0 24 24"><line x1="4" y1="21" x2="20" y2="21"/><line x1="5" y1="10" x2="5" y2="21"/><line x1="19" y1="10" x2="19" y2="21"/><line x1="9" y1="10" x2="9" y2="21"/><line x1="15" y1="10" x2="15" y2="21"/><path d="M3 10 12 4l9 6"/></symbol>
+        <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M21 12h-3M6 12H3M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1M18.4 18.4l-2.1-2.1M7.7 7.7 5.6 5.6"/></symbol>
+        <symbol id="i-more-horizontal" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="19" cy="12" r="1.4" fill="currentColor"/></symbol>
+        <symbol id="i-log-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+        <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M5 19h14"/></symbol>
+        <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 21V9"/><polyline points="7 14 12 9 17 14"/><path d="M5 5h14"/></symbol>
+        <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+        <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+        <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.2A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a13.5 13.5 0 0 1-3 3.9M6.6 6.6C4 8.3 2 12 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.9-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+        <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></symbol>
+        <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+        <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M13.5 6.5l3 3"/></symbol>
+        <symbol id="i-trash" viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><path d="M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/><path d="M7 7l1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></symbol>
+        <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.2"/><circle cx="6" cy="12" r="2.2"/><circle cx="18" cy="19" r="2.2"/><line x1="8" y1="10.8" x2="16" y2="6.2"/><line x1="8" y1="13.2" x2="16" y2="17.8"/></symbol>
+        <symbol id="i-x" viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><polyline points="4 12 9.5 17.5 20 6"/></symbol>
+        <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="7.5 12.5 10.5 15.5 16.5 9"/></symbol>
+        <symbol id="i-alert-triangle" viewBox="0 0 24 24"><path d="M12 3.5 22 20H2Z"/><line x1="12" y1="9.5" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor"/></symbol>
+        <symbol id="i-alert-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="7.5" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.6" fill="currentColor"/></symbol>
+        <symbol id="i-chevron-down" viewBox="0 0 24 24"><polyline points="5 8.5 12 15.5 19 8.5"/></symbol>
+        <symbol id="i-chevron-right" viewBox="0 0 24 24"><polyline points="8.5 5 15.5 12 8.5 19"/></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="20" y1="20" x2="15.3" y2="15.3"/></symbol>
+        <symbol id="i-credit-card" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><line x1="2.5" y1="10" x2="21.5" y2="10"/></symbol>
+        <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v3"/><path d="M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1V10a1 1 0 0 0-1-1H6a2 2 0 0 1-2-2Z"/><circle cx="16.5" cy="14.5" r="1.2" fill="currentColor"/></symbol>
+        <symbol id="i-trending-up" viewBox="0 0 24 24"><polyline points="3 17 10 10 14 14 21 6"/><polyline points="15 6 21 6 21 12"/></symbol>
+        <symbol id="i-trending-down" viewBox="0 0 24 24"><polyline points="3 7 10 14 14 10 21 18"/><polyline points="15 18 21 18 21 12"/></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+        <symbol id="i-plus-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></symbol>
+        <symbol id="i-minus-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="8" y1="12" x2="16" y2="12"/></symbol>
+        <symbol id="i-pause" viewBox="0 0 24 24"><line x1="9" y1="5" x2="9" y2="19"/><line x1="15" y1="5" x2="15" y2="19"/></symbol>
+        <symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20"/></symbol>
+        <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></symbol>
+        <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+        <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 20 6.5v5C20 16.5 16.5 20 12 21c-4.5-1-8-4.5-8-9.5v-5Z"/></symbol>
+        <symbol id="i-tag" viewBox="0 0 24 24"><path d="M11.5 3H5a2 2 0 0 0-2 2v6.5a2 2 0 0 0 .6 1.4l9 9a2 2 0 0 0 2.8 0l6.5-6.5a2 2 0 0 0 0-2.8l-9-9A2 2 0 0 0 11.5 3Z"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/></symbol>
+        <symbol id="i-utensils" viewBox="0 0 24 24"><path d="M6 3v7a2 2 0 0 0 2 2v9"/><path d="M6 3v5M9 3v5"/><path d="M17 3c-1.5 0-3 1.5-3 4v4h3v10"/></symbol>
+        <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 4 14 11 14 10 22 20 9 13 9"/></symbol>
+        <symbol id="i-car" viewBox="0 0 24 24"><path d="M4 16V11l2-5h12l2 5v5"/><path d="M4 16h16v3H4Z"/><circle cx="7.5" cy="16.5" r="1.6"/><circle cx="16.5" cy="16.5" r="1.6"/></symbol>
+        <symbol id="i-film" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1.5"/><line x1="8" y1="4" x2="8" y2="20"/><line x1="16" y1="4" x2="16" y2="20"/><line x1="3" y1="9" x2="8" y2="9"/><line x1="3" y1="15" x2="8" y2="15"/><line x1="16" y1="9" x2="21" y2="9"/><line x1="16" y1="15" x2="21" y2="15"/></symbol>
+        <symbol id="i-box" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5-9 5-9-5Z"/><path d="M3 8v9l9 5 9-5V8"/><line x1="12" y1="13" x2="12" y2="22"/></symbol>
+        <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></symbol>
+        <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 15.5c.5 1 1.5 1.5 2.5 1.5 1.7 0 3-1 3-2.3 0-1.2-1-1.8-3-2.2-2-.4-3-1-3-2.2C9 9 10.3 8 12 8c1 0 2 .5 2.5 1.5"/><line x1="12" y1="6.5" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="17.5"/></symbol>
+    </svg>
+
     <!-- LOADER -->
     <div id="loader">
         <div class="loading-wrapper">
@@ -35,19 +92,21 @@
     <!-- AUTENTICACIÓN -->
     <div id="loginScreen" class="auth-shell" style="display:none;">
         <div class="auth-brand-panel">
-            <div class="blob" style="width:300px;height:300px;top:-100px;left:-80px;"></div>
-            <div class="blob" style="width:220px;height:220px;bottom:-60px;right:-40px;"></div>
-            <div class="auth-brand-logo"><img src="logo.svg" alt=""><span>Dashboard Pro</span></div>
+            <div class="auth-brand-logo"><img src="logo.svg" alt="" width="28" height="28"><span>Dashboard Pro</span></div>
             <div class="auth-brand-copy">
-                <h1>Tu dinero, bajo control total.</h1>
+                <h1>Tu dinero, en un solo libro.</h1>
                 <p>Cuentas, tarjetas, presupuestos, metas de ahorro y pagos recurrentes en un solo lugar — con reportes claros y datos siempre sincronizados.</p>
             </div>
-            <div style="position:relative; z-index:2; font-size:12px; opacity:0.7;">© <span id="anioFooter"></span> Dashboard Pro</div>
+            <div class="auth-brand-figure tabular-nums">
+                <div class="row"><span>Patrimonio total</span><b>$66,880.50</b></div>
+                <div class="row"><span>Ingresos del mes</span><b style="color:var(--success);">+$14,343.00</b></div>
+                <div class="row"><span>Gastos del mes</span><b style="color:var(--danger);">-$7,944.00</b></div>
+            </div>
         </div>
 
         <div class="auth-form-panel">
             <div class="auth-form-wrap">
-                <div class="mobile-logo"><img src="logo.svg" alt=""></div>
+                <div class="mobile-logo"><img src="logo.svg" alt="" width="44" height="44"></div>
 
                 <form id="loginForm">
                     <h2>Bienvenido de vuelta</h2>
@@ -58,7 +117,7 @@
                     <p class="auth-link" data-action="toggleAuthForm" data-form="register">¿No tienes cuenta? Regístrate</p>
                     <p class="auth-link" data-action="toggleAuthForm" data-form="reset">¿Olvidaste tu contraseña?</p>
                     <div class="auth-divider">o</div>
-                    <button type="button" class="btn btn-ghost btn-block" data-action="entrarModoDemo">✨ Ver Demo sin cuenta</button>
+                    <button type="button" class="btn btn-ghost btn-block" data-action="entrarModoDemo"><svg class="icon"><use href="#i-eye"></use></svg>Ver demo sin cuenta</button>
                 </form>
 
                 <form id="registerForm" style="display:none;">
@@ -85,48 +144,50 @@
 
     <!-- APP -->
     <div id="appDashboard" class="app-shell" style="display:none;">
-        <aside class="app-sidebar">
-            <div class="sidebar-brand"><img src="logo.svg" alt=""><span>Dashboard Pro</span></div>
-            <nav class="sidebar-nav">
-                <div class="sidebar-link active" data-tab="resumen"><span class="ico">🏠</span>Resumen</div>
-                <div class="sidebar-link" data-tab="reportes"><span class="ico">📋</span>Movimientos</div>
-                <div class="sidebar-link" data-tab="presupuestos"><span class="ico">📊</span>Presupuesto</div>
-                <div class="sidebar-link" data-tab="metas"><span class="ico">🎯</span>Metas</div>
-                <div class="sidebar-link" data-tab="recurrentes"><span class="ico">🔁</span>Recurrentes</div>
-                <div class="sidebar-link" data-tab="cuentas"><span class="ico">🏦</span>Cuentas</div>
-                <div class="sidebar-link" data-tab="perfil"><span class="ico">⚙️</span>Configuración</div>
-            </nav>
-            <div class="sidebar-foot">
-                <div class="sidebar-link" data-action="exportarBackup"><span class="ico">💾</span>Respaldar datos</div>
-                <div class="sidebar-link" data-action="handleLogout" style="color:var(--danger);"><span class="ico">🚪</span>Cerrar sesión</div>
+        <nav class="app-rail">
+            <div class="rail-brand"><img src="logo.svg" alt="" width="24" height="24"><span>Dashboard Pro</span></div>
+            <div class="rail-links">
+                <button class="rail-link active" data-tab="resumen"><svg class="icon"><use href="#i-home"></use></svg><span>Inicio</span></button>
+                <button class="rail-link" data-tab="reportes"><svg class="icon"><use href="#i-list"></use></svg><span>Movs</span></button>
+                <button class="rail-add" data-action="abrirMenuRegistro" title="Nuevo movimiento"><svg class="icon"><use href="#i-plus"></use></svg></button>
+                <button class="rail-link" data-tab="metas"><svg class="icon"><use href="#i-target"></use></svg><span>Metas</span></button>
+                <button class="rail-link rail-desktop-only" data-tab="presupuestos"><svg class="icon"><use href="#i-bar-chart"></use></svg><span>Presupuesto</span></button>
+                <button class="rail-link rail-desktop-only" data-tab="recurrentes"><svg class="icon"><use href="#i-repeat"></use></svg><span>Recurrentes</span></button>
+                <button class="rail-link rail-desktop-only" data-tab="cuentas"><svg class="icon"><use href="#i-landmark"></use></svg><span>Cuentas</span></button>
+                <button class="rail-link rail-desktop-only" data-tab="perfil"><svg class="icon"><use href="#i-settings"></use></svg><span>Configuración</span></button>
+                <button class="rail-link rail-mobile-only" data-action="openMoreSheet"><svg class="icon"><use href="#i-more-horizontal"></use></svg><span>Más</span></button>
             </div>
-        </aside>
+            <div class="rail-bottom">
+                <button class="rail-link" data-action="exportarBackup"><svg class="icon"><use href="#i-download"></use></svg><span>Respaldar</span></button>
+                <button class="rail-link" data-action="handleLogout" style="color:var(--danger);"><svg class="icon"><use href="#i-log-out"></use></svg><span>Salir</span></button>
+            </div>
+        </nav>
 
         <div class="app-main">
             <header class="app-header">
                 <div class="header-user" data-action="toggleUserMenu">
                     <img id="headerFoto" class="header-avatar" src="" alt="">
                     <div class="header-user-text">
-                        <h2 id="headerGreeting" class="header-greeting">Hola!</h2>
-                        <span class="header-sub">Menú y opciones ▾</span>
+                        <h2 id="headerGreeting" class="header-greeting">Hola</h2>
+                        <span class="header-sub">Menú y opciones<svg class="icon" style="width:11px;height:11px;"><use href="#i-chevron-down"></use></svg></span>
                     </div>
-                    <span id="demoBadge" class="badge badge-warning" style="display:none; margin-left:4px;">DEMO</span>
+                    <span id="demoBadge" class="badge badge-warning" style="display:none;">Demo</span>
                 </div>
                 <div class="header-actions">
-                    <div class="icon-btn" id="btnPrivacy" data-action="togglePrivacy" title="Modo privacidad">👁️</div>
-                    <div class="icon-btn" data-action="toggleNotifPanel" title="Notificaciones"><span id="notifDot" class="dot" style="display:none;"></span>🔔</div>
+                    <div class="icon-btn" id="btnPrivacy" data-action="togglePrivacy" title="Modo privacidad"><svg class="icon"><use href="#i-eye"></use></svg></div>
+                    <div class="icon-btn" data-action="toggleNotifPanel" title="Notificaciones"><span id="notifDot" class="dot" style="display:none;"></span><svg class="icon"><use href="#i-bell"></use></svg></div>
                     <label class="theme-switch">
                         <input type="checkbox" id="themeToggle" data-action="toggleTheme" checked>
-                        <span class="theme-slider"><span class="ico">🌙</span><span class="ico">☀️</span></span>
+                        <span class="theme-slider"><svg class="icon ico-moon"><use href="#i-moon"></use></svg><svg class="icon ico-sun"><use href="#i-sun"></use></svg></span>
                     </label>
                 </div>
 
                 <div id="userMenu" class="dropdown-panel">
-                    <div class="dd-item" data-tab="perfil">⚙️ Configuración</div>
-                    <div class="dd-item" id="btnInstalarApp" style="display:none; color:var(--primary); font-weight:800;">📱 Instalar App</div>
-                    <div class="dd-item" data-action="exportarBackup">💾 Respaldar datos</div>
+                    <div class="dd-item" data-tab="perfil"><svg class="icon"><use href="#i-settings"></use></svg>Configuración</div>
+                    <div class="dd-item" id="btnInstalarApp" style="display:none; color:var(--primary); font-weight:800;"><svg class="icon"><use href="#i-download"></use></svg>Instalar app</div>
+                    <div class="dd-item" data-action="exportarBackup"><svg class="icon"><use href="#i-download"></use></svg>Respaldar datos</div>
                     <div class="dd-divider"></div>
-                    <div class="dd-item danger" data-action="handleLogout">🚪 Cerrar sesión</div>
+                    <div class="dd-item danger" data-action="handleLogout"><svg class="icon"><use href="#i-log-out"></use></svg>Cerrar sesión</div>
                 </div>
 
                 <div id="notifPanel" class="dropdown-panel">
@@ -135,43 +196,43 @@
                 </div>
             </header>
 
-            <main class="app-content" data-action-scope="close-dropdowns">
+            <main class="app-content">
                 <!-- RESUMEN -->
                 <section id="tab-resumen" class="tab-content active">
-                    <div class="hero-card">
-                        <div class="hero-blob" style="width:220px;height:220px;top:-70px;right:-50px;"></div>
-                        <div class="hero-blob" style="width:150px;height:150px;bottom:-40px;left:-20px;"></div>
-                        <div class="hero-content">
-                            <p class="hero-eyebrow">Patrimonio total</p>
-                            <h1 id="heroTotal" class="money-blur hero-total">$0.00</h1>
-                            <p id="heroMessage" class="hero-message">Cargando tu panorama financiero…</p>
-                            <div class="hero-stats">
-                                <div><small>Activos</small><br><b id="heroTengo" class="money-blur">$0.00</b></div>
-                                <div style="text-align:center;"><small>Capacidad crédito</small><br><b id="heroCapacidad" class="money-blur">$0.00</b></div>
-                                <div style="text-align:right;"><small>Deudas</small><br><b id="heroDebo" class="money-blur">$0.00</b></div>
+                    <div class="hero-panel">
+                        <div class="hero-top">
+                            <div>
+                                <p class="hero-eyebrow">Patrimonio total</p>
+                                <h1 id="heroTotal" class="money-blur hero-total tabular-nums">$0.00</h1>
+                                <p id="heroMessage" class="hero-message">Cargando tu panorama financiero…</p>
                             </div>
+                            <div class="hero-chart-mini"><canvas id="chartPatrimonio"></canvas></div>
                         </div>
-                        <div class="hero-chart-container"><canvas id="chartPatrimonio"></canvas></div>
+                        <div class="hero-stats-row">
+                            <div class="hero-stat"><small>Activos</small><b id="heroTengo" class="money-blur tabular-nums">$0.00</b></div>
+                            <div class="hero-stat"><small>Capacidad crédito</small><b id="heroCapacidad" class="money-blur tabular-nums">$0.00</b></div>
+                            <div class="hero-stat"><small>Deudas</small><b id="heroDebo" class="money-blur tabular-nums">$0.00</b></div>
+                        </div>
                     </div>
 
                     <div class="grid-2" style="margin-top:var(--space-4);">
-                        <div class="stat-tile">
-                            <div class="stat-label" style="color:var(--success);">Ingresos</div>
-                            <div id="homeIngresos" class="money-blur stat-value">$0.00</div>
-                            <div class="stat-foot"><small id="pctIngresos" class="stat-pct">↑ 0.0%</small><div style="width:52px;height:26px;"><canvas id="sparklineIngresos"></canvas></div></div>
+                        <div class="stat-tile pos">
+                            <div class="stat-label"><span class="icon-badge"><svg class="icon"><use href="#i-trending-up"></use></svg></span>Ingresos</div>
+                            <div id="homeIngresos" class="money-blur stat-value tabular-nums">$0.00</div>
+                            <div class="stat-foot"><small id="pctIngresos" class="stat-pct">0.0%</small><div style="width:52px;height:26px;"><canvas id="sparklineIngresos"></canvas></div></div>
                         </div>
-                        <div class="stat-tile">
-                            <div class="stat-label" style="color:var(--danger);">Gastos</div>
-                            <div id="homeGastos" class="money-blur stat-value">$0.00</div>
-                            <div class="stat-foot"><small id="pctGastos" class="stat-pct">↑ 0.0%</small><div style="width:52px;height:26px;"><canvas id="sparklineGastos"></canvas></div></div>
+                        <div class="stat-tile neg">
+                            <div class="stat-label"><span class="icon-badge"><svg class="icon"><use href="#i-trending-down"></use></svg></span>Gastos</div>
+                            <div id="homeGastos" class="money-blur stat-value tabular-nums">$0.00</div>
+                            <div class="stat-foot"><small id="pctGastos" class="stat-pct">0.0%</small><div style="width:52px;height:26px;"><canvas id="sparklineGastos"></canvas></div></div>
                         </div>
                     </div>
 
                     <div class="section-heading"><h3>Mis cuentas y tarjetas</h3></div>
                     <div class="card">
-                        <small style="color:var(--text-muted); font-weight:800; border-bottom:2px solid var(--primary); padding-bottom:6px; display:block; margin-bottom:14px;">DÉBITO / EFECTIVO</small>
+                        <small style="color:var(--text-muted); font-weight:800; text-transform:uppercase; letter-spacing:0.04em; border-bottom:2px solid var(--primary); padding-bottom:6px; display:block; margin-bottom:14px;">Débito / Efectivo</small>
                         <div id="railDebitos" class="cards-rail"></div>
-                        <small style="color:var(--text-muted); font-weight:800; border-bottom:2px solid var(--danger); padding-bottom:6px; display:block; margin:18px 0 14px;">CRÉDITO</small>
+                        <small style="color:var(--text-muted); font-weight:800; text-transform:uppercase; letter-spacing:0.04em; border-bottom:2px solid var(--danger); padding-bottom:6px; display:block; margin:18px 0 14px;">Crédito</small>
                         <div id="railCreditos" class="cards-rail"></div>
                     </div>
 
@@ -187,7 +248,7 @@
                         <div id="listaPagosTDC" class="stack" style="gap:10px;"></div>
                         <div style="border-top:1px solid var(--line); margin-top:15px; padding-top:15px; text-align:right;">
                             <small style="color:var(--text-muted);">Pago total mensual estimado</small>
-                            <h3 id="totalEstimadoTDC" class="money-blur" style="color:var(--danger); margin-top:5px;">$0.00</h3>
+                            <h3 id="totalEstimadoTDC" class="money-blur tabular-nums" style="color:var(--danger); margin-top:5px;">$0.00</h3>
                         </div>
                     </div>
 
@@ -196,15 +257,15 @@
                         <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Descarga tu estado de cuenta o exporta tus datos a Excel.</p>
                         <div class="field"><input type="month" id="mesReporte"></div>
                         <div style="display:flex; gap:10px;">
-                            <button class="btn btn-primary" style="flex:1;" data-action="generarPDFMes">📄 PDF Estado de cuenta</button>
-                            <button class="btn btn-success" style="flex:1;" data-action="exportarCSV">📊 Exportar CSV</button>
+                            <button class="btn btn-primary" style="flex:1;" data-action="generarPDFMes"><svg class="icon"><use href="#i-download"></use></svg>PDF estado de cuenta</button>
+                            <button class="btn btn-success" style="flex:1;" data-action="exportarCSV"><svg class="icon"><use href="#i-download"></use></svg>Exportar CSV</button>
                         </div>
                     </div>
                 </section>
 
                 <!-- REPORTES / MOVIMIENTOS -->
                 <section id="tab-reportes" class="tab-content">
-                    <div class="card" style="margin-bottom:var(--space-4); background:var(--brand-gradient-soft); border-color:var(--primary-soft);">
+                    <div class="card" style="margin-bottom:var(--space-4);">
                         <p id="insightText" style="font-size:13.5px; line-height:1.5;">Analizando tus movimientos…</p>
                     </div>
                     <div class="card">
@@ -215,17 +276,17 @@
                         </div>
 
                         <div id="rep-gastos-view">
-                            <div class="search-bar">🔍<input type="text" id="searchGastos" placeholder="Buscar gasto o categoría..." data-action="renderListas"></div>
+                            <div class="search-bar"><svg class="icon"><use href="#i-search"></use></svg><input type="text" id="searchGastos" placeholder="Buscar gasto o categoría..." data-action="renderListas"></div>
                             <div id="listaGastos" class="tx-list"></div>
                             <div id="btnMasGastos" style="text-align:center; margin-top:15px; display:none;"><button class="btn btn-ghost btn-block" data-action="loadMore" data-tipo="gastos">Cargar más registros</button></div>
                         </div>
                         <div id="rep-ingresos-view" style="display:none;">
-                            <div class="search-bar">🔍<input type="text" id="searchIngresos" placeholder="Buscar ingreso..." data-action="renderListas"></div>
+                            <div class="search-bar"><svg class="icon"><use href="#i-search"></use></svg><input type="text" id="searchIngresos" placeholder="Buscar ingreso..." data-action="renderListas"></div>
                             <div id="listaIngresos" class="tx-list"></div>
                             <div id="btnMasIngresos" style="text-align:center; margin-top:15px; display:none;"><button class="btn btn-ghost btn-block" data-action="loadMore" data-tipo="ingresos">Cargar más registros</button></div>
                         </div>
                         <div id="rep-movs-view" style="display:none;">
-                            <div class="search-bar">🔍<input type="text" id="searchMovs" placeholder="Buscar movimiento..." data-action="renderListas"></div>
+                            <div class="search-bar"><svg class="icon"><use href="#i-search"></use></svg><input type="text" id="searchMovs" placeholder="Buscar movimiento..." data-action="renderListas"></div>
                             <div id="listaMovimientos" class="tx-list"></div>
                             <div id="btnMasMovs" style="text-align:center; margin-top:15px; display:none;"><button class="btn btn-ghost btn-block" data-action="loadMore" data-tipo="movimientos">Cargar más registros</button></div>
                         </div>
@@ -236,7 +297,7 @@
                 <section id="tab-presupuestos" class="tab-content">
                     <div id="presupuestoGlobalCard" class="card global-budget-card" style="border-color:var(--primary); display:none;">
                         <p style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:6px;">Presupuesto global del mes</p>
-                        <h2 id="globalPresupText" class="money-blur" style="margin-bottom:12px;">$0 / $0</h2>
+                        <h2 id="globalPresupText" class="money-blur tabular-nums" style="margin-bottom:12px;">$0 / $0</h2>
                         <div class="progress-bar-track"><div id="globalPresupBar" class="progress-bar-fill" style="width:0%;"></div></div>
                     </div>
 
@@ -254,18 +315,18 @@
 
                 <!-- METAS -->
                 <section id="tab-metas" class="tab-content">
-                    <div class="section-heading"><h3>Metas de ahorro</h3><span class="link" data-action="nuevaMeta">+ Nueva meta</span></div>
+                    <div class="section-heading"><h3>Metas de ahorro</h3><span class="link" data-action="nuevaMeta"><svg class="icon"><use href="#i-plus"></use></svg>Nueva meta</span></div>
                     <div id="metasGrid" class="grid-2"></div>
                 </section>
 
                 <!-- RECURRENTES -->
                 <section id="tab-recurrentes" class="tab-content">
                     <div id="recurrentesVencidosBanner" class="card" style="display:none; border-color:var(--info); background:var(--info-soft); align-items:center; gap:12px; flex-direction:row;">
-                        <span style="font-size:22px;">🔁</span>
+                        <svg class="icon" style="width:22px;height:22px; color:var(--info); flex-shrink:0;"><use href="#i-repeat"></use></svg>
                         <p id="recurrentesVencidosTexto" style="flex:1; font-size:13px;"></p>
                         <button class="btn btn-sm btn-primary" data-action="generarVencidos">Generar</button>
                     </div>
-                    <div class="section-heading"><h3>Pagos e ingresos recurrentes</h3><span class="link" data-action="nuevoRecurrente">+ Nuevo</span></div>
+                    <div class="section-heading"><h3>Pagos e ingresos recurrentes</h3><span class="link" data-action="nuevoRecurrente"><svg class="icon"><use href="#i-plus"></use></svg>Nuevo</span></div>
                     <div id="recurrentesLista" class="stack" style="gap:0;"></div>
                 </section>
 
@@ -303,21 +364,19 @@
                 <!-- PERFIL / CONFIGURACIÓN -->
                 <section id="tab-perfil" class="tab-content">
                     <div class="card" style="text-align:center;">
-                        <img id="perfDisplayFoto" src="" alt="" style="width:84px; height:84px; border-radius:50%; object-fit:cover; margin-bottom:12px; box-shadow:var(--shadow-2);">
+                        <img id="perfDisplayFoto" src="" alt="" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:12px; border:1px solid var(--line);">
                         <h3 id="perfDisplayNombre">Usuario</h3>
                         <form id="formPerfil" data-action="guardarPerfil" style="text-align:left; margin-top:var(--space-5);">
                             <div class="field"><label>Nombre</label><input type="text" id="perfNombre" required></div>
                             <div class="field"><label>Foto</label><input type="file" id="perfFile" accept="image/*"></div>
-                            <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin:10px 0 8px;">Color de tema</label>
+                            <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin:10px 0 8px;">Color de acento</label>
                             <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:var(--space-5); justify-content:center;">
-                                <div class="color-swatch" style="background:#7c3aed;" data-action="selectColor" data-color="#7c3aed"></div>
-                                <div class="color-swatch" style="background:#059669;" data-action="selectColor" data-color="#059669"></div>
-                                <div class="color-swatch" style="background:#e11d48;" data-action="selectColor" data-color="#e11d48"></div>
-                                <div class="color-swatch" style="background:#0284c7;" data-action="selectColor" data-color="#0284c7"></div>
-                                <div class="color-swatch" style="background:#d97706;" data-action="selectColor" data-color="#d97706"></div>
-                                <div class="color-swatch" style="background:#db2777;" data-action="selectColor" data-color="#db2777"></div>
-                                <div class="color-swatch" style="background:#14b8a6;" data-action="selectColor" data-color="#14b8a6"></div>
-                                <div class="color-swatch" style="background:#475569;" data-action="selectColor" data-color="#475569"></div>
+                                <div class="color-swatch" style="background:#6c63ff;" data-action="selectColor" data-color="#6c63ff"></div>
+                                <div class="color-swatch" style="background:#ff9466;" data-action="selectColor" data-color="#ff9466"></div>
+                                <div class="color-swatch" style="background:#16a37a;" data-action="selectColor" data-color="#16a37a"></div>
+                                <div class="color-swatch" style="background:#ef5b6a;" data-action="selectColor" data-color="#ef5b6a"></div>
+                                <div class="color-swatch" style="background:#4d8dff;" data-action="selectColor" data-color="#4d8dff"></div>
+                                <div class="color-swatch" style="background:#f5a524;" data-action="selectColor" data-color="#f5a524"></div>
                             </div>
                             <button type="submit" class="btn btn-primary btn-block">Guardar perfil</button>
                         </form>
@@ -337,45 +396,42 @@
                         <div style="background:var(--surface-alt); padding:15px; border-radius:var(--radius-md); margin-bottom:15px; text-align:center; border:1px dashed var(--line-strong);">
                             <p style="font-size:12px; font-weight:700; margin-bottom:10px;">Cargar datos desde un respaldo (.json)</p>
                             <input type="file" id="fileRestore" accept=".json" style="display:none;">
-                            <button type="button" class="btn btn-primary btn-sm" data-action="seleccionarRestore">📂 Seleccionar archivo y restaurar</button>
+                            <button type="button" class="btn btn-primary btn-sm" data-action="seleccionarRestore"><svg class="icon"><use href="#i-upload"></use></svg>Seleccionar archivo y restaurar</button>
                         </div>
                         <button class="btn btn-danger btn-block" style="margin-bottom:10px;" data-action="resetearCuenta">Borrar movimientos ($0)</button>
                         <button class="btn btn-outline-danger btn-block" data-action="eliminarUsuario">Eliminar cuenta definitivamente</button>
                     </div>
                 </section>
             </main>
+        </div>
+    </div>
 
-            <div class="fab-container" id="fabContainerMain">
-                <div class="fab-menu" id="fabMenu">
-                    <button class="fab-item" style="background:var(--success);" data-action="abrirRegistro" data-tipo="ingreso">📈 Ingreso</button>
-                    <button class="fab-item" style="background:var(--danger);" data-action="abrirRegistro" data-tipo="gasto">📉 Gasto</button>
-                    <button class="fab-item" style="background:var(--primary);" data-action="abrirRegistro" data-tipo="movimiento">💳 Pago</button>
-                </div>
-                <button class="fab-main" id="fabMain" data-action="toggleFab">+</button>
+    <!-- MENÚ "NUEVO" — siempre visible (rail-add), sustituye al FAB flotante -->
+    <div id="addMenuOverlay" class="modal-overlay" style="display:none;">
+        <div class="modal-card" style="max-width:340px; padding-top:var(--space-5);">
+            <span class="sheet-close" data-action="cerrarMenuRegistro" style="position:absolute; right:10px; top:10px;"><svg class="icon"><use href="#i-x"></use></svg></span>
+            <h3 class="add-menu-title">Nuevo movimiento</h3>
+            <div class="add-menu-options">
+                <button class="add-menu-option" data-action="abrirRegistro" data-tipo="ingreso"><span class="add-ico" style="background:var(--success-soft); color:var(--success);"><svg class="icon"><use href="#i-trending-up"></use></svg></span>Ingreso</button>
+                <button class="add-menu-option" data-action="abrirRegistro" data-tipo="gasto"><span class="add-ico" style="background:var(--danger-soft); color:var(--danger);"><svg class="icon"><use href="#i-trending-down"></use></svg></span>Gasto</button>
+                <button class="add-menu-option" data-action="abrirRegistro" data-tipo="movimiento"><span class="add-ico" style="background:var(--info-soft); color:var(--info);"><svg class="icon"><use href="#i-credit-card"></use></svg></span>Pago o traspaso</button>
             </div>
-
-            <nav class="bottom-nav">
-                <button class="nav-item active" data-tab="resumen"><span class="ico">🏠</span>Inicio</button>
-                <button class="nav-item" data-tab="reportes"><span class="ico">📋</span>Movs</button>
-                <button class="nav-item" data-tab="metas"><span class="ico">🎯</span>Metas</button>
-                <button class="nav-item" data-tab="presupuestos"><span class="ico">📊</span>Presup.</button>
-                <button class="nav-item" data-action="openMoreSheet"><span class="ico">☰</span>Más</button>
-            </nav>
         </div>
     </div>
 
     <!-- MÁS (móvil) -->
     <div id="moreSheetOverlay" class="sheet-overlay" style="display:none;">
         <div class="sheet-card">
-            <span class="sheet-close" data-action="closeMoreSheet">&times;</span>
+            <span class="sheet-close" data-action="closeMoreSheet"><svg class="icon"><use href="#i-x"></use></svg></span>
             <h3 class="sheet-title">Más opciones</h3>
             <div class="stack" style="gap:4px;">
-                <div class="sidebar-link" data-tab="cuentas" style="color:var(--text);"><span class="ico">🏦</span>Cuentas</div>
-                <div class="sidebar-link" data-tab="recurrentes" style="color:var(--text);"><span class="ico">🔁</span>Recurrentes</div>
-                <div class="sidebar-link" data-tab="perfil" style="color:var(--text);"><span class="ico">⚙️</span>Configuración</div>
+                <div class="rail-link" data-tab="presupuestos" style="flex-direction:row; justify-content:flex-start; gap:12px; color:var(--text); font-size:13.5px; padding:11px 4px;"><svg class="icon"><use href="#i-bar-chart"></use></svg>Presupuesto</div>
+                <div class="rail-link" data-tab="cuentas" style="flex-direction:row; justify-content:flex-start; gap:12px; color:var(--text); font-size:13.5px; padding:11px 4px;"><svg class="icon"><use href="#i-landmark"></use></svg>Cuentas</div>
+                <div class="rail-link" data-tab="recurrentes" style="flex-direction:row; justify-content:flex-start; gap:12px; color:var(--text); font-size:13.5px; padding:11px 4px;"><svg class="icon"><use href="#i-repeat"></use></svg>Recurrentes</div>
+                <div class="rail-link" data-tab="perfil" style="flex-direction:row; justify-content:flex-start; gap:12px; color:var(--text); font-size:13.5px; padding:11px 4px;"><svg class="icon"><use href="#i-settings"></use></svg>Configuración</div>
                 <div class="dd-divider"></div>
-                <div class="sidebar-link" data-action="exportarBackup" style="color:var(--text);"><span class="ico">💾</span>Respaldar datos</div>
-                <div class="sidebar-link" data-action="handleLogout" style="color:var(--danger);"><span class="ico">🚪</span>Cerrar sesión</div>
+                <div class="rail-link" data-action="exportarBackup" style="flex-direction:row; justify-content:flex-start; gap:12px; color:var(--text); font-size:13.5px; padding:11px 4px;"><svg class="icon"><use href="#i-download"></use></svg>Respaldar datos</div>
+                <div class="rail-link" data-action="handleLogout" style="flex-direction:row; justify-content:flex-start; gap:12px; color:var(--danger); font-size:13.5px; padding:11px 4px;"><svg class="icon"><use href="#i-log-out"></use></svg>Cerrar sesión</div>
             </div>
         </div>
     </div>
@@ -383,7 +439,7 @@
     <!-- MODAL ALERTA / CONFIRMACIÓN -->
     <div id="cmOverlay" class="modal-overlay" style="display:none;">
         <div class="modal-card">
-            <div id="cmIconWrap" class="modal-icon-wrap"><span id="cmIcon">✔️</span></div>
+            <div id="cmIconWrap" class="modal-icon-wrap"><svg class="icon" id="cmIcon"><use href="#i-check"></use></svg></div>
             <h3 id="cmTitle">Título</h3>
             <p id="cmText">Mensaje aquí</p>
             <div class="modal-btns" id="cmButtons">
@@ -409,7 +465,7 @@
     <!-- SHEET REGISTRO (gasto/ingreso/movimiento) -->
     <div id="sheetRegistroOverlay" class="sheet-overlay" style="display:none;">
         <div class="sheet-card">
-            <span class="sheet-close" data-action="cerrarModalRegistro">&times;</span>
+            <span class="sheet-close" data-action="cerrarModalRegistro"><svg class="icon"><use href="#i-x"></use></svg></span>
             <h3 id="modalRegTitle" class="sheet-title">Registro</h3>
 
             <div id="formGastoContainer" style="display:none;">
@@ -455,14 +511,14 @@
     <!-- SHEET META -->
     <div id="sheetMetaOverlay" class="sheet-overlay" style="display:none;">
         <div class="sheet-card">
-            <span class="sheet-close" data-action="cerrarSheetMeta">&times;</span>
+            <span class="sheet-close" data-action="cerrarSheetMeta"><svg class="icon"><use href="#i-x"></use></svg></span>
             <h3 id="sheetMetaTitle" class="sheet-title">Nueva Meta de Ahorro</h3>
             <form id="formMeta" data-action="guardarMeta">
                 <input type="hidden" id="metaEditId">
-                <div class="field-row" style="margin-bottom:var(--space-4);">
-                    <select id="metaEmoji" style="max-width:90px;"></select>
-                    <input type="text" id="metaNombre" placeholder="Nombre de la meta" required>
-                </div>
+                <input type="hidden" id="metaEmoji" value="target">
+                <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:8px;">Ícono</label>
+                <div id="metaIconPicker" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:var(--space-4);"></div>
+                <div class="field"><input type="text" id="metaNombre" placeholder="Nombre de la meta" required></div>
                 <div class="field"><label>Monto objetivo ($)</label><input type="number" id="metaObjetivo" step="0.01" required></div>
                 <div class="field"><label>Monto ahorrado ya (opcional)</label><input type="number" id="metaActual" step="0.01" value="0"></div>
                 <div class="field"><label>Fecha límite (opcional)</label><input type="date" id="metaFecha"></div>
@@ -474,7 +530,7 @@
     <!-- SHEET RECURRENTE -->
     <div id="sheetRecurrenteOverlay" class="sheet-overlay" style="display:none;">
         <div class="sheet-card">
-            <span class="sheet-close" data-action="cerrarSheetRecurrente">&times;</span>
+            <span class="sheet-close" data-action="cerrarSheetRecurrente"><svg class="icon"><use href="#i-x"></use></svg></span>
             <h3 id="sheetRecurrenteTitle" class="sheet-title">Nuevo Recurrente</h3>
             <form id="formRecurrente" data-action="guardarRecurrente">
                 <input type="hidden" id="recEditId">

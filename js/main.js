@@ -3,7 +3,7 @@ import { state, frasesFinancieras } from './state.js';
 import { buildDemoData } from './utils/demo-data.js';
 import { money } from './utils/format.js';
 import { mostrarAlerta, mostrarConfirmacion, mostrarPromptCard } from './ui/modals.js';
-import { cambiarTab, toggleUserMenu, toggleNotifPanel, closeDropdowns, toggleFab, openMoreSheet, closeMoreSheet, toggleThemeSwitch, initThemePreference, togglePrivacy, subscribeTabChange } from './ui/nav.js';
+import { cambiarTab, toggleUserMenu, toggleNotifPanel, closeDropdowns, abrirMenuRegistro, cerrarMenuRegistro, openMoreSheet, closeMoreSheet, toggleThemeSwitch, initThemePreference, togglePrivacy, subscribeTabChange } from './ui/nav.js';
 import { compartirTarjeta } from './utils/share-card.js';
 import { exportarCSV } from './utils/csv-export.js';
 import { generarPDFMes } from './utils/pdf-export.js';
@@ -26,12 +26,10 @@ import { guardarRecurrente, eliminarRecurrente, toggleActivoRecurrente, calcular
 import { exportarBackup, importarBackup, resetearCuenta, eliminarUsuario } from './data/mantenimiento.js';
 
 import { actualizarSelectsRegistro, handleGaFuenteChange, setMovMode, getMovMode, abrirModalRegistro, cerrarModalRegistro, editIngreso, editGasto, editMovimiento, getEditId, setEditId } from './ui/registro-sheet.js';
-import { abrirSheetMeta, cerrarSheetMeta, abrirSheetRecurrente, cerrarSheetRecurrente, actualizarSelectsRecurrente, toggleCampoCategoria } from './ui/extra-sheets.js';
+import { abrirSheetMeta, cerrarSheetMeta, seleccionarIconoMeta, abrirSheetRecurrente, cerrarSheetRecurrente, actualizarSelectsRecurrente, toggleCampoCategoria } from './ui/extra-sheets.js';
 
 let currentCuentaEditId = null;
 let vencidosPrompted = false;
-
-document.getElementById('anioFooter') && (document.getElementById('anioFooter').innerText = new Date().getFullYear());
 
 /* ==================== RENDER ORQUESTADOR ==================== */
 function aplicarPerfilAlDOM() {
@@ -135,8 +133,8 @@ document.getElementById('registerForm').addEventListener('submit', (e) => {
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
         .then(() => auth.createUserWithEmailAndPassword(email, pass))
         .then((cred) => {
-            const defaultPic = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=7c3aed&color=fff&size=128`;
-            return firebase.database().ref(`Usuarios/${cred.user.uid}/perfil`).set({ nombre, foto: regBase64 || defaultPic, color: '#7c3aed' })
+            const defaultPic = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=6c63ff&color=fff&size=128`;
+            return firebase.database().ref(`Usuarios/${cred.user.uid}/perfil`).set({ nombre, foto: regBase64 || defaultPic, color: '#6c63ff' })
                 .then(() => mostrarAlerta('¡Éxito!', `Cuenta creada. ¡Bienvenido ${nombre}!`, 'success'));
         }).catch(err => mostrarAlerta('Error al registrar', translateAuthError(err.code), 'error'));
 });
@@ -180,7 +178,7 @@ function procesarDatos(data) {
     state.metas = data.metas ? Object.values(data.metas) : [];
     state.recurrentes = data.recurrentes ? Object.values(data.recurrentes) : [];
 
-    const p = data.perfil || { nombre: 'Usuario', foto: 'https://via.placeholder.com/100', color: '#7c3aed' };
+    const p = data.perfil || { nombre: 'Usuario', foto: 'https://via.placeholder.com/100', color: '#6c63ff' };
     state.perfil = p;
     state.selectedColor = p.color;
 
@@ -365,10 +363,11 @@ document.addEventListener('click', (e) => {
             case 'togglePrivacy': togglePrivacy(); break;
             case 'exportarBackup': exportarBackup(); mostrarAlerta('Respaldo Creado', 'Tus datos se han guardado con éxito.', 'success'); break;
             case 'handleLogout': handleLogout(); break;
-            case 'toggleFab': toggleFab(); break;
+            case 'abrirMenuRegistro': abrirMenuRegistro(); break;
+            case 'cerrarMenuRegistro': cerrarMenuRegistro(); break;
             case 'openMoreSheet': openMoreSheet(); break;
             case 'closeMoreSheet': closeMoreSheet(); break;
-            case 'abrirRegistro': abrirModalRegistro(actionEl.dataset.tipo); closeDropdowns(); break;
+            case 'abrirRegistro': cerrarMenuRegistro(); abrirModalRegistro(actionEl.dataset.tipo); closeDropdowns(); break;
             case 'cerrarModalRegistro': cerrarModalRegistro(); break;
             case 'setReportMode': setReportMode(actionEl.dataset.mode); break;
             case 'loadMore': loadMore(actionEl.dataset.tipo); break;
@@ -396,6 +395,7 @@ document.addEventListener('click', (e) => {
             case 'abonarMeta': mostrarPromptCard('Abonar a la meta', '¿Cuánto quieres abonar?', (val) => { const m = parseFloat(val); if (!m || m <= 0) return; withPromise(abonarMeta(id, m), 'Abonado', '¡Sigue así!', null); }); break;
             case 'retirarMeta': mostrarPromptCard('Retirar de la meta', '¿Cuánto quieres retirar?', (val) => { const m = parseFloat(val); if (!m || m <= 0) return; withPromise(retirarMeta(id, m), 'Retirado', 'Monto actualizado.', null); }); break;
             case 'cerrarSheetMeta': cerrarSheetMeta(); break;
+            case 'seleccionarIconoMeta': seleccionarIconoMeta(actionEl.dataset.icon); break;
             case 'nuevoRecurrente': abrirSheetRecurrente(); break;
             case 'editarRecurrente': abrirSheetRecurrente(state.recurrentes.find(r => r.id === id)); break;
             case 'eliminarRecurrente': mostrarConfirmacion('Eliminar Recurrente', '¿Seguro que quieres eliminarlo?', () => withPromise(eliminarRecurrente(id), 'Eliminado', 'Recurrente eliminado.', null)); break;
@@ -406,7 +406,7 @@ document.addEventListener('click', (e) => {
         }
     }
 
-    const dentroDropdown = e.target.closest('.dropdown-panel, [data-action="toggleUserMenu"], [data-action="toggleNotifPanel"], #fabContainerMain');
+    const dentroDropdown = e.target.closest('.dropdown-panel, [data-action="toggleUserMenu"], [data-action="toggleNotifPanel"]');
     if (!dentroDropdown) closeDropdowns();
 });
 

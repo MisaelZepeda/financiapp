@@ -21,25 +21,16 @@ export function formatFecha(iso) {
 }
 
 const BANK_PALETTES = {
-    nu: ['#8b5cf6', '#6d28d9'], klar: ['#8b5cf6', '#6d28d9'], stori: ['#8b5cf6', '#6d28d9'],
-    bbva: ['#0284c7', '#075985'], azteca: ['#0284c7', '#075985'], bienestar: ['#0284c7', '#075985'],
-    santander: ['#e11d48', '#9f1239'], banorte: ['#e11d48', '#9f1239'], scotiabank: ['#e11d48', '#9f1239'],
-    hey: ['#059669', '#047857'], mercadopago: ['#059669', '#047857'],
+    nu: ['#6c63ff', '#564ee0'], klar: ['#6c63ff', '#564ee0'], stori: ['#6c63ff', '#564ee0'],
+    bbva: ['#4d8dff', '#2f6fe0'], azteca: ['#4d8dff', '#2f6fe0'], bienestar: ['#4d8dff', '#2f6fe0'],
+    santander: ['#ef5b6a', '#d8404f'], banorte: ['#ef5b6a', '#d8404f'], scotiabank: ['#ef5b6a', '#d8404f'],
+    hey: ['#16a37a', '#0f7d5c'], mercadopago: ['#16a37a', '#0f7d5c'],
 };
 
 export function getBankColorsArray(banco) {
     const b = (banco || '').toLowerCase();
     for (const key in BANK_PALETTES) { if (b.includes(key)) return BANK_PALETTES[key]; }
-    return ['#475569', '#1e293b'];
-}
-
-export function getBankGradient(banco) {
-    const [a, b] = getBankColorsArray(banco);
-    return `linear-gradient(135deg, ${a}, ${b})`;
-}
-
-export function initialsAvatar(name) {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || '?')}&background=random&color=fff&size=128&bold=true`;
+    return ['#ff9466', '#f57f4d'];
 }
 
 export function escapeHtml(str) {

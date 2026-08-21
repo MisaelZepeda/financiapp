@@ -1,5 +1,6 @@
 import { state, getIconCategoria } from '../state.js';
 import { money, formatFecha } from '../utils/format.js';
+import { icon } from '../utils/icons.js';
 
 let limits = { gastos: 15, ingresos: 15, movimientos: 15 };
 let modo = 'gastos';
@@ -22,17 +23,17 @@ export function setReportMode(m) {
 function txItemHTML(t) {
     const action = t.tipo === 'movimiento' ? `data-action="editMovimiento"` : (t.tipo === 'gasto' ? `data-action="editGasto"` : `data-action="editIngreso"`);
     const esIngreso = t.tipo === 'ingreso';
-    const icono = t.tipo === 'movimiento' ? (t.subtipo === 'pago' ? '💳' : '🔁') : (t.tipo === 'ingreso' ? '💰' : getIconCategoria(t.cat));
+    const nombreIcono = t.tipo === 'movimiento' ? (t.subtipo === 'pago' ? 'credit-card' : 'repeat') : (t.tipo === 'ingreso' ? 'coin' : getIconCategoria(t.cat));
     return `<div class="tx-item">
-        <div class="tx-ico" style="background:${esIngreso ? 'var(--success-soft)' : 'var(--danger-soft)'}; color:${esIngreso ? 'var(--success)' : 'var(--danger)'};">${icono}</div>
+        <div class="tx-ico" style="background:${esIngreso ? 'var(--success-soft)' : 'var(--danger-soft)'}; color:${esIngreso ? 'var(--success)' : 'var(--danger)'};">${icon(nombreIcono)}</div>
         <div class="tx-body">
             <div class="tx-desc">${t.desc}</div>
             <div class="tx-meta">${formatFecha(t.fecha)}${t.cat ? ' · ' + t.cat : ''}</div>
         </div>
-        <b class="tx-amount ${esIngreso ? 'pos' : 'neg'} money-blur">${esIngreso ? '+' : '-'}${money(t.monto)}</b>
+        <b class="tx-amount ${esIngreso ? 'pos' : 'neg'} money-blur tabular-nums">${esIngreso ? '+' : '-'}${money(t.monto)}</b>
         <div class="tx-actions">
-            <button data-action="eliminarTransaccion" data-id="${t.firebaseId}" title="Eliminar">🗑️</button>
-            <button ${action} data-id="${t.firebaseId}" title="Editar">✏️</button>
+            <button data-action="eliminarTransaccion" data-id="${t.firebaseId}" title="Eliminar">${icon('trash')}</button>
+            <button ${action} data-id="${t.firebaseId}" title="Editar">${icon('edit')}</button>
         </div>
     </div>`;
 }
@@ -55,7 +56,7 @@ export function renderListas() {
         else { if (!qMovs || (t.desc || '').toLowerCase().includes(qMovs)) mArr.push(t); }
     });
 
-    const vacio = `<div class="empty-state"><span class="icon">🗂️</span>No hay registros.</div>`;
+    const vacio = `<div class="empty-state">${icon('box')}No hay registros.</div>`;
     document.getElementById('listaGastos').innerHTML = gArr.slice(0, limits.gastos).map(txItemHTML).join('') || vacio;
     document.getElementById('listaIngresos').innerHTML = iArr.slice(0, limits.ingresos).map(txItemHTML).join('') || vacio;
     document.getElementById('listaMovimientos').innerHTML = mArr.slice(0, limits.movimientos).map(txItemHTML).join('') || vacio;

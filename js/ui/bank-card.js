@@ -1,8 +1,9 @@
-import { money, moneyRounded, getBankGradient, initialsAvatar } from '../utils/format.js';
+import { money, moneyRounded, getBankColorsArray } from '../utils/format.js';
+import { icon } from '../utils/icons.js';
 
-// Construye el HTML de una tarjeta bancaria (débito/crédito/efectivo).
-// `mostrarAcciones` agrega los botones editar/interés/borrar (lista maestra),
-// `mostrarCompartir` agrega el ícono para generar la tarjeta de datos de depósito.
+// Construye el HTML de una fila de cuenta (débito/crédito/efectivo), estilo
+// "renglón de estado de cuenta": panel con borde fino y una franja de color
+// de acento por institución (nada de fondos degradados ni emojis).
 export function bankCardHTML(c, { mostrarAcciones = false, mostrarCompartir = false } = {}) {
     const hoy = new Date();
     const diaHoy = hoy.getDate();
@@ -13,53 +14,51 @@ export function bankCardHTML(c, { mostrarAcciones = false, mostrarCompartir = fa
         const yaPagado = c.mesPagado === mesAct;
         const vence = c.diaPago - diaHoy;
         if (yaPagado) {
-            aviso = `<br><small style="color:#bbf7d0; font-weight:800;">✅ Pagado</small> <span data-action="desmarcarPagado" data-id="${c.id}" style="font-size:9px; cursor:pointer; text-decoration:underline;">(Deshacer)</span>`;
+            aviso = `<div class="acc-due" style="color:var(--success);">${icon('check-circle')}Pagado <span data-action="desmarcarPagado" data-id="${c.id}" style="cursor:pointer; text-decoration:underline; font-weight:600;">(Deshacer)</span></div>`;
         } else {
-            const texto = vence < 0 ? '⚠️ Atrasado' : (vence === 0 ? '🔥 ¡Paga HOY!' : `Faltan: ${vence}d`);
-            const color = vence <= 3 ? '#fca5a5' : '#e5e5f5';
-            aviso = `<br><small style="color:${color}; font-weight:800;">${texto}</small><br><button class="chip-btn" style="margin-top:4px; ${vence <= 0 ? 'background:rgba(225,29,72,0.9)' : ''}" data-action="marcarPagado" data-id="${c.id}">Marcar Pagado</button>`;
+            const texto = vence < 0 ? 'Atrasado' : (vence === 0 ? '¡Paga hoy!' : `Faltan ${vence}d`);
+            const color = vence <= 3 ? 'var(--danger)' : 'var(--text-muted)';
+            aviso = `<div class="acc-due" style="color:${color};">${icon('alert-circle')}${texto}</div><button class="chip-btn" style="margin-top:6px;" data-action="marcarPagado" data-id="${c.id}">Marcar pagado</button>`;
         }
     }
 
-    const tituloSaldo = c.tipo === 'credito' ? 'DEUDA ACTUAL' : 'SALDO DISPONIBLE';
+    const tituloSaldo = c.tipo === 'credito' ? 'Deuda actual' : 'Saldo disponible';
     let limiteInfo = '';
     if (c.tipo === 'credito' && c.limite > 0) {
         const disponible = c.limite - c.saldo;
-        limiteInfo = `<div class="bank-card-limit"><div>Límite: ${moneyRounded(c.limite)}</div><div class="money-blur">Disp: ${money(disponible)}</div></div>`;
+        limiteInfo = `<div class="acc-limit"><div>Límite: ${moneyRounded(c.limite)}</div><div class="money-blur">Disp: ${money(disponible)}</div></div>`;
     }
-    const digitosHtml = c.tipo !== 'efectivo' ? `<div class="bank-card-digits">**** ${c.digitos || '0000'}</div>` : '';
-    const uiAvatars = initialsAvatar(c.banco);
-    const finalSrc = c.icon || uiAvatars;
-    const imgTag = `<img src="${finalSrc}" onerror="this.onerror=null; this.src='${uiAvatars}';" alt="">`;
-    const shareIcon = mostrarCompartir ? `<div class="bank-card-share" data-action="compartirTarjeta" data-id="${c.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3H6a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h4M16 17l5-5-5-5M19.8 12H9"/></svg></div>` : '';
+    const digitosHtml = c.tipo !== 'efectivo' ? `<div class="acc-digits">•••• ${c.digitos || '0000'}</div>` : '';
+    const accentColor = getBankColorsArray(c.banco)[0];
+    const monogram = c.icon
+        ? `<img src="${c.icon}" onerror="this.onerror=null; this.replaceWith(document.createTextNode('${(c.banco || '?').charAt(0).toUpperCase()}'));" alt="" style="width:100%; height:100%; object-fit:contain; border-radius:inherit;">`
+        : (c.banco || '?').charAt(0).toUpperCase();
+    const shareIcon = mostrarCompartir ? `<div class="acc-share" data-action="compartirTarjeta" data-id="${c.id}">${icon('share')}</div>` : '';
 
-    const acciones = mostrarAcciones ? `<div class="bank-card-actions">
-        <button class="chip-btn" data-action="editCuenta" data-id="${c.id}">✏️ Editar</button>
-        <button class="chip-btn" data-action="sumarInteres" data-id="${c.id}">+ Interés</button>
-        <button class="chip-btn danger" data-action="confirmarBorrarCuenta" data-id="${c.id}">Borrar</button>
+    const acciones = mostrarAcciones ? `<div class="acc-actions">
+        <button class="chip-btn" data-action="editCuenta" data-id="${c.id}">${icon('edit')}Editar</button>
+        <button class="chip-btn" data-action="sumarInteres" data-id="${c.id}">${icon('plus-circle')}Interés</button>
+        <button class="chip-btn danger" data-action="confirmarBorrarCuenta" data-id="${c.id}">${icon('trash')}Borrar</button>
     </div>` : '';
 
-    return `<div class="bank-card" style="background:${getBankGradient(c.banco)};">
-        <div class="bg-shape shape-1"></div><div class="bg-shape shape-2"></div>
-        <div class="bank-card-inner">
-            <div class="bank-card-top">
-                <div class="bank-card-id">
-                    ${imgTag}
-                    <div style="min-width:0;">
-                        <div class="bank-card-name">${c.banco.toUpperCase()}</div>
-                        ${digitosHtml}
-                    </div>
+    return `<div class="acc-row" style="--acc-color:${accentColor};">
+        <div class="acc-row-top">
+            <div class="acc-id">
+                <div class="acc-monogram">${monogram}</div>
+                <div style="min-width:0;">
+                    <div class="acc-name">${c.banco.toUpperCase()}</div>
+                    ${digitosHtml}
                 </div>
-                <div class="bank-card-badge">${c.tipo.toUpperCase()}</div>
             </div>
-            <div>
-                <div class="bank-card-balance-label">${tituloSaldo}</div>
-                <div class="bank-card-balance money-blur">${money(c.saldo)}</div>
-            </div>
-            <div class="bank-card-bottom">
-                <div><div class="bank-card-owner">${c.nombre}</div>${aviso}</div>
-                <div style="display:flex; align-items:flex-end; gap:10px;">${limiteInfo}${shareIcon}</div>
-            </div>
+            <div class="acc-badge">${c.tipo}</div>
+        </div>
+        <div>
+            <div class="acc-balance-label">${tituloSaldo}</div>
+            <div class="acc-balance money-blur tabular-nums">${money(c.saldo)}</div>
+        </div>
+        <div class="acc-bottom">
+            <div><div class="acc-owner">${c.nombre}</div>${aviso}</div>
+            <div style="display:flex; align-items:flex-end; gap:10px;">${limiteInfo}${shareIcon}</div>
         </div>
         ${acciones}
     </div>`;

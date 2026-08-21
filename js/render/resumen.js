@@ -1,5 +1,6 @@
 import { state } from '../state.js';
 import { money } from '../utils/format.js';
+import { icon } from '../utils/icons.js';
 import { bankCardHTML } from '../ui/bank-card.js';
 import { renderPatrimonioChart, renderSparkline, renderDonutGastos, renderBarAnual } from '../ui/charts.js';
 
@@ -17,8 +18,8 @@ function animateValue(el, start, end, duration) {
 }
 
 const FRASES_NEUTRAS = ["Resumen de tu capital neto al día de hoy.", "El panorama general de todas tus cuentas.", "Aquí tienes el balance total de tu patrimonio.", "Listo para comenzar a registrar los movimientos del mes."];
-const FRASES_ALERTA = ["⚠️ Atención: tus gastos del mes superan a tus ingresos.", "⚠️ Es un buen momento para revisar tus presupuestos.", "⚠️ Tu ritmo de gasto mensual está por encima de lo habitual.", "⚠️ Cuidado: este mes el flujo de salida es mayor al de entrada."];
-const FRASES_POSITIVAS = ["✅ ¡Excelente! Tu balance mensual se mantiene en verde.", "✅ Vas por muy buen camino construyendo tu capital.", "✅ Tus buenos hábitos financieros están dando frutos.", "✅ Tienes un ritmo financiero muy saludable este mes.", "✅ ¡Gran trabajo! Mantienes tus gastos bajo control."];
+const FRASES_ALERTA = ["Atención: tus gastos del mes superan a tus ingresos.", "Es un buen momento para revisar tus presupuestos.", "Tu ritmo de gasto mensual está por encima de lo habitual.", "Cuidado: este mes el flujo de salida es mayor al de entrada."];
+const FRASES_POSITIVAS = ["Excelente: tu balance mensual se mantiene en verde.", "Vas por muy buen camino construyendo tu capital.", "Tus buenos hábitos financieros están dando frutos.", "Tienes un ritmo financiero muy saludable este mes.", "Gran trabajo: mantienes tus gastos bajo control."];
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 export function renderResumen() {
@@ -70,10 +71,10 @@ export function renderResumen() {
     const pctGas = gPrev > 0 ? ((gT - gPrev) / gPrev) * 100 : (gT > 0 ? 100 : 0);
 
     const elPctIng = document.getElementById('pctIngresos');
-    elPctIng.innerText = `${pctIng >= 0 ? '↑' : '↓'} ${Math.abs(pctIng).toFixed(1)}%`;
+    elPctIng.innerHTML = `${icon(pctIng >= 0 ? 'trending-up' : 'trending-down')}${Math.abs(pctIng).toFixed(1)}%`;
     elPctIng.style.color = pctIng >= 0 ? 'var(--success)' : 'var(--danger)';
     const elPctGas = document.getElementById('pctGastos');
-    elPctGas.innerText = `${pctGas >= 0 ? '↑' : '↓'} ${Math.abs(pctGas).toFixed(1)}%`;
+    elPctGas.innerHTML = `${icon(pctGas >= 0 ? 'trending-up' : 'trending-down')}${Math.abs(pctGas).toFixed(1)}%`;
     elPctGas.style.color = pctGas >= 0 ? 'var(--danger)' : 'var(--success)';
 
     const sparkIng = [0, 0, 0, 0, 0, 0], sparkGas = [0, 0, 0, 0, 0, 0];
@@ -83,8 +84,8 @@ export function renderResumen() {
         const diff = (hoy.getFullYear() - d.getFullYear()) * 12 + (hoy.getMonth() - d.getMonth());
         if (diff >= 0 && diff < 6) { const idx = 5 - diff; if (t.tipo === 'ingreso') sparkIng[idx] += Number(t.monto); if (t.tipo === 'gasto') sparkGas[idx] += Number(t.monto); }
     });
-    renderSparkline('sparklineIngresos', sparkIng, '#059669');
-    renderSparkline('sparklineGastos', sparkGas, '#e11d48');
+    renderSparkline('sparklineIngresos', sparkIng, '#16a37a');
+    renderSparkline('sparklineGastos', sparkGas, '#ef5b6a');
 
     const mensajeEl = document.getElementById('heroMessage');
     if (mensajeEl) {
