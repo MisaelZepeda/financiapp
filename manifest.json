@@ -1,0 +1,36 @@
+{
+  "name": "Dashboard Pro",
+  "short_name": "DashPro",
+  "id": "/?source=pwa",
+  "orientation": "portrait",
+  "description": "Controla tus ingresos, gastos, presupuestos y mantén un ritmo financiero saludable de forma privada y segura.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "1080x2412",
+      "type": "image/png"
+    },
+    {
+      "src": "screenshot2.png",
+      "sizes": "1080x2412",
+      "type": "image/png"
+    }
+  ]
+}
