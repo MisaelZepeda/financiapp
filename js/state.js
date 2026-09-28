@@ -4,7 +4,7 @@
 export const state = {
     uid: null,
     isDemo: false,
-    perfil: { nombre: "Usuario", foto: "https://via.placeholder.com/100", color: "#6c63ff" },
+    perfil: { nombre: "Usuario", foto: "https://via.placeholder.com/100", color: "#0f766e" },
     cuentas: [],
     transacciones: [],
     presupuestos: {},
@@ -12,7 +12,7 @@ export const state = {
     metas: [],
     recurrentes: [],
     currentBase64: "",
-    selectedColor: "#6c63ff",
+    selectedColor: "#0f766e",
 };
 
 export const categoriasBase = ['Comida', 'Servicios', 'Transporte', 'Vivienda', 'Ocio', 'Otros'];

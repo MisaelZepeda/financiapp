@@ -1,5 +1,5 @@
 import { state, getIconCategoria } from '../state.js';
-import { money, formatFecha, escapeHtml } from '../utils/format.js';
+import { money, escapeHtml } from '../utils/format.js';
 import { icon } from '../utils/icons.js';
 
 let limits = { gastos: 15, ingresos: 15, movimientos: 15 };
@@ -21,21 +21,48 @@ export function setReportMode(m) {
 }
 
 function txItemHTML(t) {
-    const action = t.tipo === 'movimiento' ? `data-action="editMovimiento"` : (t.tipo === 'gasto' ? `data-action="editGasto"` : `data-action="editIngreso"`);
+    const esRecompensa = t.subtipo === 'rendimiento' || t.subtipo === 'cashback';
+    const action = t.tipo === 'movimiento' ? `data-action="editMovimiento"` : (t.tipo === 'gasto' ? `data-action="editGasto"` : (esRecompensa ? `data-action="editRecompensa"` : `data-action="editIngreso"`));
     const esIngreso = t.tipo === 'ingreso';
     const nombreIcono = t.tipo === 'movimiento' ? (t.subtipo === 'pago' ? 'credit-card' : 'repeat') : (t.tipo === 'ingreso' ? 'coin' : getIconCategoria(t.cat));
+    const cuenta = esRecompensa ? state.cuentas.find(c => c.id == t.cuentaId) : null;
+    const meta = t.tipo === 'movimiento' ? (t.subtipo === 'pago' ? 'Pago de tarjeta' : 'Traspaso')
+        : esRecompensa ? [t.subtipo === 'cashback' ? 'Cashback' : 'Rendimiento', cuenta?.nombre].filter(x => x && x !== t.desc).join(' · ')
+        : (t.cat || (esIngreso ? 'Ingreso' : ''));
+    const msi = t.isMSI && t.meses > 1 ? ` · ${t.meses} MSI` : '';
     return `<div class="tx-item">
-        <div class="tx-ico" style="background:${esIngreso ? 'var(--success-soft)' : 'var(--danger-soft)'}; color:${esIngreso ? 'var(--success)' : 'var(--danger)'};">${icon(nombreIcono)}</div>
+        <div class="tx-ico">${icon(nombreIcono)}</div>
         <div class="tx-body">
             <div class="tx-desc">${escapeHtml(t.desc)}</div>
-            <div class="tx-meta">${formatFecha(t.fecha)}${t.cat ? ' · ' + escapeHtml(t.cat) : ''}</div>
+            <div class="tx-meta">${escapeHtml(meta)}${msi}</div>
         </div>
-        <b class="tx-amount ${esIngreso ? 'pos' : 'neg'} money-blur tabular-nums">${esIngreso ? '+' : '-'}${money(t.monto)}</b>
+        <b class="tx-amount ${esIngreso ? 'pos' : 'neg'} money-blur tabular-nums">${esIngreso ? '+' : '−'}${money(t.monto)}</b>
         <div class="tx-actions">
-            <button data-action="eliminarTransaccion" data-id="${t.firebaseId}" title="Eliminar">${icon('trash')}</button>
-            <button ${action} data-id="${t.firebaseId}" title="Editar">${icon('edit')}</button>
+            <button ${action} data-id="${t.firebaseId}" title="Editar" aria-label="Editar">${icon('edit')}</button>
+            <button data-action="eliminarTransaccion" data-id="${t.firebaseId}" title="Eliminar" aria-label="Eliminar">${icon('trash')}</button>
         </div>
     </div>`;
+}
+
+// Etiqueta de grupo por día: "Hoy", "Ayer" o la fecha completa.
+function etiquetaDia(iso) {
+    if (!iso) return 'Sin fecha';
+    const hoy = new Date();
+    const d = new Date(iso + 'T12:00:00');
+    const diff = Math.round((new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 12) - d) / 86400000);
+    if (diff === 0) return 'Hoy';
+    if (diff === 1) return 'Ayer';
+    const txt = d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: d.getFullYear() !== hoy.getFullYear() ? 'numeric' : undefined });
+    return txt.charAt(0).toUpperCase() + txt.slice(1);
+}
+
+function listaAgrupadaHTML(arr) {
+    let html = '', ultimo = null;
+    arr.forEach(t => {
+        if (t.fecha !== ultimo) { html += `<div class="tx-date">${etiquetaDia(t.fecha)}</div>`; ultimo = t.fecha; }
+        html += txItemHTML(t);
+    });
+    return html;
 }
 
 export function renderListas() {
@@ -56,10 +83,10 @@ export function renderListas() {
         else { if (!qMovs || (t.desc || '').toLowerCase().includes(qMovs)) mArr.push(t); }
     });
 
-    const vacio = `<div class="empty-state">${icon('box')}No hay registros.</div>`;
-    document.getElementById('listaGastos').innerHTML = gArr.slice(0, limits.gastos).map(txItemHTML).join('') || vacio;
-    document.getElementById('listaIngresos').innerHTML = iArr.slice(0, limits.ingresos).map(txItemHTML).join('') || vacio;
-    document.getElementById('listaMovimientos').innerHTML = mArr.slice(0, limits.movimientos).map(txItemHTML).join('') || vacio;
+    const vacio = `<div class="empty-state">${icon('box')}No hay registros que coincidan.</div>`;
+    document.getElementById('listaGastos').innerHTML = listaAgrupadaHTML(gArr.slice(0, limits.gastos)) || vacio;
+    document.getElementById('listaIngresos').innerHTML = listaAgrupadaHTML(iArr.slice(0, limits.ingresos)) || vacio;
+    document.getElementById('listaMovimientos').innerHTML = listaAgrupadaHTML(mArr.slice(0, limits.movimientos)) || vacio;
 
     document.getElementById('btnMasGastos').style.display = gArr.length > limits.gastos ? 'block' : 'none';
     document.getElementById('btnMasIngresos').style.display = iArr.length > limits.ingresos ? 'block' : 'none';
@@ -95,7 +122,7 @@ function renderInsight() {
 
     if (!mayorCambio) { el.innerText = 'Registra movimientos por dos meses seguidos para ver comparativas por categoría.'; return; }
     const dir = mayorCambio.cambio >= 0 ? 'subió' : 'bajó';
-    el.innerHTML = `Tu gasto en <b>${mayorCambio.cat}</b> ${dir} <b style="color:${mayorCambio.cambio >= 0 ? 'var(--danger)' : 'var(--success)'}">${Math.abs(mayorCambio.cambio).toFixed(0)}%</b> respecto al mes anterior.`;
+    el.innerHTML = `Tu gasto en <b>${escapeHtml(mayorCambio.cat)}</b> ${dir} <b style="color:${mayorCambio.cambio >= 0 ? 'var(--danger)' : 'var(--success)'}">${Math.abs(mayorCambio.cambio).toFixed(0)}%</b> respecto al mes anterior.`;
 }
 
 export function renderReportes() {

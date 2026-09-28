@@ -9,13 +9,14 @@ export function renderCuentasMaestro() {
 
 export function toggleCamposCuenta() {
     const tipo = document.getElementById('cuTipo').value;
-    const grupoDigitos = document.getElementById('grupoDigitos');
-    const cuLimite = document.getElementById('cuLimite');
-    const grupoFechas = document.getElementById('grupoFechas');
-    const cuClabe = document.getElementById('cuClabe');
-    if (tipo === 'efectivo') { grupoDigitos.style.display = 'none'; cuLimite.style.display = 'none'; grupoFechas.style.display = 'none'; cuClabe.style.display = 'none'; }
-    else if (tipo === 'debito') { grupoDigitos.style.display = 'block'; cuLimite.style.display = 'none'; grupoFechas.style.display = 'none'; cuClabe.style.display = 'block'; }
-    else { grupoDigitos.style.display = 'block'; cuLimite.style.display = 'block'; grupoFechas.style.display = 'grid'; cuClabe.style.display = 'none'; }
+    // Se oculta el contenedor .field completo (no solo el input) para que el
+    // campo vecino ocupe el ancho libre.
+    const campo = (id) => document.getElementById(id)?.closest('.field');
+    const mostrar = (el, visible, display = 'flex') => { if (el) el.style.display = visible ? display : 'none'; };
+    mostrar(document.getElementById('grupoDigitos'), tipo !== 'efectivo', 'block');
+    mostrar(campo('cuClabe'), tipo === 'debito');
+    mostrar(campo('cuLimite'), tipo === 'credito');
+    mostrar(document.getElementById('grupoFechas'), tipo === 'credito');
 }
 
 export function poblarFormularioCuenta(c) {
@@ -35,8 +36,8 @@ export function poblarFormularioCuenta(c) {
 
 export function limpiarFormularioCuenta() {
     document.getElementById('formCuenta').reset();
-    document.getElementById('cuentaFormTitle').innerText = 'Registrar Cuenta';
-    document.getElementById('btnGuardarCuenta').innerText = 'Añadir Cuenta';
+    document.getElementById('cuentaFormTitle').innerText = 'Registrar cuenta';
+    document.getElementById('btnGuardarCuenta').innerText = 'Añadir cuenta';
     document.getElementById('btnCancelarEdicionCuenta').style.display = 'none';
     document.getElementById('grupoIcon').style.display = 'none';
     document.getElementById('cuIcon').value = '';

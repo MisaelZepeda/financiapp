@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dashpro-cache-v4'; // v4: nueva dirección visual (sidebar morado + tarjetas redondeadas)
+const CACHE_NAME = 'financiapp-cache-v5'; // v5: rediseño FinanciApp (limpio y minimalista)
 
 const urlsToCache = [
     './',

@@ -1,52 +1,58 @@
 /* ==========================================================================
-   DESIGN TOKENS — dashboard SaaS morado/naranja
-   Tarjetas blancas flotantes muy redondeadas con sombra suave sobre fondo
-   lavanda, sidebar morado sólido, acentos morado + naranja para datos.
+   DESIGN TOKENS — FinanciApp v3: limpio y minimalista
+   Fondo blanco cálido, superficies con borde fino (sin sombras), un solo
+   acento verde azulado y mucho aire. Todo color de la app sale de aquí.
    ========================================================================== */
 
 :root {
-    /* --- Tipografía --- */
-    --font-display: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color-scheme: light;
+
+    /* --- Tipografía: una sola familia sobria --- */
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    --font-display: var(--font-body);
+    --font-mono: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 
-    /* --- Acentos: morado (marca) + naranja (secundario/series de datos) --- */
-    --primary-100: #ebe9ff;
-    --primary-400: #8a83ff;
-    --primary-500: #756df4;
-    --primary-600: #6c63ff;
-    --primary-700: #564ee0;
-
-    --primary: var(--primary-600);
-    --primary-hover: var(--primary-700);
-    --primary-soft: var(--primary-100);
+    /* --- Acento (marca). El usuario puede cambiarlo desde Configuración;
+       las variantes suaves se derivan con color-mix para que sigan al acento. --- */
+    --primary: #0f766e;
+    --primary-hover: color-mix(in srgb, var(--primary) 85%, #000);
+    --primary-soft: color-mix(in srgb, var(--primary) 10%, transparent);
+    --primary-line: color-mix(in srgb, var(--primary) 35%, transparent);
     --on-primary: #ffffff;
 
-    --secondary: #ff9466;
-    --secondary-soft: #ffece1;
-    --secondary-hover: #f57f4d;
+    /* --- Estados (texto y fondos suaves) --- */
+    --success: #15803d;
+    --danger: #dc2626;
+    --warning: #b45309;
+    --info: #2563eb;
+    --success-soft: color-mix(in srgb, var(--success) 10%, transparent);
+    --danger-soft: color-mix(in srgb, var(--danger) 9%, transparent);
+    --warning-soft: color-mix(in srgb, var(--warning) 11%, transparent);
+    --info-soft: color-mix(in srgb, var(--info) 9%, transparent);
 
-    --success: #16a37a;
-    --success-soft: #dcf7ee;
-    --danger: #ef5b6a;
-    --danger-soft: #fde5e8;
-    --warning: #f5a524;
-    --warning-soft: #fef2dc;
-    --info: #4d8dff;
-    --info-soft: #e8f0ff;
-
-    /* --- Superficies / texto (claro) --- */
-    --bg: #e6e9fb;
-    --bg-gradient: linear-gradient(160deg, #dfe6fd 0%, #e7e3fb 55%, #ece1f7 100%);
-    --bg-elevated: #ffffff;
+    /* --- Superficies / texto --- */
+    --bg: #fafaf9;
     --surface: #ffffff;
-    --surface-alt: #f3f2fd;
-    --text: #24223a;
-    --text-muted: #8f8ba8;
+    --surface-alt: #f5f5f4;
+    --surface-hover: #f0efed;
+    --text: #1c1917;
+    --text-secondary: #44403c;
+    --text-muted: #78716c;
     --muted: var(--text-muted);
-    --line: #ebe9f9;
-    --line-strong: #dbd8f2;
-    --overlay: rgba(36, 34, 58, 0.45);
+    --line: #e7e5e4;
+    --line-strong: #d6d3d1;
+    --overlay: rgba(28, 25, 23, 0.40);
+
+    /* --- Gráficas (paleta categórica validada, orden fijo) --- */
+    --chart-grid: #e7e5e4;
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --series-3: #1baf7a;
+    --series-4: #eda100;
+    --series-5: #e87ba4;
+    --series-6: #008300;
+    --series-7: #4a3aa7;
+    --series-8: #e34948;
 
     /* --- Espaciado --- */
     --space-1: 4px;
@@ -58,84 +64,113 @@
     --space-7: 32px;
     --space-8: 48px;
 
-    /* --- Radios: muy redondeados, look "burbuja" --- */
-    --radius-sm: 10px;
-    --radius-md: 14px;
-    --radius-lg: 22px;
-    --radius-xl: 28px;
+    /* --- Radios: discretos --- */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
     --radius-full: 999px;
 
-    /* --- Elevación: sombras suaves y difusas, tintadas de morado --- */
-    --shadow-1: 0 2px 10px rgba(108, 99, 255, 0.06);
-    --shadow-2: 0 10px 28px rgba(84, 76, 158, 0.10);
-    --shadow-3: 0 24px 48px rgba(60, 50, 130, 0.18);
+    /* --- Elevación: solo para capas flotantes (menús, modales) --- */
+    --shadow-1: 0 1px 2px rgba(28, 25, 23, 0.05);
+    --shadow-2: 0 4px 12px rgba(28, 25, 23, 0.06);
+    --shadow-3: 0 16px 40px rgba(28, 25, 23, 0.14);
 
     /* --- Movimiento --- */
     --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --duration-fast: 150ms;
-    --duration-base: 250ms;
-    --duration-slow: 450ms;
+    --duration-fast: 120ms;
+    --duration-base: 200ms;
+    --duration-slow: 400ms;
 
     /* --- Layout --- */
-    --rail-size: 84px;
-    --header-height: 68px;
-    --content-max: 1220px;
+    --sidebar-width: 240px;
+    --tabbar-height: 64px;
+    --header-height: 64px;
+    --content-max: 1120px;
 }
 
-/* --- Tema oscuro: mismo par morado/naranja, sobre grafito profundo --- */
+/* --- Tema oscuro: mismos roles, pasos propios para superficie oscura --- */
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        --bg: #16142a;
-        --bg-gradient: linear-gradient(160deg, #14132a 0%, #181530 60%, #1c1533 100%);
-        --bg-elevated: #201d3a;
-        --surface: #201d3a;
-        --surface-alt: #262242;
-        --text: #f1f0fb;
-        --text-muted: #a29fc4;
-        --muted: var(--text-muted);
-        --line: #322e54;
-        --line-strong: #423c6b;
-        --overlay: rgba(8, 7, 18, 0.65);
+        color-scheme: dark;
+        --primary: #2dd4bf;
+        --on-primary: #042f2e;
+        --success: #4ade80;
+        --danger: #f87171;
+        --warning: #fbbf24;
+        --info: #60a5fa;
+        --success-soft: color-mix(in srgb, var(--success) 13%, transparent);
+        --danger-soft: color-mix(in srgb, var(--danger) 13%, transparent);
+        --warning-soft: color-mix(in srgb, var(--warning) 13%, transparent);
+        --info-soft: color-mix(in srgb, var(--info) 13%, transparent);
+        --primary-soft: color-mix(in srgb, var(--primary) 14%, transparent);
+        --primary-hover: color-mix(in srgb, var(--primary) 85%, #fff);
 
-        --primary: #8a83ff;
-        --primary-hover: #9b95ff;
-        --primary-soft: rgba(138, 131, 255, 0.18);
-        --secondary-soft: rgba(255, 148, 102, 0.16);
-        --success-soft: rgba(22, 163, 122, 0.18);
-        --danger-soft: rgba(239, 91, 106, 0.18);
-        --warning-soft: rgba(245, 165, 36, 0.16);
-        --info-soft: rgba(77, 141, 255, 0.16);
+        --bg: #0c0c0b;
+        --surface: #161615;
+        --surface-alt: #1f1e1c;
+        --surface-hover: #262523;
+        --text: #f5f5f4;
+        --text-secondary: #d6d3d1;
+        --text-muted: #a8a29e;
+        --line: #292725;
+        --line-strong: #3a3734;
+        --overlay: rgba(0, 0, 0, 0.60);
 
-        --shadow-1: 0 2px 10px rgba(0, 0, 0, 0.25);
-        --shadow-2: 0 10px 28px rgba(0, 0, 0, 0.35);
-        --shadow-3: 0 24px 48px rgba(0, 0, 0, 0.5);
+        --chart-grid: #2c2b29;
+        --series-1: #3987e5;
+        --series-2: #d95926;
+        --series-3: #199e70;
+        --series-4: #c98500;
+        --series-5: #d55181;
+        --series-6: #008300;
+        --series-7: #9085e9;
+        --series-8: #e66767;
+
+        --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+        --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.4);
+        --shadow-3: 0 16px 40px rgba(0, 0, 0, 0.6);
     }
 }
 
 :root[data-theme="dark"] {
-    --bg: #16142a;
-    --bg-gradient: linear-gradient(160deg, #14132a 0%, #181530 60%, #1c1533 100%);
-    --bg-elevated: #201d3a;
-    --surface: #201d3a;
-    --surface-alt: #262242;
-    --text: #f1f0fb;
-    --text-muted: #a29fc4;
-    --muted: var(--text-muted);
-    --line: #322e54;
-    --line-strong: #423c6b;
-    --overlay: rgba(8, 7, 18, 0.65);
+    color-scheme: dark;
+    --primary: #2dd4bf;
+    --on-primary: #042f2e;
+    --success: #4ade80;
+    --danger: #f87171;
+    --warning: #fbbf24;
+    --info: #60a5fa;
+    --success-soft: color-mix(in srgb, var(--success) 13%, transparent);
+    --danger-soft: color-mix(in srgb, var(--danger) 13%, transparent);
+    --warning-soft: color-mix(in srgb, var(--warning) 13%, transparent);
+    --info-soft: color-mix(in srgb, var(--info) 13%, transparent);
+    --primary-soft: color-mix(in srgb, var(--primary) 14%, transparent);
+    --primary-hover: color-mix(in srgb, var(--primary) 85%, #fff);
 
-    --primary: #8a83ff;
-    --primary-hover: #9b95ff;
-    --primary-soft: rgba(138, 131, 255, 0.18);
-    --secondary-soft: rgba(255, 148, 102, 0.16);
-    --success-soft: rgba(22, 163, 122, 0.18);
-    --danger-soft: rgba(239, 91, 106, 0.18);
-    --warning-soft: rgba(245, 165, 36, 0.16);
-    --info-soft: rgba(77, 141, 255, 0.16);
+    --bg: #0c0c0b;
+    --surface: #161615;
+    --surface-alt: #1f1e1c;
+    --surface-hover: #262523;
+    --text: #f5f5f4;
+    --text-secondary: #d6d3d1;
+    --text-muted: #a8a29e;
+    --line: #292725;
+    --line-strong: #3a3734;
+    --overlay: rgba(0, 0, 0, 0.60);
 
-    --shadow-1: 0 2px 10px rgba(0, 0, 0, 0.25);
-    --shadow-2: 0 10px 28px rgba(0, 0, 0, 0.35);
-    --shadow-3: 0 24px 48px rgba(0, 0, 0, 0.5);
+    --chart-grid: #2c2b29;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
+
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-3: 0 16px 40px rgba(0, 0, 0, 0.6);
 }

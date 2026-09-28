@@ -14,7 +14,7 @@ export function revertirTransaccion(fid) {
     const updates = {};
     if (t.tipo === 'ingreso') {
         const c = state.cuentas.find(x => x.id == t.cuentaId);
-        if (c) updates[`cuentas/${c.id}/saldo`] = c.saldo - t.monto;
+        if (c) updates[`cuentas/${c.id}/saldo`] = c.tipo === 'credito' ? c.saldo + t.monto : c.saldo - t.monto;
     } else if (t.tipo === 'gasto') {
         const c = state.cuentas.find(x => x.id == t.cuentaId);
         if (c) updates[`cuentas/${c.id}/saldo`] = (c.tipo === 'debito' || c.tipo === 'efectivo') ? c.saldo + t.monto : c.saldo - t.monto;
@@ -34,15 +34,18 @@ function aplicarUpdatesLocal(updates) {
     });
 }
 
-export function guardarIngreso({ monto, desc, cuentaId, editId }) {
+// Un ingreso en una tarjeta de crédito (p. ej. cashback) reduce la deuda;
+// en débito/efectivo aumenta el saldo. `subtipo` distingue rendimientos y
+// cashback de un ingreso normal.
+export function guardarIngreso({ monto, desc, cuentaId, editId, subtipo = null }) {
     let updates = editId ? revertirTransaccion(editId) : {};
     const cId = editId ? state.transacciones.find(x => x.firebaseId === editId).cuentaId : cuentaId;
     const c = state.cuentas.find(x => x.id == cId);
     const saldoActual = updates[`cuentas/${c.id}/saldo`] !== undefined ? updates[`cuentas/${c.id}/saldo`] : c.saldo;
     const id = editId || nuevoId();
     const oldFecha = editId ? state.transacciones.find(x => x.firebaseId === editId).fecha : new Date().toISOString().split('T')[0];
-    updates[`transacciones/${id}`] = { desc, monto, tipo: 'ingreso', cuentaId: c.id, fecha: oldFecha };
-    updates[`cuentas/${c.id}/saldo`] = saldoActual + monto;
+    updates[`transacciones/${id}`] = { desc, monto, tipo: 'ingreso', cuentaId: c.id, fecha: oldFecha, ...(subtipo ? { subtipo } : {}) };
+    updates[`cuentas/${c.id}/saldo`] = c.tipo === 'credito' ? saldoActual - monto : saldoActual + monto;
 
     if (state.isDemo) {
         aplicarUpdatesLocal(updates);

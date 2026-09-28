@@ -1,28 +1,59 @@
 // Helpers de Chart.js. Se apoya en Chart.getChart(canvas) (Chart.js v4) para
 // destruir automáticamente cualquier instancia previa antes de redibujar, sin
 // tener que mantener un registro manual de instancias entre módulos.
+//
+// Los colores salen de tokens.css (--series-N, --text-muted, --chart-grid…)
+// para que claro y oscuro usen cada uno sus pasos validados.
+
+const cssVar = (name, fallback) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+
+const SERIES_FALLBACK = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'];
+export const MAX_SERIES = SERIES_FALLBACK.length;
+
+// Color categórico en orden fijo. Nunca se cicla: quien llama debe agrupar
+// lo que pase de MAX_SERIES en "Otros" antes de pedir colores.
+export function colorSerie(i) {
+    return cssVar(`--series-${Math.min(i, MAX_SERIES - 1) + 1}`, SERIES_FALLBACK[Math.min(i, MAX_SERIES - 1)]);
+}
+
+const fmtMoney = (n) => '$' + Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtCompact = (n) => '$' + Number(n || 0).toLocaleString('es-MX', { notation: 'compact', maximumFractionDigits: 1 });
+
+function baseTooltip() {
+    return {
+        backgroundColor: cssVar('--surface', '#fff'),
+        titleColor: cssVar('--text', '#1c1917'),
+        bodyColor: cssVar('--text-secondary', '#44403c'),
+        borderColor: cssVar('--line-strong', '#d6d3d1'),
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 8,
+        boxPadding: 4,
+        usePointStyle: true,
+        titleFont: { family: 'Inter', weight: '600', size: 12.5 },
+        bodyFont: { family: 'Inter', size: 12.5 },
+    };
+}
 
 const centerTextPlugin = {
     id: 'centerText',
-    beforeDraw(chart) {
+    afterDraw(chart) {
         const opts = chart.config.options.plugins?.centerText;
         if (!opts?.display) return;
         const { ctx, chartArea } = chart;
         if (!chartArea) return;
-        ctx.restore();
-        const centerX = chartArea.left + (chartArea.right - chartArea.left) / 2;
-        const centerY = chartArea.top + (chartArea.bottom - chartArea.top) / 2;
-        const fontSize = (chart.height / 150).toFixed(2);
-        ctx.textBaseline = 'middle';
-        const top = opts.title || 'TOTAL';
-        const bottom = opts.text;
-        ctx.font = `bold ${fontSize * 0.4}em var(--font-body)`;
-        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted').trim() || '#6b6b80';
-        ctx.fillText(top, centerX - ctx.measureText(top).width / 2, centerY - 15);
-        ctx.font = `800 ${fontSize * 0.85}em var(--font-display)`;
-        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#14121f';
-        ctx.fillText(bottom, centerX - ctx.measureText(bottom).width / 2, centerY + 15);
+        const cx = (chartArea.left + chartArea.right) / 2;
+        const cy = (chartArea.top + chartArea.bottom) / 2;
         ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `500 11.5px Inter, sans-serif`;
+        ctx.fillStyle = cssVar('--text-muted', '#78716c');
+        ctx.fillText(opts.title || 'Total', cx, cy - 11);
+        ctx.font = `600 15px Inter, sans-serif`;
+        ctx.fillStyle = cssVar('--text', '#1c1917');
+        ctx.fillText(document.body.classList.contains('privacy-mode') ? '••••' : opts.text, cx, cy + 8);
+        ctx.restore();
     }
 };
 if (window.Chart) Chart.register(centerTextPlugin);
@@ -40,51 +71,34 @@ export function isDarkTheme() {
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
-export function renderPatrimonioChart(canvasId, patrimonioActual) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    destroyIfExists(canvas);
-    const ctx = canvas.getContext('2d');
-    const primary = getComputedStyle(document.body).getPropertyValue('--primary').trim() || '#6c63ff';
-    const gradient = ctx.createLinearGradient(0, 0, 0, 60);
-    gradient.addColorStop(0, `${primary}33`);
-    gradient.addColorStop(1, `${primary}00`);
-    const curve = patrimonioActual > 0
-        ? [patrimonioActual * 0.7, patrimonioActual * 0.75, patrimonioActual * 0.72, patrimonioActual * 0.8, patrimonioActual * 0.85, patrimonioActual * 0.9, patrimonioActual]
-        : [0, 0, 0, 0, 0, 0, 0];
-    return new Chart(ctx, {
-        type: 'line',
-        data: { labels: ['1', '2', '3', '4', '5', '6', 'Hoy'], datasets: [{ data: curve, borderColor: primary, borderWidth: 2.5, backgroundColor: gradient, fill: true, tension: 0.4, pointRadius: 0 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false, min: Math.min(...curve) * 0.85 } }, layout: { padding: 0 }, animation: { duration: 1000, easing: 'easeOutQuart' } }
-    });
-}
-
-export function renderSparkline(canvasId, data, color) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    destroyIfExists(canvas);
-    return new Chart(canvas.getContext('2d'), {
-        type: 'line',
-        data: { labels: data.map((_, i) => i), datasets: [{ data, borderColor: color, borderWidth: 2, tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false } }, layout: { padding: 0 }, elements: { point: { radius: 0, hitRadius: 10, hoverRadius: 4 } } }
-    });
-}
-
-const DONUT_PALETTE = ['#6c63ff', '#ff9466', '#4d8dff', '#16a37a', '#f5a524', '#ef5b6a', '#b8b3ff', '#ffc09f'];
-
+// `categorias` es una lista [nombre, monto] ya ordenada y con a lo más
+// MAX_SERIES entradas (el resto agrupado en "Otros").
 export function renderDonutGastos(canvasId, categorias, totalMes) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
     destroyIfExists(canvas);
-    const dark = isDarkTheme();
-    Chart.defaults.color = dark ? '#a29fc4' : '#8f8ba8';
+    const vacio = categorias.length === 0;
     return new Chart(canvas.getContext('2d'), {
         type: 'doughnut',
-        data: { labels: Object.keys(categorias), datasets: [{ data: Object.values(categorias), backgroundColor: DONUT_PALETTE, borderWidth: 3, borderColor: dark ? '#201d3a' : '#ffffff' }] },
+        data: {
+            labels: vacio ? ['Sin gastos'] : categorias.map(c => c[0]),
+            datasets: [{
+                data: vacio ? [1] : categorias.map(c => c[1]),
+                backgroundColor: vacio ? [cssVar('--surface-alt', '#f5f5f4')] : categorias.map((_, i) => colorSerie(i)),
+                borderWidth: 2,
+                borderColor: cssVar('--surface', '#ffffff'),
+                hoverBorderColor: cssVar('--surface', '#ffffff'),
+                hoverOffset: 4,
+            }]
+        },
         options: {
-            maintainAspectRatio: false, cutout: '74%', layout: { padding: 10 },
-            plugins: { legend: { display: true, position: 'right', labels: { boxWidth: 11, font: { size: 10.5 } } }, centerText: { display: true, title: 'TOTAL MES', text: '$' + totalMes.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } },
-            animation: { animateRotate: true, animateScale: true, duration: 1100, easing: 'easeOutQuart' }
+            maintainAspectRatio: false, cutout: '72%', layout: { padding: 4 },
+            plugins: {
+                legend: { display: false },
+                tooltip: vacio ? { enabled: false } : { ...baseTooltip(), callbacks: { label: (c) => ` ${c.label}: ${fmtMoney(c.parsed)}` } },
+                centerText: { display: true, title: 'Total del mes', text: fmtMoney(totalMes) },
+            },
+            animation: { animateRotate: true, duration: 700, easing: 'easeOutQuart' }
         }
     });
 }
@@ -93,18 +107,27 @@ export function renderBarAnual(canvasId, labels, ingresos, gastos) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
     destroyIfExists(canvas);
-    const dark = isDarkTheme();
+    const muted = cssVar('--text-muted', '#78716c');
+    const grid = cssVar('--chart-grid', '#e7e5e4');
+    const bar = { borderRadius: { topLeft: 4, topRight: 4 }, borderSkipped: 'bottom', maxBarThickness: 22, categoryPercentage: 0.62, barPercentage: 0.86 };
     return new Chart(canvas.getContext('2d'), {
         type: 'bar',
         data: { labels, datasets: [
-            { label: 'Ingresos', data: ingresos, backgroundColor: '#6c63ff', borderRadius: 6 },
-            { label: 'Gastos', data: gastos, backgroundColor: '#ff9466', borderRadius: 6 },
+            { label: 'Ingresos', data: ingresos, backgroundColor: colorSerie(0), ...bar },
+            { label: 'Gastos', data: gastos, backgroundColor: colorSerie(1), ...bar },
         ] },
         options: {
             responsive: true, maintainAspectRatio: false,
-            scales: { x: { grid: { display: false } }, y: { grid: { color: dark ? '#322e54' : '#ebe9f9' }, border: { display: false } } },
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 11, font: { size: 10.5 } } } },
-            animation: { duration: 1200, easing: 'easeOutQuart' }
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { grid: { display: false }, border: { color: cssVar('--line-strong', '#d6d3d1') }, ticks: { color: muted, font: { family: 'Inter', size: 12 } } },
+                y: { grid: { color: grid }, border: { display: false }, ticks: { color: muted, font: { family: 'Inter', size: 11.5 }, maxTicksLimit: 5, callback: (v) => fmtCompact(v) } },
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: { ...baseTooltip(), callbacks: { label: (c) => ` ${c.dataset.label}: ${fmtMoney(c.parsed.y)}` } },
+            },
+            animation: { duration: 700, easing: 'easeOutQuart' }
         }
     });
 }

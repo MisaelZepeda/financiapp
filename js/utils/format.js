@@ -21,16 +21,16 @@ export function formatFecha(iso) {
 }
 
 const BANK_PALETTES = {
-    nu: ['#6c63ff', '#564ee0'], klar: ['#6c63ff', '#564ee0'], stori: ['#6c63ff', '#564ee0'],
-    bbva: ['#4d8dff', '#2f6fe0'], azteca: ['#4d8dff', '#2f6fe0'], bienestar: ['#4d8dff', '#2f6fe0'],
-    santander: ['#ef5b6a', '#d8404f'], banorte: ['#ef5b6a', '#d8404f'], scotiabank: ['#ef5b6a', '#d8404f'],
-    hey: ['#16a37a', '#0f7d5c'], mercadopago: ['#16a37a', '#0f7d5c'],
+    nu: ['#7c3aed', '#5b21b6'], klar: ['#7c3aed', '#5b21b6'], stori: ['#7c3aed', '#5b21b6'],
+    bbva: ['#1d4ed8', '#1e3a8a'], azteca: ['#1d4ed8', '#1e3a8a'], bienestar: ['#1d4ed8', '#1e3a8a'],
+    santander: ['#dc2626', '#991b1b'], banorte: ['#dc2626', '#991b1b'], scotiabank: ['#dc2626', '#991b1b'],
+    hey: ['#15803d', '#14532d'], mercadopago: ['#15803d', '#14532d'],
 };
 
 export function getBankColorsArray(banco) {
     const b = (banco || '').toLowerCase();
     for (const key in BANK_PALETTES) { if (b.includes(key)) return BANK_PALETTES[key]; }
-    return ['#ff9466', '#f57f4d'];
+    return ['#0f766e', '#134e4a'];
 }
 
 export function escapeHtml(str) {

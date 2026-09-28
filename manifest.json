@@ -1,13 +1,13 @@
 {
-  "name": "Dashboard Pro",
-  "short_name": "DashPro",
+  "name": "FinanciApp",
+  "short_name": "FinanciApp",
   "id": "/?source=pwa",
   "orientation": "portrait",
   "description": "Controla tus cuentas, gastos, presupuestos, metas de ahorro y pagos recurrentes en un solo lugar, de forma privada y segura.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#e6e9fb",
-  "theme_color": "#6c63ff",
+  "background_color": "#fafaf9",
+  "theme_color": "#0f766e",
   "icons": [
     {
       "src": "icon-192x192.png",

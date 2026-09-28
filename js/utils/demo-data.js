@@ -52,7 +52,7 @@ export function buildDemoData() {
     ];
 
     return {
-        perfil: { nombre: 'Cuenta Demo', foto: 'https://ui-avatars.com/api/?name=Demo&background=6c63ff&color=fff&size=128', color: '#6c63ff' },
+        perfil: { nombre: 'Cuenta Demo', foto: 'https://ui-avatars.com/api/?name=Demo&background=0f766e&color=fff&size=128', color: '#0f766e' },
         cuentas, transacciones, presupuestos, categoriasCustom: ['Mascotas'], metas, recurrentes,
     };
 }

@@ -3,7 +3,7 @@ import { state, frasesFinancieras } from './state.js';
 import { buildDemoData } from './utils/demo-data.js';
 import { money } from './utils/format.js';
 import { mostrarAlerta, mostrarConfirmacion, mostrarPromptCard } from './ui/modals.js';
-import { cambiarTab, toggleUserMenu, toggleNotifPanel, closeDropdowns, abrirMenuRegistro, cerrarMenuRegistro, openMoreSheet, closeMoreSheet, toggleThemeSwitch, initThemePreference, togglePrivacy, subscribeTabChange } from './ui/nav.js';
+import { cambiarTab, toggleUserMenu, toggleNotifPanel, closeDropdowns, abrirMenuRegistro, cerrarMenuRegistro, openMoreSheet, closeMoreSheet, toggleThemeSwitch, initThemePreference, togglePrivacy, subscribeTabChange, aplicarColorAcento } from './ui/nav.js';
 import { compartirTarjeta } from './utils/share-card.js';
 import { exportarCSV } from './utils/csv-export.js';
 import { generarPDFMes } from './utils/pdf-export.js';
@@ -17,7 +17,7 @@ import { renderMetas } from './render/metas.js';
 import { renderRecurrentes, chequearVencidosBanner } from './render/recurrentes.js';
 import { renderNotificaciones } from './render/notificaciones.js';
 
-import { guardarCuenta, eliminarCuenta, marcarPagado, desmarcarPagado, sumarInteres } from './data/cuentas.js';
+import { guardarCuenta, eliminarCuenta, marcarPagado, desmarcarPagado } from './data/cuentas.js';
 import { guardarIngreso, guardarGasto, guardarMovimiento, eliminarTransaccion } from './data/transacciones.js';
 import { guardarPresupuestos } from './data/presupuestos.js';
 import { guardarPerfil, guardarCategoriasCustom } from './data/perfil.js';
@@ -25,7 +25,7 @@ import { guardarMeta, eliminarMeta, abonarMeta, retirarMeta } from './data/metas
 import { guardarRecurrente, eliminarRecurrente, toggleActivoRecurrente, calcularVencidos, generarOcurrencia } from './data/recurrentes.js';
 import { exportarBackup, importarBackup, resetearCuenta, eliminarUsuario } from './data/mantenimiento.js';
 
-import { actualizarSelectsRegistro, handleGaFuenteChange, setMovMode, getMovMode, abrirModalRegistro, cerrarModalRegistro, editIngreso, editGasto, editMovimiento, getEditId, setEditId } from './ui/registro-sheet.js';
+import { actualizarSelectsRegistro, handleGaFuenteChange, setMovMode, getMovMode, abrirModalRegistro, cerrarModalRegistro, editIngreso, editGasto, editMovimiento, getEditId, setEditId, actualizarHintRecompensa, abrirRecompensa, editRecompensa } from './ui/registro-sheet.js';
 import { abrirSheetMeta, cerrarSheetMeta, seleccionarIconoMeta, abrirSheetRecurrente, cerrarSheetRecurrente, actualizarSelectsRecurrente, toggleCampoCategoria } from './ui/extra-sheets.js';
 
 let currentCuentaEditId = null;
@@ -34,8 +34,8 @@ let vencidosPrompted = false;
 /* ==================== RENDER ORQUESTADOR ==================== */
 function aplicarPerfilAlDOM() {
     const p = state.perfil;
-    document.documentElement.style.setProperty('--primary', p.color);
-    document.getElementById('headerGreeting').innerText = `Hola ${p.nombre} :)`;
+    aplicarColorAcento(p.color);
+    document.getElementById('headerGreeting').innerText = `Hola, ${p.nombre}`;
     document.getElementById('headerFoto').src = p.foto;
     document.getElementById('perfDisplayNombre').innerText = p.nombre;
     document.getElementById('perfDisplayFoto').src = p.foto;
@@ -133,8 +133,8 @@ document.getElementById('registerForm').addEventListener('submit', (e) => {
     auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
         .then(() => auth.createUserWithEmailAndPassword(email, pass))
         .then((cred) => {
-            const defaultPic = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=6c63ff&color=fff&size=128`;
-            return firebase.database().ref(`Usuarios/${cred.user.uid}/perfil`).set({ nombre, foto: regBase64 || defaultPic, color: '#6c63ff' })
+            const defaultPic = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=0f766e&color=fff&size=128`;
+            return firebase.database().ref(`Usuarios/${cred.user.uid}/perfil`).set({ nombre, foto: regBase64 || defaultPic, color: '#0f766e' })
                 .then(() => mostrarAlerta('¡Éxito!', `Cuenta creada. ¡Bienvenido ${nombre}!`, 'success'));
         }).catch(err => mostrarAlerta('Error al registrar', translateAuthError(err.code), 'error'));
 });
@@ -183,7 +183,7 @@ function procesarDatos(data) {
     state.metas = data.metas ? Object.values(data.metas) : [];
     state.recurrentes = data.recurrentes ? Object.values(data.recurrentes) : [];
 
-    const p = data.perfil || { nombre: 'Usuario', foto: 'https://via.placeholder.com/100', color: '#6c63ff' };
+    const p = data.perfil || { nombre: 'Usuario', foto: 'https://via.placeholder.com/100', color: '#0f766e' };
     state.perfil = p;
     state.selectedColor = p.color;
 
@@ -278,6 +278,18 @@ function onSubmitByAction(action, form, e) {
             withPromise(guardarIngreso({ monto: parseFloat(document.getElementById('inMonto').value), desc: document.getElementById('inDesc').value, cuentaId: document.getElementById('inCuenta').value, editId }), 'Ingreso', 'Registrado exitosamente.', () => { form.reset(); setEditId(null); document.getElementById('inCuenta').disabled = false; cerrarModalRegistro(); });
             break;
         }
+        case 'handleRecompensa': {
+            const editId = getEditId();
+            const cuentaId = editId ? state.transacciones.find(x => x.firebaseId === editId)?.cuentaId : document.getElementById('reCuenta').value;
+            const cuenta = state.cuentas.find(c => c.id == cuentaId);
+            if (!cuenta) { mostrarAlerta('Atención', 'Selecciona una cuenta de débito o crédito.', 'error'); return; }
+            const subtipo = cuenta.tipo === 'credito' ? 'cashback' : 'rendimiento';
+            const desc = document.getElementById('reDesc').value.trim() || (subtipo === 'cashback' ? 'Cashback' : 'Rendimiento');
+            const monto = parseFloat(document.getElementById('reMonto').value);
+            if (!monto || monto <= 0) return;
+            withPromise(guardarIngreso({ monto, desc, cuentaId: cuenta.id, editId, subtipo }), subtipo === 'cashback' ? 'Cashback registrado' : 'Rendimiento registrado', subtipo === 'cashback' ? 'Se restó de la deuda de la tarjeta.' : 'Se sumó al saldo de la cuenta.', () => { form.reset(); setEditId(null); cerrarModalRegistro(); });
+            break;
+        }
         case 'handleMovimiento': {
             const editId = getEditId();
             withPromise(guardarMovimiento({ monto: parseFloat(document.getElementById('movMonto').value), origenId: document.getElementById('movOrigen').value, destinoId: document.getElementById('movDestino').value, subtipo: getMovMode(), editId }), 'Completado', 'Movimiento exitoso.', () => { form.reset(); setEditId(null); document.getElementById('movOrigen').disabled = false; document.getElementById('movDestino').disabled = false; cerrarModalRegistro(); });
@@ -343,6 +355,7 @@ document.addEventListener('change', (e) => {
         case 'handleGaFuenteChange': handleGaFuenteChange(el.value); break;
         case 'toggleCamposCuenta': toggleCamposCuenta(); break;
         case 'toggleCampoCategoria': toggleCampoCategoria(); break;
+        case 'actualizarHintRecompensa': actualizarHintRecompensa(); break;
         case 'toggleMesesMSI': document.getElementById('gaMesesContainer').style.display = el.checked ? 'block' : 'none'; break;
     }
 });
@@ -380,14 +393,15 @@ document.addEventListener('click', (e) => {
             case 'editIngreso': editIngreso(id); break;
             case 'editMovimiento': editMovimiento(id); break;
             case 'eliminarTransaccion': mostrarConfirmacion('Eliminar Registro', '¿Seguro que deseas borrar este movimiento y revertir los saldos?', () => withPromise(eliminarTransaccion(id), 'Eliminado', 'Saldos ajustados.', null)); break;
-            case 'editCuenta': { const c = state.cuentas.find(x => x.id == id); if (!c) return; cambiarTab('cuentas'); poblarFormularioCuenta(c); currentCuentaEditId = id; document.getElementById('cuentaFormTitle').innerText = 'Editando Cuenta'; document.getElementById('btnGuardarCuenta').innerText = 'Guardar Cambios'; document.getElementById('btnCancelarEdicionCuenta').style.display = 'block'; window.scrollTo(0, 0); break; }
-            case 'sumarInteres': { const c = state.cuentas.find(x => x.id == id); if (!c) return; mostrarPromptCard('Generar Rendimiento', 'Ingresa el interés generado hoy ($):', (val) => { const m = parseFloat(val); if (!m || m <= 0) return; withPromise(sumarInteres(c, m), 'Intereses Sumados', 'Ganancias actualizadas.', null); }); break; }
+            case 'editCuenta': { const c = state.cuentas.find(x => x.id == id); if (!c) return; cambiarTab('cuentas'); poblarFormularioCuenta(c); currentCuentaEditId = id; document.getElementById('cuentaFormTitle').innerText = 'Editar cuenta'; document.getElementById('btnGuardarCuenta').innerText = 'Guardar cambios'; document.getElementById('btnCancelarEdicionCuenta').style.display = 'inline-flex'; window.scrollTo(0, 0); break; }
+            case 'registrarRecompensa': abrirRecompensa(id); break;
+            case 'editRecompensa': editRecompensa(id); break;
             case 'confirmarBorrarCuenta': mostrarConfirmacion('Eliminar Cuenta', 'Se borrará permanentemente de tu lista. Sus transacciones perderán la referencia. ¿Continuar?', () => withPromise(eliminarCuenta(id), 'Borrada', 'La cuenta fue eliminada.', null)); break;
             case 'marcarPagado': withPromise(marcarPagado(id, new Date().getMonth()), 'Marcado', 'Cuenta marcada como pagada.', null); break;
             case 'desmarcarPagado': withPromise(desmarcarPagado(id), 'Deshecho', 'Se quitó la marca de pagado.', null); break;
             case 'compartirTarjeta': compartirTarjeta(id); break;
             case 'cancelarEdicionCuenta': currentCuentaEditId = null; limpiarFormularioCuenta(); break;
-            case 'selectColor': state.selectedColor = actionEl.dataset.color; document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active')); actionEl.classList.add('active'); document.documentElement.style.setProperty('--primary', actionEl.dataset.color); break;
+            case 'selectColor': state.selectedColor = actionEl.dataset.color; aplicarColorAcento(actionEl.dataset.color); break;
             case 'eliminarCategoriaCustom': mostrarConfirmacion('Borrar Categoría', `¿Eliminar la etiqueta "${actionEl.dataset.cat}"?`, () => withPromise(guardarCategoriasCustom(state.categoriasCustom.filter(c => c !== actionEl.dataset.cat)), 'Eliminada', 'Categoría removida.', null)); break;
             case 'seleccionarRestore': document.getElementById('fileRestore').click(); break;
             case 'resetearCuenta': mostrarConfirmacion('Mantenimiento Mayor', 'Esto borrará TODO tu historial de movimientos y dejará los saldos de todas las cuentas en $0. ¿Estás seguro?', () => withPromise(resetearCuenta(), 'Limpio', 'Saldos restablecidos a cero.', null)); break;

@@ -6,7 +6,7 @@ export function renderFormularioPresupuestos() {
     const cats = todasLasCategorias();
     document.getElementById('contenedorInputsPresupuesto').innerHTML = cats.map(c => {
         const val = state.presupuestos[c] || '';
-        return `<div class="field"><label style="display:flex; align-items:center; gap:6px;">${icon(getIconCategoria(c))}${escapeHtml(c)}</label><input type="number" data-cat="${escapeHtml(c)}" value="${val}" placeholder="$0" step="0.01"></div>`;
+        return `<div class="field"><label>${icon(getIconCategoria(c))}${escapeHtml(c)}</label><input type="number" data-cat="${escapeHtml(c)}" value="${val}" placeholder="Sin límite" step="0.01"></div>`;
     }).join('');
 }
 
@@ -25,32 +25,32 @@ export function renderPresupuestos() {
         const globalCard = document.getElementById('presupuestoGlobalCard');
 
         if (activas.length === 0) {
-            grid.innerHTML = `<div class="empty-state" style="width:100%;">${icon('bar-chart')}Aún no tienes límites definidos. Configúralos abajo.</div>`;
+            grid.innerHTML = `<div class="empty-state">${icon('bar-chart')}Aún no tienes límites definidos. Asígnalos en “Ajustar límites”.</div>`;
             globalCard.style.display = 'none';
             return;
         }
 
-        const ANILLOS = ['var(--primary)', 'var(--secondary)', 'var(--info)', 'var(--success)'];
         let totalAsignado = 0, totalGastado = 0;
-        grid.innerHTML = activas.map((c, i) => {
+        grid.innerHTML = activas.map(c => {
             const limite = Number(state.presupuestos[c]) || 0;
             const gastado = Number(gastosPorCat[c]) || 0;
             totalAsignado += limite; totalGastado += gastado;
             const pct = limite > 0 ? (gastado / limite) * 100 : 0;
             const sobregiro = pct > 100;
-            const ringColor = sobregiro ? 'var(--danger)' : ANILLOS[i % ANILLOS.length];
-            return `<div class="budget-item">
-                <div class="budget-ring" style="--pct:${Math.min(pct, 100)}; --ring-color:${ringColor};">
-                    <div class="budget-icon">${icon(getIconCategoria(c))}</div>
+            const color = sobregiro ? 'var(--danger)' : (pct > 80 ? 'var(--warning)' : 'var(--primary)');
+            return `<div class="budget-row">
+                <div class="budget-row-top">
+                    ${icon(getIconCategoria(c))}
+                    <span class="budget-name">${escapeHtml(c)}</span>
+                    <span class="budget-amounts money-blur">${moneyRounded(gastado)} de ${moneyRounded(limite)}</span>
+                    <span class="budget-pct ${sobregiro ? 'over' : ''}">${pct.toFixed(0)}%</span>
                 </div>
-                <div class="budget-title">${escapeHtml(c)}</div>
-                <div class="budget-amounts tabular-nums">${moneyRounded(gastado)} / ${moneyRounded(limite)}</div>
-                <div class="budget-pct ${sobregiro ? 'over' : ''}" style="${sobregiro ? '' : `color:${ringColor};`}">${pct.toFixed(0)}%</div>
+                <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${Math.min(pct, 100)}%; background:${color};"></div></div>
             </div>`;
         }).join('');
 
         globalCard.style.display = 'block';
-        document.getElementById('globalPresupText').innerText = `${moneyRounded(totalGastado)} / ${moneyRounded(totalAsignado)}`;
+        document.getElementById('globalPresupText').innerHTML = `${moneyRounded(totalGastado)} <span class="text-muted" style="font-size:16px; font-weight:500;">de ${moneyRounded(totalAsignado)}</span>`;
         const globalPct = totalAsignado > 0 ? (totalGastado / totalAsignado) * 100 : 0;
         const fill = document.getElementById('globalPresupBar');
         fill.style.width = Math.min(globalPct, 100) + '%';

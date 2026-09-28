@@ -36,17 +36,3 @@ export function desmarcarPagado(id) {
     }
     return userRef(uid(), `cuentas/${id}/mesPagado`).remove();
 }
-
-export function sumarInteres(cuenta, monto) {
-    const nuevoSaldo = cuenta.saldo + monto;
-    if (state.isDemo) {
-        cuenta.saldo = nuevoSaldo;
-        state.transacciones.push({ firebaseId: `demo_${Date.now()}`, desc: 'Rendimiento', monto, tipo: 'ingreso', cuentaId: cuenta.id, fecha: new Date().toISOString().split('T')[0] });
-        return Promise.resolve();
-    }
-    const transId = userRef(uid(), 'transacciones').push().key;
-    const updates = {};
-    updates[`transacciones/${transId}`] = { desc: 'Rendimiento', monto, tipo: 'ingreso', cuentaId: cuenta.id, fecha: new Date().toISOString().split('T')[0] };
-    updates[`cuentas/${cuenta.id}/saldo`] = nuevoSaldo;
-    return userRef(uid()).update(updates);
-}

@@ -17,8 +17,8 @@ export function mostrarAlerta(titulo, mensaje, tipo = 'success') {
     document.getElementById('cmText').innerText = mensaje;
     btns.style.display = 'none';
 
-    if (tipo === 'success') { iconWrap.style.background = 'var(--success)'; setModalIcon('check'); }
-    else if (tipo === 'error') { iconWrap.style.background = 'var(--danger)'; setModalIcon('x'); }
+    if (tipo === 'success') { iconWrap.dataset.tone = 'success'; setModalIcon('check'); }
+    else if (tipo === 'error') { iconWrap.dataset.tone = 'danger'; setModalIcon('x'); }
 
     overlay.style.display = 'flex';
     setTimeout(() => { overlay.style.display = 'none'; btns.style.display = 'flex'; }, 1400);
@@ -41,10 +41,8 @@ export function mostrarConfirmacion(titulo, mensaje, callback) {
     btnConfirm.innerText = 'Confirmar';
     btnConfirm.onclick = () => { overlay.style.display = 'none'; callback(); };
 
-    iconWrap.style.background = 'var(--warning)';
-    btnConfirm.className = 'btn';
-    btnConfirm.style.background = 'var(--warning)';
-    btnConfirm.style.color = '#fff';
+    iconWrap.dataset.tone = 'warning';
+    btnConfirm.className = 'btn btn-primary';
     setModalIcon('alert-triangle');
 
     overlay.style.display = 'flex';
