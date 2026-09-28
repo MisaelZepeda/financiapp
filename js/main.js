@@ -15,7 +15,7 @@ import { renderCuentasMaestro, toggleCamposCuenta, poblarFormularioCuenta, limpi
 import { renderPerfil } from './render/perfil.js';
 import { renderMetas } from './render/metas.js';
 import { renderRecurrentes, chequearVencidosBanner } from './render/recurrentes.js';
-import { renderNotificaciones } from './render/notificaciones.js';
+import { renderNotificaciones, clavesNotificacionesVisibles } from './render/notificaciones.js';
 
 import { guardarCuenta, eliminarCuenta, marcarPagado, desmarcarPagado } from './data/cuentas.js';
 import { guardarIngreso, guardarGasto, guardarMovimiento, eliminarTransaccion } from './data/transacciones.js';
@@ -24,6 +24,7 @@ import { guardarPerfil, guardarCategoriasCustom } from './data/perfil.js';
 import { guardarMeta, eliminarMeta, abonarMeta, retirarMeta } from './data/metas.js';
 import { guardarRecurrente, eliminarRecurrente, toggleActivoRecurrente, calcularVencidos, generarOcurrencia } from './data/recurrentes.js';
 import { exportarBackup, importarBackup, resetearCuenta, eliminarUsuario } from './data/mantenimiento.js';
+import { descartarNotificaciones } from './data/notificaciones.js';
 
 import { actualizarSelectsRegistro, handleGaFuenteChange, setMovMode, getMovMode, abrirModalRegistro, cerrarModalRegistro, editIngreso, editGasto, editMovimiento, getEditId, setEditId, actualizarHintRecompensa, abrirRecompensa, editRecompensa } from './ui/registro-sheet.js';
 import { abrirSheetMeta, cerrarSheetMeta, seleccionarIconoMeta, abrirSheetRecurrente, cerrarSheetRecurrente, actualizarSelectsRecurrente, toggleCampoCategoria } from './ui/extra-sheets.js';
@@ -182,6 +183,7 @@ function procesarDatos(data) {
     state.categoriasCustom = data.categoriasCustom ? Object.values(data.categoriasCustom) : [];
     state.metas = data.metas ? Object.values(data.metas) : [];
     state.recurrentes = data.recurrentes ? Object.values(data.recurrentes) : [];
+    state.notifDescartadas = data.notifDescartadas || {};
 
     const p = data.perfil || { nombre: 'Usuario', foto: 'https://via.placeholder.com/100', color: '#0f766e' };
     state.perfil = p;
@@ -378,6 +380,8 @@ document.addEventListener('click', (e) => {
             case 'entrarModoDemo': entrarModoDemo(); break;
             case 'toggleUserMenu': toggleUserMenu(e); break;
             case 'toggleNotifPanel': toggleNotifPanel(e); renderNotificaciones(); break;
+            case 'descartarNotif': descartarNotificaciones([actionEl.dataset.key]).then(renderNotificaciones); break;
+            case 'descartarTodasNotif': descartarNotificaciones(clavesNotificacionesVisibles()).then(renderNotificaciones); break;
             case 'togglePrivacy': togglePrivacy(); break;
             case 'exportarBackup': exportarBackup(); mostrarAlerta('Respaldo Creado', 'Tus datos se han guardado con éxito.', 'success'); break;
             case 'handleLogout': handleLogout(); break;

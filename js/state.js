@@ -11,6 +11,7 @@ export const state = {
     categoriasCustom: [],
     metas: [],
     recurrentes: [],
+    notifDescartadas: {},
     currentBase64: "",
     selectedColor: "#0f766e",
 };

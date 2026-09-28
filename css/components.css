@@ -103,8 +103,12 @@
 .dd-divider { height: 1px; background: var(--line); margin: 6px 0; }
 
 #notifPanel { width: 340px; max-width: calc(100vw - 32px); max-height: 70vh; overflow-y: auto; }
-.notif-head { padding: 12px 16px; font-weight: 600; font-size: 14px; border-bottom: 1px solid var(--line); }
-.notif-item { display: flex; gap: 12px; padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--line); }
+.notif-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: 12px 16px; font-weight: 600; font-size: 14px; border-bottom: 1px solid var(--line); }
+.notif-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 8px 12px 16px; font-size: 13px; border-bottom: 1px solid var(--line); }
+.notif-text { flex: 1; min-width: 0; }
+.notif-dismiss { width: 28px; height: 28px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--text-muted); }
+.notif-dismiss:hover { background: var(--surface-alt); color: var(--text); }
+.notif-dismiss .icon { width: 14px; height: 14px; }
 .notif-item:last-child { border-bottom: none; }
 .notif-ico { width: 32px; height: 32px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .notif-ico .icon { width: 16px; height: 16px; }
@@ -130,18 +134,32 @@
 @media (max-width: 1099px) { .split-reverse .split-side { order: -1; } }
 @media (min-width: 1100px) { .sticky-card { position: sticky; top: calc(var(--header-height) + var(--space-5)); } }
 
-/* ---------- INICIO: patrimonio + mes ---------- */
-.overview { display: grid; gap: var(--space-4); }
-@media (min-width: 760px) { .overview { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); } }
+/* ---------- INICIO ----------
+   Orden fijo de arriba a abajo: saldos generales, cuentas, comparativa
+   mensual, gastos por categoría y pagos de TDC. */
+#tab-resumen > * + * { margin-top: var(--space-4); }
 
-.hero-panel { display: flex; flex-direction: column; }
+.hero-panel { display: grid; gap: var(--space-5); }
+@media (min-width: 900px) { .hero-panel { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: end; } }
 .hero-total { font-size: clamp(34px, 6vw, 48px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; margin: 6px 0 8px; }
 .hero-message { font-size: 13.5px; color: var(--text-muted); }
-.hero-stats-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); margin-top: auto; padding-top: var(--space-5); }
+.hero-stats-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
 .hero-stat { padding-top: var(--space-4); border-top: 1px solid var(--line); min-width: 0; }
 .hero-stat small { display: block; font-size: 12.5px; color: var(--text-muted); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hero-stat b { font-size: 15px; font-weight: 600; white-space: nowrap; }
 @media (max-width: 420px) { .hero-stat b { font-size: 13.5px; } }
+
+.acc-columns { display: grid; gap: 0 var(--space-7); }
+.acc-columns > div + div .list-label { margin-top: var(--space-4); }
+@media (min-width: 760px) {
+    .acc-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .acc-columns > div + div .list-label { margin-top: var(--space-2); }
+}
+
+.dash-row { display: grid; gap: var(--space-4); }
+@media (min-width: 900px) { .dash-row-compare { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); } }
+.month-panel { display: flex; flex-direction: column; }
+.month-panel .card-foot { margin-top: auto; padding-top: var(--space-3); }
 
 .month-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: 12px 0; border-bottom: 1px solid var(--line); }
 .month-label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-secondary); }
@@ -154,11 +172,6 @@
 .dot-ind.neg { background: var(--series-2); }
 .delta { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 500; min-width: 58px; justify-content: flex-end; }
 .delta .icon { width: 13px; height: 13px; }
-
-/* ---------- INICIO: rejilla principal ---------- */
-.dash-grid { display: grid; gap: var(--space-4); margin-top: var(--space-4); }
-.dash-col { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
-@media (min-width: 1100px) { .dash-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); } }
 
 .donut-layout { display: grid; gap: var(--space-5); align-items: center; }
 @media (min-width: 560px) { .donut-layout { grid-template-columns: 180px minmax(0, 1fr); } }
@@ -177,7 +190,6 @@
 .bar-wrap { position: relative; height: 220px; }
 
 .list-label { font-size: 12.5px; font-weight: 500; color: var(--text-muted); margin: var(--space-2) 0 var(--space-1); }
-.list-label ~ .list-label { margin-top: var(--space-4); }
 
 /* Cuentas compactas (Inicio) */
 .acc-list { display: flex; flex-direction: column; }

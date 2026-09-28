@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiapp-cache-v6'; // v6: íconos rellenos y nuevo logo
+const CACHE_NAME = 'financiapp-cache-v7'; // v7: nuevo orden de Inicio
 
 const urlsToCache = [
     './',
@@ -18,6 +18,7 @@ const urlsToCache = [
     './js/data/metas.js',
     './js/data/recurrentes.js',
     './js/data/mantenimiento.js',
+    './js/data/notificaciones.js',
     './js/render/resumen.js',
     './js/render/reportes.js',
     './js/render/presupuestos.js',

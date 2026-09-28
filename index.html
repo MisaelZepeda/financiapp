@@ -240,7 +240,7 @@
                 </div>
 
                 <div id="notifPanel" class="dropdown-panel">
-                    <div class="notif-head">Notificaciones</div>
+                    <div class="notif-head"><span>Notificaciones</span><button id="notifClearAll" class="link" data-action="descartarTodasNotif" style="display:none;">Borrar todas</button></div>
                     <div id="notifList"></div>
                 </div>
             </header>
@@ -248,18 +248,37 @@
             <main class="app-content">
                 <!-- ============ INICIO ============ -->
                 <section id="tab-resumen" class="tab-content active">
-                    <div class="overview">
-                        <div class="card hero-panel">
+                    <!-- 1. Saldos generales -->
+                    <div class="card hero-panel">
+                        <div class="hero-main">
                             <p class="eyebrow">Patrimonio neto</p>
                             <p id="heroTotal" class="money-blur hero-total">$0.00</p>
                             <p id="heroMessage" class="hero-message">Cargando tu panorama financiero…</p>
-                            <div class="hero-stats-row">
-                                <div class="hero-stat"><small>Activos</small><b id="heroTengo" class="money-blur tabular-nums">$0.00</b></div>
-                                <div class="hero-stat"><small>Deudas</small><b id="heroDebo" class="money-blur tabular-nums">$0.00</b></div>
-                                <div class="hero-stat"><small>Crédito libre</small><b id="heroCapacidad" class="money-blur tabular-nums">$0.00</b></div>
+                        </div>
+                        <div class="hero-stats-row">
+                            <div class="hero-stat"><small>Activos</small><b id="heroTengo" class="money-blur tabular-nums">$0.00</b></div>
+                            <div class="hero-stat"><small>Deudas</small><b id="heroDebo" class="money-blur tabular-nums">$0.00</b></div>
+                            <div class="hero-stat"><small>Crédito libre</small><b id="heroCapacidad" class="money-blur tabular-nums">$0.00</b></div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Saldos por cuenta: débito y luego crédito -->
+                    <div class="card">
+                        <div class="card-head"><h2 class="card-title">Cuentas</h2><span class="link" data-tab="cuentas">Administrar<svg class="icon"><use href="#i-chevron-right"></use></svg></span></div>
+                        <div class="acc-columns">
+                            <div>
+                                <p class="list-label">Débito y efectivo</p>
+                                <div id="railDebitos" class="acc-list"></div>
+                            </div>
+                            <div>
+                                <p class="list-label">Crédito</p>
+                                <div id="railCreditos" class="acc-list"></div>
                             </div>
                         </div>
+                    </div>
 
+                    <!-- 3. Ingresos y gastos contra otros meses -->
+                    <div class="dash-row dash-row-compare">
                         <div class="card month-panel">
                             <div class="card-head"><h2 class="card-title">Este mes</h2><span id="mesActualLabel" class="card-meta"></span></div>
                             <div class="month-row">
@@ -274,48 +293,36 @@
                                 <span class="month-label">Balance</span>
                                 <span class="month-values"><b id="homeBalance" class="money-blur tabular-nums">$0.00</b></span>
                             </div>
-                            <p class="card-foot">Comparado con el mes anterior.</p>
+                            <p class="card-foot">Porcentajes comparados con el mes anterior.</p>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-head"><h2 class="card-title">Ingresos vs. gastos</h2><span class="card-meta">Últimos 6 meses</span></div>
+                            <div class="chart-legend">
+                                <span><i style="background:var(--series-1);"></i>Ingresos</span>
+                                <span><i style="background:var(--series-2);"></i>Gastos</span>
+                            </div>
+                            <div class="bar-wrap"><canvas id="chartAnual" aria-label="Ingresos y gastos de los últimos 6 meses"></canvas></div>
                         </div>
                     </div>
 
-                    <div class="dash-grid">
-                        <div class="dash-col">
-                            <div class="card">
-                                <div class="card-head"><h2 class="card-title">Gastos por categoría</h2><span class="card-meta">Mes actual</span></div>
-                                <div class="donut-layout">
-                                    <div class="donut-wrap"><canvas id="chartGastos" aria-label="Gráfica de gastos por categoría"></canvas></div>
-                                    <ul id="leyendaGastos" class="legend-list"></ul>
-                                </div>
-                            </div>
-
-                            <div class="card">
-                                <div class="card-head"><h2 class="card-title">Ingresos vs. gastos</h2><span class="card-meta">Últimos 6 meses</span></div>
-                                <div class="chart-legend">
-                                    <span><i style="background:var(--series-1);"></i>Ingresos</span>
-                                    <span><i style="background:var(--series-2);"></i>Gastos</span>
-                                </div>
-                                <div class="bar-wrap"><canvas id="chartAnual" aria-label="Ingresos y gastos de los últimos 6 meses"></canvas></div>
-                            </div>
+                    <!-- 4. Gastos por categoría -->
+                    <div class="card">
+                        <div class="card-head"><h2 class="card-title">Gastos por categoría</h2><span class="card-meta">Mes actual</span></div>
+                        <div class="donut-layout">
+                            <div class="donut-wrap"><canvas id="chartGastos" aria-label="Gráfica de gastos por categoría"></canvas></div>
+                            <ul id="leyendaGastos" class="legend-list"></ul>
                         </div>
+                    </div>
 
-                        <div class="dash-col">
-                            <div class="card">
-                                <div class="card-head"><h2 class="card-title">Cuentas</h2><span class="link" data-tab="cuentas">Administrar<svg class="icon"><use href="#i-chevron-right"></use></svg></span></div>
-                                <p class="list-label">Débito y efectivo</p>
-                                <div id="railDebitos" class="acc-list"></div>
-                                <p class="list-label">Crédito</p>
-                                <div id="railCreditos" class="acc-list"></div>
-                            </div>
-
-                            <div class="card">
-                                <div class="card-head"><h2 class="card-title">Pago para no generar intereses</h2></div>
-                                <p class="card-desc">Calculado desde la última fecha de corte, incluyendo compras a MSI.</p>
-                                <div id="listaPagosTDC" class="simple-list"></div>
-                                <div class="total-row">
-                                    <span>Total estimado del mes</span>
-                                    <b id="totalEstimadoTDC" class="money-blur tabular-nums">$0.00</b>
-                                </div>
-                            </div>
+                    <!-- 5. Pagos de tarjetas de crédito -->
+                    <div class="card">
+                        <div class="card-head"><h2 class="card-title">Pago para no generar intereses</h2></div>
+                        <p class="card-desc">Calculado desde la última fecha de corte, incluyendo compras a MSI y descontando cashback.</p>
+                        <div id="listaPagosTDC" class="simple-list"></div>
+                        <div class="total-row">
+                            <span>Total estimado del mes</span>
+                            <b id="totalEstimadoTDC" class="money-blur tabular-nums">$0.00</b>
                         </div>
                     </div>
                 </section>
