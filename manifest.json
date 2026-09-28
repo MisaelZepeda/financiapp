@@ -3,11 +3,11 @@
   "short_name": "FinanciApp",
   "id": "/?source=pwa",
   "orientation": "portrait",
-  "description": "Controla tus cuentas, gastos, presupuestos, metas de ahorro y pagos recurrentes en un solo lugar, de forma privada y segura.",
+  "description": "Cuentas, tarjetas, presupuestos, metas, recurrentes y análisis de tus finanzas personales.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#fafaf9",
-  "theme_color": "#0f766e",
+  "background_color": "#0e0f12",
+  "theme_color": "#0e0f12",
   "icons": [
     {
       "src": "icon-192x192.png",

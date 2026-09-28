@@ -6,16 +6,15 @@ App web de finanzas personales: cuentas, tarjetas de crédito, presupuestos, met
 
 ## Funciones
 
-- **Inicio:** patrimonio neto, saldos por cuenta (débito y crédito), ingresos y gastos del mes contra el anterior, histórico de 6 meses, gastos por categoría y pago de tarjetas para no generar intereses.
-- **Movimientos:** gastos, ingresos, pagos de tarjeta y traspasos, agrupados por día, con búsqueda y edición. Exporta estado de cuenta en PDF y movimientos en CSV.
-- **Rendimientos y cashback:** el rendimiento suma al saldo de una cuenta de débito; el cashback resta de la deuda de una tarjeta de crédito.
-- **Compras a meses sin intereses (MSI)** en tarjetas de crédito.
-- **Presupuestos** por categoría con avance del mes.
-- **Metas de ahorro** con abonos y retiros.
-- **Recurrentes:** suscripciones, renta o nómina que se generan cuando vencen.
-- **Notificaciones** de pagos de tarjeta, presupuestos al límite, recurrentes pendientes y metas casi listas; se pueden borrar.
-- Modo claro y oscuro, modo privacidad (oculta montos), color de acento, categorías propias, respaldo y restauración en `.json`.
-- **Modo demo** para explorar la app sin crear cuenta.
+- **Inicio:** patrimonio neto con su tendencia real, saldos por cuenta (débito y luego crédito), el mes contra el anterior, próximos pagos (tarjetas y recurrentes) y gastos por categoría.
+- **Registro rápido:** el monto primero (teclado propio en el celular) y categoría, cuenta y fecha en fichas de un toque; sugiere descripciones anteriores y la cuenta más usada. Deshacer con un toque.
+- **Movimientos:** agrupados por día, con búsqueda y filtros por tipo, cuenta, categoría y mes.
+- **Detalle de cuenta:** saldo, uso del crédito, estado de cuenta (corte, fecha límite, pago sin intereses, abonado y por facturar) y acciones rápidas: pagar, cashback, rendimiento, traspasar.
+- **Análisis:** patrimonio mes a mes, ingresos contra gastos, cada categoría contra su promedio de 3 meses, gastos más grandes y más frecuentes, tasa de ahorro, y exportación a PDF (con saldos al cierre del mes) y CSV.
+- **Planear:** presupuestos por categoría (con cuánto puedes gastar al día), metas de ahorro con historial y recurrentes que se registran con un toque.
+- **Avisos** de tarjetas por vencer, presupuestos al límite, recurrentes pendientes y metas casi listas; se pueden borrar.
+- Tema oscuro (predeterminado) o claro, cinco colores de acento, modo privacidad, respaldo y restauración (acepta respaldos de la versión anterior).
+- **Modo demo** para explorar sin cuenta.
 
 ## Tecnología
 
@@ -36,6 +35,12 @@ python -m http.server 5500
 
 Luego abre http://localhost:5500. En `localhost` el service worker no se registra, así que los cambios se ven al recargar.
 
+La lógica de negocio (`js/domain/`) tiene pruebas automáticas con el ejecutor de Node, sin dependencias:
+
+```bash
+npm test
+```
+
 ## Publicar
 
 GitHub Pages publica automáticamente la rama `master` desde la raíz del repositorio. Para cada versión:
@@ -47,37 +52,32 @@ GitHub Pages publica automáticamente la rama `master` desde la raíz del reposi
 ## Estructura
 
 ```
-index.html          Toda la interfaz y el sprite de íconos SVG
-manifest.json       Datos de instalación como app (PWA)
-sw.js               Service worker (caché sin conexión)
-logo.svg            Logo; icon-192x192.png e icon-512x512.png para instalar
-css/
-  tokens.css        Colores, tipografía y espaciado (tema claro y oscuro)
-  base.css          Reset, formularios, botones y piezas genéricas
-  components.css    Navegación, tarjetas, listas, modales y pantallas
-js/
-  main.js           Arranque, autenticación y manejo de acciones (data-action)
-  state.js          Estado en memoria y catálogos (categorías, íconos)
-  firebase-init.js  Configuración de Firebase
-  data/             Escritura en Firebase (cuentas, transacciones, metas…)
-  render/           Dibujo de cada pantalla a partir del estado
-  ui/               Navegación, modales, formularios, gráficas y tarjetas
-  utils/            Formato, íconos, datos demo y exportación PDF/CSV
+index.html            Esqueleto de la app y sprite de íconos SVG
+manifest.json, sw.js  Instalación como app (PWA) y caché sin conexión
+css/                  tokens (tema y acentos), base, componentes y vistas
+js/app.js             Arranque: sesión, migración, datos, rutas y acciones globales
+js/core/              Estado (store), acceso a datos (db), escrituras (actions), rutas y eventos
+js/domain/            Lógica pura sin DOM: saldos, tarjetas, recurrentes, análisis, avisos, migración
+js/views/             Una vista por pantalla (inicio, movimientos, cuenta, análisis, planear, ajustes…)
+js/components/        Registro rápido, formularios, hojas, toasts, gráficas y piezas de lista
+js/lib/               Formato, íconos, apariencia, exportación PDF/CSV, datos demo
+tests/                Pruebas de js/domain (npm test)
 ```
 
 ## Datos en Firebase
 
-Cada usuario guarda sus datos en `Usuarios/{uid}`:
+Cada usuario guarda sus datos en `Usuarios/{uid}/v4`:
 
 | Nodo | Contenido |
 |---|---|
-| `perfil` | Nombre, foto y color de acento |
-| `cuentas` | Cuentas de débito, crédito y efectivo con su saldo |
-| `transacciones` | Gastos, ingresos, pagos de tarjeta y traspasos |
-| `presupuestos` | Límite mensual por categoría |
-| `categoriasCustom` | Categorías agregadas por el usuario |
-| `metas` | Metas de ahorro |
-| `recurrentes` | Pagos e ingresos recurrentes |
-| `notifDescartadas` | Notificaciones borradas (se sincronizan entre dispositivos) |
+| `perfil`, `ajustes` | Nombre, foto, tema y acento |
+| `cuentas` | Débito, crédito y efectivo con `saldoInicial` y `fechaInicial` |
+| `transacciones` | `tipo` gasto/ingreso/transferencia, `subtipo` (pago_tdc, traspaso, rendimiento, cashback), monto, fecha, cuentas, categoría y MSI |
+| `categorias` | Nombre, ícono, orden y presupuesto mensual |
+| `metas` | Metas de ahorro con historial de abonos y retiros |
+| `recurrentes` | Pagos e ingresos recurrentes con su `proximaFecha` |
+| `notifDescartadas` | Avisos borrados (se sincronizan entre dispositivos) |
 
-En las tarjetas de crédito, `saldo` es la deuda: un gasto la aumenta y un pago o cashback la reduce.
+**El saldo no se guarda: se calcula** a partir de `saldoInicial` y los movimientos de la cuenta. En tarjetas de crédito el saldo es la deuda: un gasto la aumenta y un pago o cashback la reduce.
+
+La versión anterior guardaba los datos directo en `Usuarios/{uid}`. La primera vez que un usuario entra a v4, esos datos se copian y convierten a `v4/` (`js/domain/migracion.js`) sin modificar los originales; antes de guardar se comprueba que el saldo de cada cuenta coincida al centavo.
