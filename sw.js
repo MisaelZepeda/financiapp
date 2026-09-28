@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiapp-cache-v7'; // v7: nuevo orden de Inicio
+const CACHE_NAME = 'financiapp-cache-v8'; // v8: limpieza del repositorio
 
 const urlsToCache = [
     './',

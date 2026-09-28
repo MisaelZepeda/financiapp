@@ -64,13 +64,6 @@ function destroyIfExists(canvas) {
     if (existing) existing.destroy();
 }
 
-export function isDarkTheme() {
-    const attr = document.documentElement.getAttribute('data-theme');
-    if (attr === 'dark') return true;
-    if (attr === 'light') return false;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
-
 // `categorias` es una lista [nombre, monto] ya ordenada y con a lo más
 // MAX_SERIES entradas (el resto agrupado en "Otros").
 export function renderDonutGastos(canvasId, categorias, totalMes) {

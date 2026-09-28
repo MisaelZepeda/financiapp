@@ -121,7 +121,6 @@
 .tab-content { display: none; }
 .tab-content.active { display: block; animation: fadeIn var(--duration-base) var(--ease-out); }
 
-.stack { display: flex; flex-direction: column; gap: var(--space-4); }
 .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
 .cards-grid-2 { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
 
@@ -407,10 +406,6 @@
 .segmented button:hover { color: var(--text); }
 .segmented button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-1), 0 0 0 1px var(--line); }
 .segmented-block { display: flex; width: 100%; margin-bottom: var(--space-5); }
-
-/* ---------- SKELETONS ---------- */
-.skeleton { background: linear-gradient(90deg, var(--surface-alt) 25%, var(--line) 37%, var(--surface-alt) 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; border-radius: var(--radius-md); }
-@keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 
 /* ---------- AUTH ---------- */
 /* main.js muestra esta pantalla con style.display = 'flex' */

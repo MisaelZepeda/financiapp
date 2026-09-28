@@ -14,8 +14,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 export const auth = firebase.auth();
-export const db = firebase.database();
-export const firebaseApp = firebase;
+const db = firebase.database();
 
 export function userRef(uid, path = '') {
     return db.ref(`Usuarios/${uid}${path ? '/' + path : ''}`);

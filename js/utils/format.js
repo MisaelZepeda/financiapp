@@ -6,14 +6,6 @@ export function moneyRounded(n) {
     return `$${Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
-export function todayISO() {
-    return new Date().toISOString().split('T')[0];
-}
-
-export function monthPrefix(date = new Date()) {
-    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-}
-
 export function formatFecha(iso) {
     if (!iso) return '';
     const d = new Date(iso + 'T12:00:00');

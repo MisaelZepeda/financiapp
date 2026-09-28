@@ -1,9 +1,14 @@
-node_modules/
-*.rar
-*.zip
+# Sistema operativo
 .DS_Store
 Thumbs.db
 desktop.ini
-*.log
+
+# Editores y herramientas locales
 .vscode/
-.claude/*.lock
+.claude/
+
+# Otros
+node_modules/
+*.log
+*.zip
+*.rar

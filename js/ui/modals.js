@@ -64,7 +64,3 @@ export function mostrarPromptCard(titulo, mensaje, callback) {
     overlay.style.display = 'flex';
     setTimeout(() => input.focus(), 100);
 }
-
-export function cerrarTodosLosModales() {
-    ['cmOverlay', 'cpOverlay'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
-}

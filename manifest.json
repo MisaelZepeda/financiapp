@@ -20,17 +20,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshot1.png",
-      "sizes": "1080x2412",
-      "type": "image/png"
-    },
-    {
-      "src": "screenshot2.png",
-      "sizes": "1080x2412",
-      "type": "image/png"
-    }
   ]
 }
