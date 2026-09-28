@@ -9,7 +9,8 @@
         (function () {
             try {
                 var ap = JSON.parse(localStorage.getItem('financiapp_apariencia')) || {};
-                document.documentElement.setAttribute('data-theme', ap.tema === 'claro' ? 'light' : 'dark');
+                var claro = ap.tema === 'claro' || (ap.tema === 'auto' && !matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.setAttribute('data-theme', claro ? 'light' : 'dark');
                 if (ap.acento && ap.acento !== 'lima') document.documentElement.setAttribute('data-accent', ap.acento);
             } catch (e) {}
         })();

@@ -9,16 +9,22 @@ import { avatarHTML } from '../components/piezas.js';
 import { toast, confirmar, abrirHoja, cerrarHoja } from '../components/capas.js';
 import { exportarRespaldo } from '../lib/exportar.js';
 import { migrarV1 } from '../domain/migracion.js';
-import { aplicarApariencia } from '../lib/apariencia.js';
+import { aplicarApariencia, temaElegido } from '../lib/apariencia.js';
 
 export const titulo = () => ({ titulo: 'Ajustes' });
+
+// Selector Automático / Claro / Oscuro (también se usa en el menú).
+export function selectorTema(tema) {
+    return `<div class="seg seg-tema">${[['auto', 'sparkle', 'Automático'], ['claro', 'sun', 'Claro'], ['oscuro', 'moon', 'Oscuro']]
+        .map(([v, i, t]) => `<button class="${tema === v ? 'activo' : ''}" data-action="ajTema" data-v="${v}">${icon(i)} ${t}</button>`).join('')}</div>`;
+}
 
 const ACENTOS = [['lima', '#c6f432', 'Lima'], ['menta', '#5eead4', 'Menta'], ['cielo', '#7cc4ff', 'Cielo'], ['violeta', '#b69cff', 'Violeta'], ['coral', '#ff9b7a', 'Coral']];
 
 export function render() {
     const p = sel.perfil();
     const aj = sel.ajustes();
-    const tema = aj.tema || 'oscuro';
+    const tema = temaElegido();
     const acento = aj.acento || 'lima';
     return `<div class="ajustes">
         <section class="card">
@@ -33,10 +39,8 @@ export function render() {
 
         <section class="card">
             <h2 class="card-title" style="margin-bottom:14px;">Apariencia</h2>
-            <div class="field"><span class="label">Tema</span><div class="seg" style="max-width:280px;">
-                <button class="${tema === 'oscuro' ? 'activo' : ''}" data-action="ajTema" data-v="oscuro">${icon('moon')} Oscuro</button>
-                <button class="${tema === 'claro' ? 'activo' : ''}" data-action="ajTema" data-v="claro">${icon('sun')} Claro</button>
-            </div></div>
+            <div class="field"><span class="label">Tema</span>${selectorTema(tema)}
+                <span class="hint">Automático sigue la configuración de tu teléfono o computadora.</span></div>
             <div class="field" style="margin:0;"><span class="label">Color de acento</span><div class="acentos">
                 ${ACENTOS.map(([id, color, n]) => `<button class="acento ${acento === id ? 'activo' : ''}" style="--c:${color}" data-action="ajAcento" data-v="${id}" title="${n}" aria-label="${n}"></button>`).join('')}
             </div></div>

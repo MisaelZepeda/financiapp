@@ -12,13 +12,13 @@ import { abrirFormCuenta, abrirFormMeta, abrirMovimientoMeta, abrirFormRecurrent
 import { avatarHTML, vacioHTML } from './components/piezas.js';
 import { icon } from './lib/icons.js';
 import { escapeHtml } from './lib/format.js';
-import { aplicarApariencia, leerApariencia } from './lib/apariencia.js';
+import { aplicarApariencia, leerApariencia, temaEfectivo, temaElegido } from './lib/apariencia.js';
 import { construirDemo } from './lib/demo-data.js';
 import { compartirTarjeta } from './lib/compartir.js';
 import { migrarV1 } from './domain/migracion.js';
 import { pendientes } from './domain/recurrentes.js';
 import { mostrarAcceso, ocultarAcceso, mostrarMigracion, nombreRegistro } from './views/acceso.js';
-import { confirmarMigracion } from './views/ajustes.js';
+import { confirmarMigracion, selectorTema } from './views/ajustes.js';
 
 import * as inicio from './views/inicio.js';
 import * as movimientos from './views/movimientos.js';
@@ -63,13 +63,15 @@ function pintarNav() {
 function pintarTop(vista, params) {
     const t = vista.titulo?.(params) || {};
     const avisos = sel.avisos().length;
+    const oscuro = temaEfectivo() === 'oscuro';
     document.getElementById('top').innerHTML = `
         ${t.atras ? `<a class="icon-btn top-back" href="${t.atras}" aria-label="Volver">${icon('chevron-right', 'rot180')}</a>` : ''}
         <div class="top-title"><h1>${escapeHtml(t.titulo || '')}</h1>${t.subtitulo ? `<p>${escapeHtml(t.subtitulo)}</p>` : ''}</div>
         ${store.demo ? '<span class="badge badge-warn">Demo</span>' : ''}
         <button class="icon-btn" data-action="togglePrivacidad" aria-label="${store.ui.privacidad ? 'Mostrar montos' : 'Ocultar montos'}" title="${store.ui.privacidad ? 'Mostrar montos' : 'Ocultar montos'}">${icon(store.ui.privacidad ? 'eye-off' : 'eye')}</button>
+        <button class="icon-btn" data-action="alternarTema" aria-label="${oscuro ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}" title="${oscuro ? 'Tema claro' : 'Tema oscuro'}">${icon(oscuro ? 'sun' : 'moon')}</button>
         <button class="icon-btn" data-action="abrirAvisos" aria-label="Avisos">${icon('bell')}${avisos ? '<span class="dot"></span>' : ''}</button>
-        <a class="avatar-btn" href="#/ajustes" aria-label="Ajustes">${avatarHTML(sel.perfil())}</a>`;
+        <button class="avatar-btn" data-action="abrirMenu" aria-label="Menú">${avatarHTML(sel.perfil())}</button>`;
 }
 
 function pintarVista(nuevaVista = false) {
@@ -88,7 +90,7 @@ function pintarVista(nuevaVista = false) {
 
 alNavegar((r, cambio) => { if (cambio) r.vista.alEntrar?.(r.params); pintarVista(cambio); });
 suscribir(() => pintarVista(false));
-document.addEventListener('apariencia', () => pintarVista(false));
+document.addEventListener('apariencia', () => { pintarVista(false); repintarMenu(); });
 
 // ---------- Datos ----------
 const CACHE = (uid) => `financiapp_v4_${uid}`;
@@ -203,6 +205,30 @@ on('abrirAvisos', () => abrirHoja({ titulo: 'Avisos', html: `<div id="avisos-bod
 on('descartarAviso', async (el) => { await A.descartarAvisos([el.dataset.key]); repintarAvisos(); });
 on('descartarTodos', async () => { await A.descartarAvisos(sel.avisos().map(a => a.key)); repintarAvisos(); });
 on('irAviso', (el) => { cerrarHoja(); if (el.dataset.ruta) navegar(el.dataset.ruta); });
+
+// Menú de la foto de perfil: accesos que no caben en la barra inferior.
+function menuHTML() {
+    const p = sel.perfil();
+    const n = sel.cuentas().length;
+    const fila = (ruta, ico, titulo, sub = '') => `<button class="fila fila-link" data-action="irMenu" data-ruta="${ruta}" style="width:100%; text-align:left;"><div class="fila-ico">${icon(ico)}</div>
+        <div class="fila-body"><div class="fila-titulo">${titulo}</div>${sub ? `<div class="fila-sub">${sub}</div>` : ''}</div>${icon('chevron-right', 'chev')}</button>`;
+    return `<div class="menu-perfil">${avatarHTML(p)}<div><b>${escapeHtml(p.nombre || 'Usuario')}</b><span class="muted">${escapeHtml(store.demo ? 'Modo demo' : store.usuario?.email || '')}</span></div></div>
+        <div class="lista">
+            ${fila('#/cuentas', 'landmark', 'Cuentas', `${n} cuenta${n === 1 ? '' : 's'} · agregar o administrar`)}
+            ${fila('#/ajustes', 'tag', 'Categorías y presupuestos')}
+            ${fila('#/ajustes', 'settings', 'Ajustes', 'Perfil, apariencia y respaldo')}
+        </div>
+        <div class="field" style="margin:18px 0 0;"><span class="label">Tema</span>${selectorTema(temaElegido())}</div>
+        <button class="btn btn-ghost btn-block" data-action="cerrarSesion" style="margin-top:18px;">${icon('log-out')}${store.demo ? 'Salir de la demo' : 'Cerrar sesión'}</button>`;
+}
+function repintarMenu() { const b = document.getElementById('menu-body'); if (b) b.innerHTML = menuHTML(); }
+on('irMenu', (el) => { cerrarHoja(); navegar(el.dataset.ruta); });
+on('abrirMenu', () => abrirHoja({ titulo: 'Menú', html: `<div id="menu-body">${menuHTML()}</div>` }));
+on('alternarTema', () => {
+    const tema = temaEfectivo() === 'oscuro' ? 'claro' : 'oscuro';
+    aplicarApariencia({ tema });
+    A.guardarAjustes({ tema });
+});
 
 on('entrarDemo', entrarDemo);
 on('cerrarSesion', async () => {

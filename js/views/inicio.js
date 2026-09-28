@@ -45,8 +45,9 @@ function cuentasHTML() {
     const cre = cuentas.filter(c => c.tipo === 'credito');
     const bloque = (titulo, lista) => lista.length ? `<div><p class="lista-label">${titulo}</p><div class="lista">${lista.map(c => cuentaFilaHTML(c)).join('')}</div></div>` : '';
     return `<section class="card">
-        <div class="card-head"><h2 class="card-title">Cuentas</h2><a class="link" href="#/cuentas">Ver todas${icon('chevron-right')}</a></div>
+        <div class="card-head"><h2 class="card-title">Cuentas</h2><a class="link" href="#/cuentas">Administrar${icon('chevron-right')}</a></div>
         <div class="cuentas-cols">${bloque('Débito y efectivo', deb)}${bloque('Crédito', cre)}</div>
+        <button class="btn btn-soft btn-sm" data-action="nuevaCuenta" style="margin-top:12px;">${icon('plus')}Agregar cuenta</button>
     </section>`;
 }
 

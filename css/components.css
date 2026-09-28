@@ -69,7 +69,7 @@
 .card-meta { font-size: 12.5px; color: var(--muted); }
 .card-desc { font-size: 13px; color: var(--muted); margin: -6px 0 14px; }
 .stack { display: flex; flex-direction: column; gap: 14px; }
-.grid-2 { display: grid; gap: 14px; }
+.grid-2 { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 900px) { .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .seccion { margin-top: 26px; }
 .seccion-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 4px 10px; }
@@ -191,3 +191,12 @@
 .leyenda span { display: inline-flex; align-items: center; gap: 6px; }
 .leyenda i { width: 10px; height: 10px; border-radius: 3px; }
 .grafica { position: relative; }
+
+/* Teléfonos angostos: encabezado más compacto para que quepa el título. */
+@media (max-width: 400px) {
+    .top { gap: 2px; padding-left: 12px; padding-right: 10px; }
+    .top .icon-btn { width: 34px; height: 34px; }
+    .top .icon-btn .icon { width: 18px; height: 18px; }
+    .top .badge { display: none; }
+    .top-title h1 { font-size: 20px; }
+}

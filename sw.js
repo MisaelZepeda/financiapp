@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiapp-cache-v9'; // v9: FinanciApp v4 (rediseño completo)
+const CACHE_NAME = 'financiapp-cache-v10'; // v10: tema automático, menú de perfil y desbordes en móvil
 
 const urlsToCache = [
     './',
