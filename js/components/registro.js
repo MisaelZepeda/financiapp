@@ -1,4 +1,4 @@
-// Registro rápido de movimientos: monto primero (teclado propio en celular),
+// Registro rápido de movimientos: monto primero (teclado-calculadora en celular),
 // y todo lo demás en fichas de un toque. También sirve para editar.
 
 import { on } from '../core/eventos.js';
@@ -8,6 +8,7 @@ import { abrirHoja, cerrarHoja, hojaAbierta, toast, confirmar } from './capas.js
 import { icon } from '../lib/icons.js';
 import { escapeHtml, money, fechaCorta } from '../lib/format.js';
 import { hoyISO, sumarDias } from '../domain/fechas.js';
+import { teclear, evaluar, tieneOperacion, expresionLegible, normalizarTexto } from '../domain/calculadora.js';
 
 let r = null; // estado del formulario
 
@@ -86,29 +87,33 @@ function sugerenciasDesc() {
     return out;
 }
 
-// ---------- Monto ----------
-function montoNum() { return parseFloat(r.montoTxt.replace(/,/g, '')) || 0; }
+// ---------- Monto (calculadora) ----------
+// r.montoTxt guarda la expresión tecleada, p. ej. "120+35×2".
+function montoNum() { return evaluar(r.montoTxt) || 0; }
 
 function montoHTML() {
     if (!r.montoTxt) return '<span class="num vacio-monto">$0</span>';
+    if (tieneOperacion(r.montoTxt)) {
+        const v = evaluar(r.montoTxt);
+        return `<div class="calc-expr num">${escapeHtml(expresionLegible(r.montoTxt))}</div><span class="num ${v < 0 ? 'neg' : ''}">= ${money(v || 0)}</span>`;
+    }
     const [ent, dec] = r.montoTxt.split('.');
     const entero = Number(ent || 0).toLocaleString('es-MX');
     return `<span class="num">$${entero}${dec !== undefined ? `<span class="cent">.${dec}</span>` : ''}</span>`;
 }
 
+function refrescarMonto() {
+    const hoja = hojaAbierta();
+    const d = hoja?.querySelector('.monto-display'); if (d) d.innerHTML = montoHTML();
+    const p = hoja?.querySelector('.calc-preview');
+    if (p) p.textContent = tieneOperacion(r.montoTxt) ? `= ${money(evaluar(r.montoTxt) || 0)}` : '';
+}
+
 function tecla(k) {
-    let t = r.montoTxt;
-    if (k === 'del') t = t.slice(0, -1);
-    else if (k === '.') { if (!t.includes('.')) t = (t || '0') + '.'; }
-    else {
-        const [ent, dec] = t.split('.');
-        if (dec !== undefined && dec.length >= 2) return;
-        if (dec === undefined && (ent || '').replace(/^0+/, '').length >= 9) return;
-        t = (t === '0' ? '' : t) + k;
-    }
-    r.montoTxt = t;
-    const d = hojaAbierta()?.querySelector('.monto-display');
-    if (d) d.innerHTML = montoHTML();
+    r.montoTxt = teclear(r.montoTxt, k);
+    const input = hojaAbierta()?.querySelector('#reg-monto');
+    if (input) input.value = r.montoTxt;
+    refrescarMonto();
 }
 
 // ---------- Render ----------
@@ -151,10 +156,12 @@ function cuerpoHTML() {
             ${['gasto', 'ingreso', 'transferencia'].map(t => `<button type="button" class="${r.tipo === t ? 'activo' : ''}" data-action="regTipo" data-t="${t}" ${r.id ? 'disabled' : ''}>${TITULOS[t]}</button>`).join('')}
         </div>
         <div class="monto-display">${montoHTML()}</div>
-        <input id="reg-monto" class="monto-input-desktop" inputmode="decimal" autocomplete="off" placeholder="$0.00" value="${escapeHtml(r.montoTxt)}" data-input="regMontoInput" aria-label="Monto">
+        <input id="reg-monto" class="monto-input-desktop" inputmode="decimal" autocomplete="off" placeholder="$0.00" value="${escapeHtml(r.montoTxt)}" data-input="regMontoInput" aria-label="Monto (acepta + − ×)">
+        <p class="calc-preview num">${tieneOperacion(r.montoTxt) ? `= ${money(evaluar(r.montoTxt) || 0)}` : ''}</p>
         <div class="teclado" style="margin-bottom:16px;">
-            ${['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0'].map(k => `<button type="button" data-action="regTecla" data-k="${k}">${k}</button>`).join('')}
-            <button type="button" data-action="regTecla" data-k="del" aria-label="Borrar">${icon('x')}</button>
+            ${['1', '2', '3', 'del', '4', '5', '6', '×', '7', '8', '9', '−', '.', '0', '=', '+'].map(k => k === 'del'
+                ? `<button type="button" class="tecla-op" data-action="regTecla" data-k="del" aria-label="Borrar último dígito">${icon('backspace')}</button>`
+                : `<button type="button" class="${['+', '−', '×', '='].includes(k) ? 'tecla-op' : ''}" data-action="regTecla" data-k="${k}" aria-label="${{ '+': 'Sumar', '−': 'Restar', '×': 'Multiplicar', '=': 'Resultado' }[k] || k}">${k}</button>`).join('')}
         </div>
         ${campos}
         <div class="field">
@@ -196,7 +203,7 @@ function pintar() {
 // ---------- Guardar ----------
 async function guardar(otro) {
     const monto = Math.round(montoNum() * 100) / 100;
-    if (!(monto > 0)) return toast('Escribe un monto', { tipo: 'error' });
+    if (!(monto > 0)) return toast(tieneOperacion(r.montoTxt) ? 'El resultado debe ser mayor que cero' : 'Escribe un monto', { tipo: 'error' });
     if (!r.cuentaId || !sel.cuenta(r.cuentaId)) return toast('Elige una cuenta', { tipo: 'error' });
     const desc = r.desc.trim();
     let tx;
@@ -266,11 +273,11 @@ on('regDesc', (el) => {
     if (cont) cont.innerHTML = sugsHTML(sugerenciasDesc());
 }, 'input');
 on('regMontoInput', (el) => {
-    const limpio = el.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
-    const [ent, dec] = limpio.split('.');
-    r.montoTxt = dec !== undefined ? `${ent}.${dec.slice(0, 2)}` : ent;
+    // En escritorio se teclea la expresión directo; se normaliza tecla por tecla
+    // con las mismas reglas del teclado en pantalla.
+    r.montoTxt = normalizarTexto(el.value).split('').reduce((e, c) => teclear(e, c), '');
     if (el.value !== r.montoTxt) el.value = r.montoTxt;
-    const d = hojaAbierta()?.querySelector('.monto-display'); if (d) d.innerHTML = montoHTML();
+    refrescarMonto();
 }, 'input');
 on('regGuardar', (el) => guardar(el.dataset.otro === '1'));
 on('regBorrar', async () => {

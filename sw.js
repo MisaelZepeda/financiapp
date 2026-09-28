@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiapp-cache-v10'; // v10: tema automático, menú de perfil y desbordes en móvil
+const CACHE_NAME = 'financiapp-cache-v11'; // v11: teclado calculadora
 
 const urlsToCache = [
     './',
@@ -23,6 +23,7 @@ const urlsToCache = [
     './js/core/router.js',
     './js/core/store.js',
     './js/domain/analisis.js',
+    './js/domain/calculadora.js',
     './js/domain/categorias.js',
     './js/domain/fechas.js',
     './js/domain/migracion.js',

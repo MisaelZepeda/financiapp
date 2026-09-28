@@ -188,3 +188,26 @@ test('migración v1 → v4: esquema de transacciones, categorías y recurrentes'
     // Nada con undefined (Firebase rechaza undefined).
     assert.ok(!JSON.stringify(v4, (k, v) => (v === undefined ? '__UNDEF__' : v)).includes('__UNDEF__'));
 });
+
+import { teclear, evaluar, expresionLegible, normalizarTexto, tieneOperacion } from '../js/domain/calculadora.js';
+
+const escribir = (teclas) => teclas.reduce((e, t) => teclear(e, t), '');
+
+test('calculadora: precedencia, decimales y edición', () => {
+    assert.equal(evaluar('120+35×2'), 190);
+    assert.equal(evaluar('500−120.50'), 379.5);
+    assert.equal(evaluar('3×2×1.5+1'), 10);
+    assert.equal(evaluar('100+'), 100);          // operador al final se ignora
+    assert.equal(evaluar(''), null);
+    assert.equal(evaluar('0.1+0.2'), 0.3);        // sin errores de coma flotante visibles
+    assert.equal(escribir(['+', '5', '+', '×', '2']), '5×2');   // no empieza con operador; cambia operador
+    assert.equal(escribir(['.', '5']), '0.5');
+    assert.equal(escribir(['1', '.', '2', '3', '4']), '1.23');   // máximo 2 decimales
+    assert.equal(escribir(['0', '5']), '5');
+    assert.equal(escribir(['9', '9', '×', '3', '=']), '297');
+    assert.equal(escribir(['1', '2', 'del']), '1');
+    assert.equal(expresionLegible('1500+35.5'), '1,500 + 35.5');
+    assert.equal(normalizarTexto('1,200*3-50'), '1200×3−50');
+    assert.equal(tieneOperacion('1200'), false);
+    assert.equal(tieneOperacion('1200+5'), true);
+});
