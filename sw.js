@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiapp-cache-v5'; // v5: rediseño FinanciApp (limpio y minimalista)
+const CACHE_NAME = 'financiapp-cache-v6'; // v6: íconos rellenos y nuevo logo
 
 const urlsToCache = [
     './',

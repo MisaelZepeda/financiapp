@@ -56,7 +56,7 @@
 .tab-link span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .tab-link.active { color: var(--primary); }
 .tab-add { width: 44px; height: 44px; margin: 0 var(--space-2); border-radius: var(--radius-full); background: var(--primary); color: var(--on-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.tab-add .icon { width: 22px; height: 22px; stroke-width: 2.2; }
+.tab-add .icon { width: 22px; height: 22px; }
 
 /* ---------- HEADER ---------- */
 .app-header {
@@ -375,7 +375,7 @@
 .modal-icon-wrap { width: 40px; height: 40px; border-radius: var(--radius-full); display: flex; justify-content: center; align-items: center; margin-bottom: var(--space-4); background: var(--success-soft); color: var(--success); }
 .modal-icon-wrap[data-tone="danger"] { background: var(--danger-soft); color: var(--danger); }
 .modal-icon-wrap[data-tone="warning"] { background: var(--warning-soft); color: var(--warning); }
-.modal-icon-wrap .icon { width: 20px; height: 20px; stroke-width: 2.2; }
+.modal-icon-wrap .icon { width: 20px; height: 20px; }
 .modal-card h3 { font-size: 17px; margin-bottom: 6px; }
 .modal-card p { color: var(--text-muted); font-size: 14px; margin-bottom: var(--space-5); }
 .modal-btns { display: flex; gap: var(--space-2); justify-content: flex-end; }

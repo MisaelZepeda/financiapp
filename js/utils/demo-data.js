@@ -41,7 +41,7 @@ export function buildDemoData() {
 
     const metas = [
         { id: 'm1', nombre: 'Fondo de emergencia', emoji: 'shield', montoObjetivo: 60000, montoActual: 32500, fechaLimite: '2026-12-31' },
-        { id: 'm2', nombre: 'Viaje a Japón', emoji: 'calendar', montoObjetivo: 45000, montoActual: 12800, fechaLimite: '2027-04-01' },
+        { id: 'm2', nombre: 'Viaje a Japón', emoji: 'plane', montoObjetivo: 45000, montoActual: 12800, fechaLimite: '2027-04-01' },
         { id: 'm3', nombre: 'Laptop nueva', emoji: 'box', montoObjetivo: 28000, montoActual: 27100, fechaLimite: '' },
     ];
 

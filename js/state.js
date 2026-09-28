@@ -21,10 +21,10 @@ export const categoriasBase = ['Comida', 'Servicios', 'Transporte', 'Vivienda', 
 // no emojis: así el ícono se ve idéntico en cualquier dispositivo.
 export const iconosCategoria = {
     'Comida': 'utensils', 'Servicios': 'zap', 'Transporte': 'car', 'Vivienda': 'home', 'Ocio': 'film',
-    'Otros': 'box', 'Mascotas': 'heart', 'Salud': 'heart', 'Ropa': 'tag', 'Suscripciones': 'repeat', 'Gimnasio': 'zap'
+    'Otros': 'box', 'Mascotas': 'paw', 'Salud': 'medical', 'Ropa': 'shirt', 'Suscripciones': 'repeat', 'Gimnasio': 'dumbbell'
 };
 
-export const iconosMeta = ['target', 'shield', 'home', 'car', 'coin', 'box', 'heart', 'calendar'];
+export const iconosMeta = ['target', 'shield', 'home', 'car', 'plane', 'gift', 'coin', 'box', 'heart', 'calendar'];
 
 export const frasesFinancieras = [
     "Ser bueno con el dinero no significa acumularlo, sino saber cuándo dejarlo ir.",
