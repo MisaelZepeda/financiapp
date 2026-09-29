@@ -9,7 +9,7 @@ import { avatarHTML } from '../components/piezas.js';
 import { toast, confirmar, abrirHoja, cerrarHoja } from '../components/capas.js';
 import { exportarRespaldo } from '../lib/exportar.js';
 import { migrarV1 } from '../domain/migracion.js';
-import { aplicarApariencia, temaElegido } from '../lib/apariencia.js';
+import { aplicarApariencia, temaElegido, elegirTema, hayTemaDeSesion, temaEfectivo } from '../lib/apariencia.js';
 
 export const titulo = () => ({ titulo: 'Ajustes' });
 
@@ -30,7 +30,7 @@ export function render() {
         <section class="card">
             <h2 class="card-title" style="margin-bottom:14px;">Perfil</h2>
             <form data-submit="guardarPerfil" class="perfil-form">
-                <label class="perfil-foto" title="Cambiar foto">${avatarHTML(p)}<span>${icon('edit')}</span><input type="file" accept="image/*" data-change="fotoPerfil" hidden></label>
+                <label class="perfil-foto" title="Cambiar foto">${avatarHTML(p)}<span class="perfil-editar">${icon('edit')}</span><input type="file" accept="image/*" data-change="fotoPerfil" hidden></label>
                 <div class="field" style="flex:1; margin:0;"><label for="aj-nombre">Nombre</label><input id="aj-nombre" name="nombre" value="${escapeHtml(p.nombre || '')}" required></div>
                 <button class="btn btn-soft" type="submit">Guardar</button>
             </form>
@@ -40,7 +40,7 @@ export function render() {
         <section class="card">
             <h2 class="card-title" style="margin-bottom:14px;">Apariencia</h2>
             <div class="field"><span class="label">Tema</span>${selectorTema(tema)}
-                <span class="hint">Automático sigue la configuración de tu teléfono o computadora.</span></div>
+                <span class="hint">Automático sigue la configuración de tu teléfono o computadora.${hayTemaDeSesion() ? ` Ahora ves el tema ${temaEfectivo()} solo en esta sesión (botón del encabezado).` : ''}</span></div>
             <div class="field" style="margin:0;"><span class="label">Color de acento</span><div class="acentos">
                 ${ACENTOS.map(([id, color, n]) => `<button class="acento ${acento === id ? 'activo' : ''}" style="--c:${color}" data-action="ajAcento" data-v="${id}" title="${n}" aria-label="${n}"></button>`).join('')}
             </div></div>
@@ -100,7 +100,7 @@ on('fotoPerfil', async (el) => {
     catch { toast('No se pudo leer la imagen', { tipo: 'error' }); }
 }, 'change');
 
-on('ajTema', async (el) => { aplicarApariencia({ tema: el.dataset.v }); await A.guardarAjustes({ tema: el.dataset.v }); });
+on('ajTema', async (el) => { elegirTema(el.dataset.v); await A.guardarAjustes({ tema: el.dataset.v }); });
 on('ajAcento', async (el) => { aplicarApariencia({ acento: el.dataset.v }); await A.guardarAjustes({ acento: el.dataset.v }); });
 
 on('ajRespaldo', () => { exportarRespaldo(store.datos); toast('Respaldo descargado'); });

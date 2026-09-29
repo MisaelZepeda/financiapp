@@ -12,7 +12,7 @@ import { abrirFormCuenta, abrirFormMeta, abrirMovimientoMeta, abrirFormRecurrent
 import { avatarHTML, vacioHTML } from './components/piezas.js';
 import { icon } from './lib/icons.js';
 import { escapeHtml } from './lib/format.js';
-import { aplicarApariencia, leerApariencia, temaEfectivo, temaElegido } from './lib/apariencia.js';
+import { aplicarApariencia, leerApariencia, temaEfectivo, temaElegido, alternarTemaSesion } from './lib/apariencia.js';
 import { construirDemo } from './lib/demo-data.js';
 import { compartirTarjeta } from './lib/compartir.js';
 import { migrarV1 } from './domain/migracion.js';
@@ -69,7 +69,7 @@ function pintarTop(vista, params) {
         <div class="top-title"><h1>${escapeHtml(t.titulo || '')}</h1>${t.subtitulo ? `<p>${escapeHtml(t.subtitulo)}</p>` : ''}</div>
         ${store.demo ? '<span class="badge badge-warn">Demo</span>' : ''}
         <button class="icon-btn" data-action="togglePrivacidad" aria-label="${store.ui.privacidad ? 'Mostrar montos' : 'Ocultar montos'}" title="${store.ui.privacidad ? 'Mostrar montos' : 'Ocultar montos'}">${icon(store.ui.privacidad ? 'eye-off' : 'eye')}</button>
-        <button class="icon-btn" data-action="alternarTema" aria-label="${oscuro ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}" title="${oscuro ? 'Tema claro' : 'Tema oscuro'}">${icon(oscuro ? 'sun' : 'moon')}</button>
+        <button class="icon-btn" data-action="alternarTema" aria-label="${oscuro ? 'Ver en tema claro durante esta sesión' : 'Ver en tema oscuro durante esta sesión'}" title="${oscuro ? 'Tema claro (solo esta sesión)' : 'Tema oscuro (solo esta sesión)'}">${icon(oscuro ? 'sun' : 'moon')}</button>
         <button class="icon-btn" data-action="abrirAvisos" aria-label="Avisos">${icon('bell')}${avisos ? '<span class="dot"></span>' : ''}</button>
         <button class="avatar-btn" data-action="abrirMenu" aria-label="Menú">${avatarHTML(sel.perfil())}</button>`;
 }
@@ -224,11 +224,8 @@ function menuHTML() {
 function repintarMenu() { const b = document.getElementById('menu-body'); if (b) b.innerHTML = menuHTML(); }
 on('irMenu', (el) => { cerrarHoja(); navegar(el.dataset.ruta); });
 on('abrirMenu', () => abrirHoja({ titulo: 'Menú', html: `<div id="menu-body">${menuHTML()}</div>` }));
-on('alternarTema', () => {
-    const tema = temaEfectivo() === 'oscuro' ? 'claro' : 'oscuro';
-    aplicarApariencia({ tema });
-    A.guardarAjustes({ tema });
-});
+// Solo por esta sesión: no cambia la preferencia guardada.
+on('alternarTema', () => alternarTemaSesion());
 
 on('entrarDemo', entrarDemo);
 on('cerrarSesion', async () => {

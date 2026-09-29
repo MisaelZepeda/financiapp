@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiapp-cache-v11'; // v11: teclado calculadora
+const CACHE_NAME = 'financiapp-cache-v12'; // v12: tema por sesión y foto de perfil
 
 const urlsToCache = [
     './',

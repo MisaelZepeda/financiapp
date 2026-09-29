@@ -145,10 +145,10 @@
 /* ---------- Ajustes ---------- */
 .ajustes { display: flex; flex-direction: column; gap: 14px; max-width: 720px; }
 .perfil-form { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
-.perfil-foto { position: relative; cursor: pointer; }
+.perfil-foto { position: relative; cursor: pointer; flex: 0 0 64px; width: 64px; height: 64px; }
 .perfil-foto .avatar { width: 64px; height: 64px; font-size: 24px; }
-.perfil-foto > span { position: absolute; right: -2px; bottom: -2px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; }
-.perfil-foto > span .icon { width: 12px; height: 12px; }
+.perfil-editar { position: absolute; right: -2px; bottom: -2px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; }
+.perfil-editar .icon { width: 12px; height: 12px; }
 .acentos { display: flex; gap: 12px; }
 .acento { width: 34px; height: 34px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
 .acento.activo { box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--c); }
