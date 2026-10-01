@@ -271,6 +271,46 @@ auth.onAuthStateChanged((user) => {
     else { document.getElementById('cargando').hidden = true; document.getElementById('app').hidden = true; mostrarAcceso(); }
 });
 
+// ---------- Actualizaciones de la app (service worker) ----------
+// Cuando se publica una versión nueva, su service worker se instala en
+// segundo plano y queda en espera; aquí se avisa y, al aceptar, se activa
+// y la app se recarga ya actualizada.
+function avisarActualizacion(sw) {
+    if (document.getElementById('aviso-actualizacion')) return;
+    const el = document.createElement('div');
+    el.id = 'aviso-actualizacion';
+    el.className = 'aviso-actualizacion';
+    el.setAttribute('role', 'status');
+    el.innerHTML = `${icon('download')}<span><b>Hay una nueva versión</b>Actualiza para ver las mejoras.</span><button class="btn btn-primary btn-sm">Actualizar</button>`;
+    el.querySelector('button').addEventListener('click', (e) => {
+        e.currentTarget.disabled = true;
+        e.currentTarget.textContent = 'Actualizando…';
+        sw.postMessage('SKIP_WAITING');
+    });
+    document.body.appendChild(el);
+}
+
 if ('serviceWorker' in navigator && !['localhost', '127.0.0.1'].includes(location.hostname)) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    let recargando = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (recargando) return;
+        recargando = true;
+        location.reload();
+    });
+    window.addEventListener('load', async () => {
+        try {
+            const reg = await navigator.serviceWorker.register('./sw.js');
+            // Ya había una versión esperando (p. ej. descargada en la visita anterior).
+            if (reg.waiting && navigator.serviceWorker.controller) avisarActualizacion(reg.waiting);
+            reg.addEventListener('updatefound', () => {
+                const nuevo = reg.installing;
+                nuevo?.addEventListener('statechange', () => {
+                    if (nuevo.state === 'installed' && navigator.serviceWorker.controller) avisarActualizacion(nuevo);
+                });
+            });
+            // Buscar versiones nuevas al volver a la app y cada 30 minutos.
+            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+            setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
+        } catch { /* sin service worker: la app funciona igual, sin modo sin conexión */ }
+    });
 }
