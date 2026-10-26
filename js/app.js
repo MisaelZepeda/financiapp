@@ -20,6 +20,7 @@ import { pendientes } from './domain/recurrentes.js';
 import { mostrarAcceso, ocultarAcceso, mostrarMigracion, nombreRegistro } from './views/acceso.js';
 import { confirmarMigracion, selectorTema } from './views/ajustes.js';
 import './components/salud.js';
+import './components/gestos.js';
 import { consejoAlAzar } from './domain/consejos.js';
 import { buscarPorNombre } from './domain/autocategoria.js';
 
@@ -198,7 +199,10 @@ function pagarTarjeta(tarjetaId) {
 }
 on('pagarTarjeta', (el) => pagarTarjeta(id(el)));
 // Acciones sugeridas por Tlaco en "Tu salud financiera".
-document.addEventListener('accionTlaco', (e) => { if (e.detail.action === 'pagarTarjeta') pagarTarjeta(e.detail.id); });
+document.addEventListener('accionTlaco', (e) => {
+    if (e.detail.action === 'pagarTarjeta') pagarTarjeta(e.detail.id);
+    else if (e.detail.action === 'nuevo') abrirRegistro();
+});
 on('marcarPagada', async (el) => { await A.marcarTarjetaPagada(id(el), true); toast('Tarjeta marcada como pagada'); });
 on('desmarcarPagada', async (el) => { await A.marcarTarjetaPagada(id(el), false); toast('Se quitó la marca de pagada'); });
 on('compartirCuenta', (el) => compartirTarjeta(id(el)));

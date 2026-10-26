@@ -9,6 +9,7 @@ import { escapeHtml, money } from '../lib/format.js';
 import { ICONOS_CATEGORIA } from '../domain/categorias.js';
 import { FRECUENCIAS } from '../domain/recurrentes.js';
 import { navegar } from '../core/router.js';
+import { confeti, monedaAlcancia } from './efectos.js';
 
 const v = (form, name) => form.elements[name]?.value.trim() ?? '';
 const n = (form, name) => parseFloat(v(form, name)) || 0;
@@ -132,8 +133,18 @@ export function abrirMovimientoMeta(id, retiro = false) {
 on('moverMeta', async (form) => {
     const monto = n(form, 'monto');
     if (!(monto > 0)) return;
+    const meta = sel.metas().find(m => m.id === form.dataset.id);
+    const abono = Number(form.dataset.signo) > 0;
+    const objetivo = Number(meta?.montoObjetivo) || 0, antes = Number(meta?.montoActual) || 0;
+    const cumple = abono && objetivo > 0 && antes < objetivo && antes + monto >= objetivo;
     await A.moverMeta(form.dataset.id, monto * Number(form.dataset.signo));
-    cerrarHoja(); toast(Number(form.dataset.signo) > 0 ? `Abonaste ${money(monto)}` : `Retiraste ${money(monto)}`);
+    cerrarHoja();
+    if (cumple) {
+        toast(`¡Meta cumplida! «${meta.nombre}» está completa`); confeti();
+    } else {
+        toast(Number(form.dataset.signo) > 0 ? `Abonaste ${money(monto)}` : `Retiraste ${money(monto)}`);
+        if (abono) monedaAlcancia();
+    }
 }, 'submit');
 
 // ---------- Recurrente ----------

@@ -198,6 +198,8 @@
 .estado-tranquilo { color: var(--muted); }
 .estado-preocupado { color: var(--warn); }
 .estado-triste { color: var(--neg); }
+.estado-sorprendido { color: var(--warn); }
+.estado-dormido { color: var(--muted); }
 :root[data-theme="light"] .estado-preocupado { color: #9a5b0b; }
 
 /* ---------- Hoja "Tu salud financiera" ---------- */
@@ -360,3 +362,30 @@
 .nowrap { white-space: nowrap; }
 .reto-top .fila-titulo { white-space: normal; }
 .tabs-planear { position: relative; }
+
+/* ---------- Tarjetas visuales de cuentas ---------- */
+.tarjeta-visual { --tv: #14b8a6; position: relative; display: grid; grid-template-rows: auto 1fr auto auto; gap: 6px; aspect-ratio: 1.586; width: 100%; max-width: 380px; padding: 18px 20px; border-radius: 18px; color: #fff; text-decoration: none; overflow: hidden; isolation: isolate;
+    background: linear-gradient(135deg, var(--tv) 0%, color-mix(in srgb, var(--tv) 55%, #0b0806) 100%);
+    box-shadow: 0 10px 28px -12px color-mix(in srgb, var(--tv) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, .18); }
+.tarjeta-visual::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(120% 90% at 100% 0%, rgba(255, 255, 255, .22), transparent 55%), radial-gradient(80% 60% at 0% 100%, rgba(0, 0, 0, .25), transparent 70%); }
+.tarjeta-visual::after { content: ''; position: absolute; right: -40px; bottom: -60px; width: 190px; height: 190px; border-radius: 50%; border: 26px solid rgba(255, 255, 255, .07); z-index: -1; }
+.tv-efectivo { background: linear-gradient(135deg, #2f7d57 0%, #1b4a33 100%); box-shadow: 0 10px 28px -12px rgba(47, 125, 87, .6); }
+.tv-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.tv-banco { font-family: var(--font-display); font-weight: 700; font-size: 17px; letter-spacing: .01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tv-tipo { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; opacity: .8; }
+.tv-chip { width: 38px; height: 28px; align-self: center; }
+.tv-billete { display: grid; place-items: center; border-radius: 6px; background: rgba(255, 255, 255, .18); }
+.tv-billete .icon { width: 18px; height: 18px; }
+.tv-saldo small { display: block; font-size: 11.5px; opacity: .8; }
+.tv-saldo b { font-family: 'Inter Tight', Inter, sans-serif; font-size: 26px; font-weight: 600; letter-spacing: -.01em; }
+.tv-saldo .cent { font-size: .6em; opacity: .8; }
+.tv-pie { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 13px; }
+.tv-nombre { opacity: .92; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tv-digitos { letter-spacing: .12em; opacity: .9; flex-shrink: 0; }
+.cuenta-hero-visual { position: relative; display: flex; justify-content: center; margin-bottom: 12px; }
+.tv-compartir { position: absolute; top: 10px; right: calc(50% - min(190px, 50%) + 10px); background: rgba(0, 0, 0, .25); color: #fff; }
+.tv-carrusel { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 16px; margin: 0 -16px 16px; padding: 4px 16px 14px; scrollbar-width: none; }
+.tv-carrusel::-webkit-scrollbar { display: none; }
+.tv-carrusel .tarjeta-visual { flex: 0 0 min(280px, 78vw); scroll-snap-align: start; padding: 14px 16px; border-radius: 16px; }
+.tv-carrusel .tv-saldo b { font-size: 21px; }
+.tv-carrusel .tarjeta-visual:active { transform: scale(.98); }

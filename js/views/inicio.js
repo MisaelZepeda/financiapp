@@ -8,6 +8,7 @@ import { resumenMes, serieMensual, variacion } from '../domain/analisis.js';
 import { estadoPago } from '../domain/tarjetas.js';
 import { tarjetaTlacoHTML } from '../components/salud.js';
 import { resumenPendiente } from '../components/resumen-mes.js';
+import { contar } from '../components/efectos.js';
 import { proyectarFinDeMes } from '../domain/proyeccion.js';
 import { pendientes, proximos } from '../domain/recurrentes.js';
 import { mesKey, sumarMeses } from '../domain/fechas.js';
@@ -28,7 +29,7 @@ function heroHTML() {
         <div class="hero-top">
             <div>
                 <p class="card-meta">Patrimonio neto</p>
-                <p class="hero-total num privado">${partes.signo}${partes.entero}<span class="cent">${partes.decimales}</span></p>
+                <p class="hero-total num privado" id="hero-total">${partes.signo}${partes.entero}<span class="cent">${partes.decimales}</span></p>
                 ${delta}
             </div>
             <div class="hero-spark"><canvas id="spark-neto" aria-label="Tendencia del patrimonio"></canvas></div>
@@ -181,7 +182,13 @@ export function render() {
         </div>`;
 }
 
+// El patrimonio cuenta desde la última cifra que viste cuando cambia.
+let netoMostrado = null;
+
 export function montar() {
+    const neto = sel.patrimonio().neto;
+    if (netoMostrado != null && Math.abs(netoMostrado - neto) > 0.009) contar(document.getElementById('hero-total'), netoMostrado, neto);
+    netoMostrado = neto;
     const serie = seriePatrimonio(sel.cuentas(), sel.transacciones(), 6);
     sparkline(document.getElementById('spark-neto'), serie.map(s => s.neto));
     const fin = document.getElementById('spark-fin');

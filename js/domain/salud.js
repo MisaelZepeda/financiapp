@@ -2,13 +2,15 @@
 // factores que lo explican y una sugerencia concreta. Función pura.
 //
 // Estados de Tlaco, del más urgente al más tranquilo:
-//   triste      gastos > ingresos del mes (si ya hubo ingresos), pago vencido o presupuesto rebasado
-//   preocupado  presupuesto al 90 %, tarjeta que vence en ≤3 días sin cubrir, crédito usado > 70 % o proyección negativa
-//   celebrando  meta cumplida este mes o ahorro ≥ 30 % de lo que entró
+//   triste       gastos > ingresos del mes (si ya hubo ingresos), pago vencido o presupuesto rebasado
+//   preocupado   presupuesto al 90 %, tarjeta que vence en ≤3 días sin cubrir, crédito usado > 70 % o proyección negativa
+//   sorprendido  el gasto de hoy es más de 3 veces tu gasto diario promedio
+//   celebrando   meta cumplida este mes o ahorro ≥ 30 % de lo que entró
+//   dormido      no registras nada desde hace 3 días o más
 //   contento    balance del mes positivo
 //   tranquilo   sin movimientos este mes, o ingresos y gastos parejos
 
-import { mesKey, sumarMeses } from './fechas.js';
+import { mesKey, sumarMeses, hoyISO, sumarDias, diasEntre } from './fechas.js';
 import { resumenMes } from './analisis.js';
 import { estadoPago } from './tarjetas.js';
 import { proyectarFinDeMes } from './proyeccion.js';
@@ -120,12 +122,32 @@ export function evaluarSalud({ cuentas = [], saldos = {}, transacciones = [], ca
         if (abonoEsteMes) motivos.celebrando.unshift({ texto: `¡Meta cumplida! «${m.nombre}» ya está completa.`, sugerencia: 'Elige tu siguiente meta mientras traes el impulso.', ruta: '#/planear/metas' });
     });
 
+    // Sorprendido: gasto variable de hoy contra el promedio diario de los últimos 90 días.
+    const h = hoyISO(hoy);
+    const variable = (t) => t.tipo === 'gasto' && !t.recurrenteId;
+    const desde90 = sumarDias(h, -90);
+    const previos = transacciones.filter(t => variable(t) && t.fecha >= desde90 && t.fecha < h);
+    const promDiario = previos.reduce((a, t) => a + (Number(t.monto) || 0), 0) / 90;
+    const gastoHoy = transacciones.filter(t => variable(t) && t.fecha === h).reduce((a, t) => a + (Number(t.monto) || 0), 0);
+    const sorpresa = promDiario > 0 && previos.length >= 10 && gastoHoy > promDiario * 3
+        ? { texto: `¡Uy! Hoy llevas ${fmt(gastoHoy)}, más de ${r0(gastoHoy / promDiario)} veces lo que gastas en un día normal.`, sugerencia: 'Si fue algo planeado, todo bien. Si no, revisa qué pasó hoy.', ruta: '#/movimientos' }
+        : null;
+
+    // Dormido: hace 3 días o más que no registras nada.
+    const ultima = transacciones.reduce((m, t) => (t.fecha && t.fecha <= h && t.fecha > m ? t.fecha : m), '');
+    const diasSin = ultima ? diasEntre(ultima, h) : 0;
+    const siesta = ultima && diasSin >= 3
+        ? { texto: `Zzz… hace ${diasSin} días que no registras nada.`, sugerencia: 'Anota tus gastos de estos días para que tus números sigan al día.', ruta: '#/movimientos', accion: { texto: 'Registrar un gasto', action: 'nuevo' } }
+        : null;
+
     const puntaje = r0(factores.reduce((a, f) => a + f.peso * f.puntos, 0) / factores.reduce((a, f) => a + f.peso, 0) * 100);
 
     let estado, motivo;
     if (motivos.triste.length) { estado = 'triste'; motivo = motivos.triste[0]; }
     else if (motivos.preocupado.length) { estado = 'preocupado'; motivo = motivos.preocupado[0]; }
+    else if (sorpresa) { estado = 'sorprendido'; motivo = sorpresa; }
     else if (motivos.celebrando.length) { estado = 'celebrando'; motivo = motivos.celebrando[0]; }
+    else if (siesta) { estado = 'dormido'; motivo = siesta; }
     else if (hayMovs && r.balance > 0) { estado = 'contento'; motivo = { texto: `Vas bien: llevas +${fmt(r.balance)} este mes.`, sugerencia: tasa != null && tasa < 20 ? 'Si apartas un poco más llegarás al 20 % de ahorro sugerido.' : 'Mantén el ritmo y aparta lo que sobre en una meta.', ruta: '#/planear/metas' }; }
     else { estado = 'tranquilo'; motivo = hayMovs
         ? { texto: 'Este mes tus ingresos y gastos van parejos.', sugerencia: 'Un presupuesto por categoría te ayuda a decidir dónde recortar.', ruta: '#/planear/presupuestos' }

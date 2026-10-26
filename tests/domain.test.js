@@ -222,7 +222,7 @@ const basesSalud = (txs, extra = {}) => ({ cuentas: [debSalud, tdcSalud], saldos
 test('salud: tranquilo sin movimientos y contento con balance positivo', () => {
     const t = evaluarSalud(basesSalud([]), HOY);
     assert.equal(t.estado, 'tranquilo');
-    const c = evaluarSalud(basesSalud([{ tipo: 'ingreso', monto: 10000, fecha: '2026-09-01', cuentaId: 'deb' }, { tipo: 'gasto', monto: 8500, fecha: '2026-09-02', cuentaId: 'deb' }]), HOY);
+    const c = evaluarSalud(basesSalud([{ tipo: 'ingreso', monto: 10000, fecha: '2026-09-01', cuentaId: 'deb' }, { tipo: 'gasto', monto: 8500, fecha: '2026-09-27', cuentaId: 'deb' }]), HOY);
     assert.equal(c.estado, 'contento');
     assert.match(c.mensaje, /\+\$1,500/);
     assert.ok(c.puntaje > 0 && c.puntaje <= 100);
@@ -498,4 +498,28 @@ test('tu mes en resumen: cifras y tono', () => {
     assert.equal(d.meta.nombre, 'Viaje');
     assert.equal(tonoResumen(d), 'celebrando');
     assert.equal(tonoResumen({ ingresos: 0, balance: -50 }), 'preocupado');
+});
+
+// ---------- Fase 5 ----------
+test('salud: Tlaco dormido sin registros en 3 días y sorprendido con un gasto atípico', () => {
+    const base = { cuentas: [{ id: 'd', tipo: 'debito' }], saldos: { d: 5000 } };
+    const dormido = evaluarSalud({ ...base, transacciones: [{ tipo: 'gasto', monto: 50, fecha: '2026-09-24', cuentaId: 'd', categoriaId: 'comida' }] }, HOY);
+    assert.equal(dormido.estado, 'dormido');
+    assert.match(dormido.mensaje, /4 días/);
+
+    const rutina = Array.from({ length: 30 }, (_, i) => ({ tipo: 'gasto', monto: 100, fecha: `2026-08-${String(i + 1).padStart(2, '0')}`, cuentaId: 'd', categoriaId: 'comida' }));
+    const ingreso = { tipo: 'ingreso', monto: 50000, fecha: '2026-09-01', cuentaId: 'd' };
+    const normal = evaluarSalud({ ...base, transacciones: [...rutina, ingreso, { tipo: 'gasto', monto: 80, fecha: '2026-09-28', cuentaId: 'd', categoriaId: 'comida' }] }, HOY);
+    assert.notEqual(normal.estado, 'sorprendido');
+    const grande = evaluarSalud({ ...base, transacciones: [...rutina, ingreso, { tipo: 'gasto', monto: 2000, fecha: '2026-09-28', cuentaId: 'd', categoriaId: 'ocio' }] }, HOY);
+    assert.equal(grande.estado, 'sorprendido');
+});
+
+test('ingreso grande: la quincena sí, el cashback no', async () => {
+    const { esIngresoGrande } = await import('../js/domain/analisis.js');
+    const historial = [7, 8].map(m => ({ tipo: 'ingreso', monto: 30000, fecha: `2026-0${m}-15` }));
+    assert.equal(esIngresoGrande(15000, historial, HOY), true);
+    assert.equal(esIngresoGrande(2500, historial, HOY), false);
+    assert.equal(esIngresoGrande(5000, historial, HOY), false);   // menos del 40 % de $30,000
+    assert.equal(esIngresoGrande(3500, [], HOY), true);           // sin historial basta con $3,000
 });

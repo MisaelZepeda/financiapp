@@ -9,6 +9,7 @@ import { money, escapeHtml, fechaCorta } from '../lib/format.js';
 import { vacioHTML } from '../components/piezas.js';
 import { abrirHoja, cerrarHoja, hojaAbierta, toast, confirmar } from '../components/capas.js';
 import { tlacoSVG } from '../components/tlaco.js';
+import { confeti } from '../components/efectos.js';
 import { TIPOS_RETO, evaluarReto, tituloReto, sugerirRetos } from '../domain/retos.js';
 import { hoyISO, diasEntre } from '../domain/fechas.js';
 
@@ -61,6 +62,7 @@ export function celebrarRetos() {
     evaluados().filter(x => x.e.estado === 'cumplido' && !x.r.celebrado && !celebrando.has(x.r.id)).forEach(({ r }) => {
         celebrando.add(r.id);
         toast(`¡Reto cumplido! ${tituloReto(r, nombreCat(r.categoriaId))}`);
+        confeti();
         setTimeout(() => A.guardarReto({ id: r.id, celebrado: true }), 4000);
     });
 }

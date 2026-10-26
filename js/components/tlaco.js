@@ -51,7 +51,7 @@ const CARAS = {
         <path d="M110 112 q12 9 24 0" stroke="#3a1f0e" stroke-width="5" fill="none" stroke-linecap="round"/>
         <ellipse cx="100" cy="140" rx="7" ry="5" fill="#3a1f0e"/>
         <g class="tlaco-zzz" fill="#f2b544" font-family="Bricolage Grotesque, Inter, sans-serif" font-weight="700">
-            <text x="150" y="58" font-size="26">Z</text><text x="172" y="34" font-size="18">z</text><text x="186" y="18" font-size="13">z</text></g>`,
+            <text x="136" y="62" font-size="26">Z</text><text x="158" y="40" font-size="19">z</text><text x="174" y="22" font-size="14">z</text></g>`,
 };
 
 export const NOMBRE_ESTADO = { celebrando: 'celebrando', contento: 'contento', tranquilo: 'tranquilo', preocupado: 'preocupado', triste: 'triste', sorprendido: 'sorprendido', dormido: 'dormido' };

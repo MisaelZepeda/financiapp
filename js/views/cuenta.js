@@ -2,8 +2,8 @@
 
 import { sel } from '../core/store.js';
 import { icon } from '../lib/icons.js';
-import { money, moneyPartes, escapeHtml, TIPO_CUENTA, fechaLarga, cuandoRelativo } from '../lib/format.js';
-import { txAgrupadasHTML, vacioHTML, monogramaHTML } from '../components/piezas.js';
+import { money, escapeHtml, TIPO_CUENTA, fechaLarga, cuandoRelativo } from '../lib/format.js';
+import { txAgrupadasHTML, vacioHTML, tarjetaVisualHTML } from '../components/piezas.js';
 import { estadoPago, porFacturar } from '../domain/tarjetas.js';
 import { msiDeCuenta } from '../domain/msi.js';
 
@@ -17,7 +17,6 @@ export function render({ id }) {
     if (!c) return `<section class="card">${vacioHTML('landmark', 'Esta cuenta ya no existe.', '<a class="btn btn-soft btn-sm" href="#/cuentas">Ver cuentas</a>')}</section>`;
     const saldo = sel.saldo(id);
     const cred = c.tipo === 'credito';
-    const partes = moneyPartes(saldo);
     const txs = sel.transacciones().filter(t => t.cuentaId === id || t.cuentaDestinoId === id);
 
     let credito = '';
@@ -43,11 +42,9 @@ export function render({ id }) {
         : [['gastoCuenta', 'minus', 'Gasto'], ['ingresoCuenta', 'plus', 'Ingreso'], ['traspasar', 'repeat', 'Traspasar'], c.tipo === 'debito' ? ['rendimiento', 'trending-up', 'Rendimiento'] : null, ['editarCuenta', 'edit', 'Editar']].filter(Boolean);
 
     return `<section class="card cuenta-hero">
-            <div class="cuenta-hero-top">${monogramaHTML(c)}<div><p class="card-meta">${cred ? 'Deuda actual' : 'Saldo disponible'}</p>
-                <p class="cuenta-saldo num privado">${partes.signo}${partes.entero}<span class="cent">${partes.decimales}</span></p></div>
-                ${c.tipo === 'debito' ? `<button class="icon-btn" data-action="compartirCuenta" data-id="${escapeHtml(id)}" title="Compartir datos de depósito" aria-label="Compartir datos de depósito" style="margin-left:auto;">${icon('share')}</button>` : ''}
-            </div>
-            ${c.digitos || c.clabe ? `<p class="cuenta-datos">${c.digitos ? `•••• ${escapeHtml(c.digitos)}` : ''}${c.clabe ? ` · CLABE ${escapeHtml(c.clabe)}` : ''}</p>` : ''}
+            <div class="cuenta-hero-visual">${tarjetaVisualHTML(c)}
+                ${c.tipo === 'debito' ? `<button class="icon-btn tv-compartir" data-action="compartirCuenta" data-id="${escapeHtml(id)}" title="Compartir datos de depósito" aria-label="Compartir datos de depósito">${icon('share')}</button>` : ''}</div>
+            ${c.clabe ? `<p class="cuenta-datos">CLABE ${escapeHtml(c.clabe)}</p>` : ''}
             ${credito}
             <div class="acciones-rapidas">${acciones.map(([a, i, t]) => `<button data-action="${a}" data-id="${escapeHtml(id)}"><span>${icon(i === 'minus' ? 'trending-down' : i)}</span>${t}</button>`).join('')}</div>
         </section>

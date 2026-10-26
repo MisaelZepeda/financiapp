@@ -1,8 +1,9 @@
 // Piezas de HTML reutilizadas por varias vistas.
 
 import { icon } from '../lib/icons.js';
-import { money, escapeHtml, colorBanco, TIPO_CUENTA, etiquetaDia } from '../lib/format.js';
+import { money, moneyPartes, escapeHtml, colorBanco, TIPO_CUENTA, etiquetaDia } from '../lib/format.js';
 import { sel } from '../core/store.js';
+import { accionesSwipeHTML } from './gestos.js';
 
 export function vacioHTML(ico, texto, extra = '') {
     return `<div class="vacio">${icon(ico)}<div>${escapeHtml(texto)}</div>${extra}</div>`;
@@ -18,6 +19,27 @@ export function monogramaHTML(cuenta) {
 }
 
 // Fila de cuenta (toca → detalle).
+// Tarjeta visual de una cuenta: color del banco, nombre, saldo y últimos 4 dígitos.
+// Con `enlace`, toda la tarjeta lleva al detalle de la cuenta.
+const CHIP = '<svg class="tv-chip" viewBox="0 0 34 26" aria-hidden="true"><rect x="0.5" y="0.5" width="33" height="25" rx="5" fill="#e9c46a" stroke="#b8923a"/><path d="M0.5 9h10v8h-10M33.5 9h-10v8h10M10.5 0.5v25M23.5 0.5v25M10.5 13h13" stroke="#b8923a" fill="none"/></svg>';
+export function tarjetaVisualHTML(c, { enlace = false } = {}) {
+    const saldo = sel.saldo(c.id);
+    const color = colorBanco(c.banco);
+    const cred = c.tipo === 'credito';
+    const p = moneyPartes(saldo);
+    const etiqueta = cred ? 'Deuda' : c.tipo === 'efectivo' ? 'En la cartera' : 'Saldo';
+    const banco = escapeHtml(c.banco && c.banco.toLowerCase() !== 'efectivo' ? c.banco : (c.tipo === 'efectivo' ? 'Efectivo' : c.nombre));
+    const inner = `
+        <div class="tv-top"><span class="tv-banco">${banco}</span><span class="tv-tipo">${TIPO_CUENTA[c.tipo] || ''}</span></div>
+        ${c.tipo === 'efectivo' ? `<span class="tv-chip tv-billete">${icon('coin')}</span>` : CHIP}
+        <div class="tv-saldo"><small>${etiqueta}</small><b class="num privado">${p.signo}${p.entero}<span class="cent">${p.decimales}</span></b></div>
+        <div class="tv-pie"><span class="tv-nombre">${escapeHtml(c.nombre)}</span>${c.digitos ? `<span class="tv-digitos num">•••• ${escapeHtml(c.digitos)}</span>` : ''}</div>`;
+    const estilo = `--tv:${color}`;
+    return enlace
+        ? `<a class="tarjeta-visual tv-${c.tipo}" href="#/cuenta/${encodeURIComponent(c.id)}" style="${estilo}" aria-label="${escapeHtml(c.nombre)}">${inner}</a>`
+        : `<div class="tarjeta-visual tv-${c.tipo}" style="${estilo}">${inner}</div>`;
+}
+
 export function cuentaFilaHTML(c, { secundario } = {}) {
     const saldo = sel.saldo(c.id);
     // Banco y últimos dígitos (el tipo ya lo dice el grupo donde aparece la fila).
@@ -65,11 +87,11 @@ export function describirTx(tx) {
 
 export function txFilaHTML(tx) {
     const d = describirTx(tx);
-    return `<div class="fila fila-link" data-action="editarTx" data-id="${escapeHtml(tx.id)}" role="button" tabindex="0">
+    return `<div class="swipe">${accionesSwipeHTML(escapeHtml(tx.id))}<div class="fila fila-link swipe-fila" data-action="editarTx" data-id="${escapeHtml(tx.id)}" role="button" tabindex="0">
         <div class="fila-ico ${d.tono}">${icon(d.icono)}</div>
         <div class="fila-body"><div class="fila-titulo">${escapeHtml(d.titulo)}</div><div class="fila-sub">${escapeHtml(d.sub)}${tx.etiquetas?.length ? ` ${tx.etiquetas.map(e => `<span class="tag">#${escapeHtml(e)}</span>`).join(' ')}` : ''}</div></div>
         <div class="fila-der"><span class="num privado ${d.clase}">${d.signo}${money(Math.abs(tx.monto))}</span></div>
-    </div>`;
+    </div></div>`;
 }
 
 // Lista de movimientos agrupada por día, con el neto del día.

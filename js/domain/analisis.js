@@ -151,3 +151,13 @@ export function nivelCalor(valor, maximo) {
     if (!valor || !maximo) return 0;
     return Math.min(4, Math.max(1, Math.ceil((valor / maximo) * 4)));
 }
+
+// Un ingreso "grande" (la quincena, la nómina) merece confeti: al menos $3,000 y
+// al menos el 40 % de tu ingreso mensual promedio de los últimos 3 meses.
+export function esIngresoGrande(montoIngreso, transacciones, hoy = new Date()) {
+    const m = Number(montoIngreso) || 0;
+    if (m < 3000) return false;
+    const previos = [1, 2, 3].map(i => resumenMes(transacciones, sumarMeses(mesKey(hoy), -i)).ingresos).filter(x => x > 0);
+    if (!previos.length) return true;
+    return m >= (previos.reduce((a, b) => a + b, 0) / previos.length) * 0.4;
+}

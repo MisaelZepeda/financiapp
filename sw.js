@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v20'; // v20: resumen visible en Inicio
+const CACHE_NAME = 'morralla-cache-v21'; // v21: estetica y sensacion nativa
 
 const urlsToCache = [
     './',
@@ -13,7 +13,9 @@ const urlsToCache = [
     './css/views.css',
     './js/app.js',
     './js/components/capas.js',
+    './js/components/efectos.js',
     './js/components/formularios.js',
+    './js/components/gestos.js',
     './js/components/graficas.js',
     './js/components/piezas.js',
     './js/components/registro.js',

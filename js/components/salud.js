@@ -13,6 +13,7 @@ import { consejoAlAzar } from '../domain/consejos.js';
 const TITULO_ESTADO = {
     celebrando: 'Tlaco está celebrando', contento: 'Tlaco está contento', tranquilo: 'Tlaco está tranquilo',
     preocupado: 'Tlaco está preocupado', triste: 'Tlaco está triste',
+    sorprendido: 'Tlaco está sorprendido', dormido: 'Tlaco está dormido',
 };
 
 export function saludActual() {

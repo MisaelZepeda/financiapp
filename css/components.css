@@ -245,3 +245,46 @@ input.etiqueta-input { width: 130px; height: 30px; padding: 0 11px; border-radiu
 .listo-atajo { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 4px 0 6px; }
 .listo-monto { font-family: var(--font-display); font-size: 18px; font-weight: 600; margin: 0; }
 .listo-atajo .hint { margin: 0 0 8px; }
+
+/* ---------- Efectos ---------- */
+.confeti { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 500; pointer-events: none; }
+.alcancia { position: fixed; left: 50%; bottom: calc(var(--tabbar) + 70px + env(safe-area-inset-bottom)); width: 72px; height: 120px; margin-left: -36px; z-index: 450; pointer-events: none; }
+.alcancia-svg { position: absolute; left: 4px; bottom: 0; width: 64px; height: 52px; animation: alcanciaEntra 1.5s ease forwards; transform-origin: 50% 100%; }
+.moneda-svg { position: absolute; left: 24px; top: 0; width: 24px; height: 24px; animation: monedaCae 1.5s cubic-bezier(.5, 0, .75, .4) forwards; }
+@keyframes alcanciaEntra {
+    0% { opacity: 0; transform: translateY(14px) scale(.8); }
+    18% { opacity: 1; transform: none; }
+    55% { transform: none; }
+    62% { transform: scale(1.12, .9); }
+    72% { transform: scale(.96, 1.05); }
+    82% { opacity: 1; transform: none; }
+    100% { opacity: 0; transform: translateY(8px); }
+}
+@keyframes monedaCae {
+    0%, 15% { opacity: 0; transform: translateY(-20px) rotateY(0); }
+    25% { opacity: 1; }
+    58% { opacity: 1; transform: translateY(66px) rotateY(540deg); }
+    62%, 100% { opacity: 0; transform: translateY(72px) rotateY(540deg) scale(.6); }
+}
+@media (min-width: 900px) { .alcancia { bottom: 40px; } }
+
+/* ---------- Deslizar movimientos ---------- */
+.swipe { position: relative; overflow: hidden; }
+.swipe + .swipe, .fila + .swipe, .swipe + .fila { border-top: 1px solid var(--line); }
+.swipe-fila { position: relative; z-index: 1; background: var(--surface); transition: transform .25s var(--ease); touch-action: pan-y; }
+.capa .swipe-fila { background: var(--surface); }
+.swipe-acciones { position: absolute; top: 0; right: 0; bottom: 0; display: flex; width: 148px; }
+.swipe-acciones button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 0; font-size: 12px; font-weight: 600; cursor: pointer; }
+.swipe-acciones .icon { width: 18px; height: 18px; }
+.swipe-editar { background: var(--surface-3); color: var(--text); }
+.swipe-borrar { background: var(--neg); color: #fff; }
+@media (hover: hover) and (pointer: fine) { .swipe-acciones { display: none; } }
+
+/* ---------- Jalar para actualizar ---------- */
+.jalar { height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--muted); transition: height .2s var(--ease); }
+.jalar .icon { width: 18px; height: 18px; }
+.jalar.listo { color: var(--accent-ink); }
+.jalar.cargando .icon { animation: girar .8s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+.card:not(.card-flush) .swipe { margin: 0 -10px; border-radius: var(--r-md); }
+.card:not(.card-flush) .swipe .fila-link { margin: 0; }

@@ -11,6 +11,8 @@ import { hoyISO, sumarDias } from '../domain/fechas.js';
 import { teclear, evaluar, tieneOperacion, expresionLegible, normalizarTexto } from '../domain/calculadora.js';
 import { sugerirCategoria } from '../domain/autocategoria.js';
 import { tlacoSVG } from './tlaco.js';
+import { monedaAlcancia, confeti } from './efectos.js';
+import { esIngresoGrande } from '../domain/analisis.js';
 
 let r = null; // estado del formulario
 
@@ -319,8 +321,10 @@ async function guardar(otro) {
     const original = r.original;
     const texto = `${TITULOS[r.tipo]} ${r.id ? 'actualizado' : 'registrado'} · ${money(monto)}`;
     try {
+        const grande = !original && tx.tipo === 'ingreso' && !tx.subtipo && esIngresoGrande(monto, sel.transacciones());
         const id = await guardarTransaccion(tx);
-        toast(texto, { deshacer: () => original ? guardarTransaccion({ ...original }) : borrarTransaccion(id) });
+        toast(grande ? `¡Llegó el dinero! ${texto}` : texto, { deshacer: () => original ? guardarTransaccion({ ...original }) : borrarTransaccion(id) });
+        if (grande) confeti(); else if (!original) monedaAlcancia();
         if (otro && r) { Object.assign(r, { montoTxt: '', desc: '', etiquetas: [], favorito: false, dividir: false, partes: [] }); if (!r.catManual) r.categoriaId = null; pintar(); hojaAbierta()?.querySelector('#reg-monto')?.focus(); }
         else {
             const avisarSafari = r?.desdeAtajo && !enAppInstalada();

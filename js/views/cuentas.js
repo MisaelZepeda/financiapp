@@ -1,7 +1,7 @@
 import { sel } from '../core/store.js';
 import { icon } from '../lib/icons.js';
 import { money } from '../lib/format.js';
-import { cuentaFilaHTML, vacioHTML } from '../components/piezas.js';
+import { cuentaFilaHTML, vacioHTML, tarjetaVisualHTML } from '../components/piezas.js';
 
 export const titulo = () => ({ titulo: 'Cuentas', subtitulo: 'Débito, efectivo y crédito' });
 
@@ -14,6 +14,7 @@ export function render() {
     </section>` : '';
     return `
         <div class="acciones-top"><button class="btn btn-primary" data-action="nuevaCuenta">${icon('plus')}Nueva cuenta</button></div>
+        ${cuentas.length ? `<div class="tv-carrusel" aria-label="Tus tarjetas">${cuentas.map(c => tarjetaVisualHTML(c, { enlace: true })).join('')}</div>` : ''}
         ${cuentas.length ? `<div class="stack">
             ${grupo('Débito y efectivo', cuentas.filter(c => c.tipo !== 'credito'), p.activos, 'Total')}
             ${grupo('Tarjetas de crédito', cuentas.filter(c => c.tipo === 'credito'), p.deudas, 'Deuda')}
