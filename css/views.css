@@ -389,3 +389,9 @@
 .tv-carrusel .tarjeta-visual { flex: 0 0 min(280px, 78vw); scroll-snap-align: start; padding: 14px 16px; border-radius: 16px; }
 .tv-carrusel .tv-saldo b { font-size: 21px; }
 .tv-carrusel .tarjeta-visual:active { transform: scale(.98); }
+
+/* ---------- Avisos y Siri (Ajustes) ---------- */
+.aviso-estado { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; margin: 0 0 12px; }
+.aviso-estado .icon { width: 18px; height: 18px; }
+.botones-fila { display: flex; gap: 8px; flex-wrap: wrap; }
+.siri ol.pasos[start] { margin-top: 4px; }

@@ -21,6 +21,7 @@ import { mostrarAcceso, ocultarAcceso, mostrarMigracion, nombreRegistro } from '
 import { confirmarMigracion, selectorTema } from './views/ajustes.js';
 import './components/salud.js';
 import './components/gestos.js';
+import { iniciarPush } from './lib/push.js';
 import { consejoAlAzar } from './domain/consejos.js';
 import { buscarPorNombre } from './domain/autocategoria.js';
 
@@ -142,7 +143,11 @@ function mostrarApp() {
     ocultarAcceso();
     document.getElementById('app').hidden = false;
     ocultarCarga();
+    if (!store.demo) iniciarPush((n) => toast(n === 1 ? 'Guardé 1 movimiento que le dictaste a Siri' : `Guardé ${n} movimientos que le dictaste a Siri`));
 }
+
+// Al tocar un aviso con la app abierta, el service worker pide ir a su pantalla.
+navigator.serviceWorker?.addEventListener('message', (e) => { if (e.data?.tipo === 'navegar' && /^#\//.test(e.data.ruta || '')) navegar(e.data.ruta); });
 
 function entrarDemo() {
     store.demo = true;

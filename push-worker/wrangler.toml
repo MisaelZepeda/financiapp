@@ -1,0 +1,21 @@
+# Morralla — avisos en el iPhone y registro con Siri (Cloudflare Workers, plan gratuito)
+name = "morralla-push"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+# Revisa cada minuto qué avisos tocan
+[triggers]
+crons = ["* * * * *"]
+
+[[kv_namespaces]]
+binding = "PUSH"
+id = "62d5b2ffb894420bb6f0de7f9c7e47e6"
+
+[vars]
+FIREBASE_PROJECT_ID = "misuperappfinanciera"
+VAPID_PUBLIC_KEY = "BEyOfsTwVEGJX9HFN42oCFByjm3GwJdh9wl1W4_wwHNAdYhbo14qLKuV8JhqoND4-Ozu5TCsxbpod7T51_hkcHg"
+VAPID_SUBJECT = "https://misaelzepeda.github.io/financiapp/"
+ALLOWED_ORIGINS = "https://misaelzepeda.github.io,http://localhost:5500"
+
+# Secreto (no va en el repositorio): npx wrangler secret put VAPID_PRIVATE_JWK

@@ -523,3 +523,47 @@ test('ingreso grande: la quincena sí, el cashback no', async () => {
     assert.equal(esIngresoGrande(5000, historial, HOY), false);   // menos del 40 % de $30,000
     assert.equal(esIngresoGrande(3500, [], HOY), true);           // sin historial basta con $3,000
 });
+
+// ---------- Fase 6 ----------
+import { calcularRecordatorios, interpretarDictado, proximoMomento, momento } from '../js/domain/recordatorios.js';
+
+test('recordatorios: tarjeta un día antes y el mismo día; nada si ya está pagada', () => {
+    const tdc = { id: 'tdc', nombre: 'Platino', tipo: 'credito', diaCorte: 18, diaPago: 5, saldoInicial: 0, fechaInicial: '2026-01-01' };
+    const txs = [{ tipo: 'gasto', monto: 1200, fecha: '2026-09-10', cuentaId: 'tdc', categoriaId: 'comida' }];
+    const a = calcularRecordatorios({ cuentas: [tdc], transacciones: txs }, HOY);
+    const ids = a.map(x => x.id);
+    assert.ok(ids.includes('tdc:tdc:2026-10-05:antes'));
+    assert.ok(ids.includes('tdc:tdc:2026-10-05:hoy'));
+    const hoyAviso = a.find(x => x.id === 'tdc:tdc:2026-10-05:hoy');
+    assert.equal(hoyAviso.at, momento('2026-10-05', 9));
+    assert.match(hoyAviso.body, /\$1,200/);
+    const pagada = calcularRecordatorios({ cuentas: [{ ...tdc, pagadoPeriodo: '2026-09' }], transacciones: txs }, HOY);
+    assert.ok(!pagada.some(x => x.id.startsWith('tdc:')));
+});
+
+test('recordatorios: recurrentes, presupuesto al 90 % y resumen del domingo', () => {
+    const deb = { id: 'd', nombre: 'Nómina', tipo: 'debito', saldoInicial: 50000, fechaInicial: '2026-01-01' };
+    const rec = { id: 'net', tipo: 'gasto', desc: 'Netflix', monto: 219, cuentaId: 'd', frecuencia: 'mensual', diaMes: 2, activo: true, proximaFecha: '2026-10-02' };
+    const txs = [{ tipo: 'gasto', monto: 950, fecha: '2026-09-28', cuentaId: 'd', categoriaId: 'comida' }];
+    const cats = [{ id: 'comida', nombre: 'Comida', presupuesto: 1000 }];
+    const a = calcularRecordatorios({ cuentas: [deb], saldos: { d: 49050 }, transacciones: txs, recurrentes: [rec], categorias: cats }, HOY);
+    const net = a.find(x => x.id === 'rec:net:2026-10-02');
+    assert.equal(net.title, 'Hoy toca: Netflix');
+    assert.ok(a.find(x => x.id === 'm:pres90:comida:2026-09'));
+    const sem = a.find(x => x.id.startsWith('sem:'));
+    assert.equal(sem.id, 'sem:2026-10-04');                // HOY es lunes 28; el domingo es el 4
+    assert.equal(sem.at, momento('2026-10-04', 19));
+    assert.match(sem.body, /Comida/);
+    // Avisos de estado: de día salen ya; de noche esperan a las 9:00.
+    assert.equal(proximoMomento(new Date(2026, 8, 28, 23, 0)), momento('2026-09-29', 9));
+    assert.equal(proximoMomento(HOY), HOY.getTime() + 60000);
+});
+
+test('Siri: interpretar lo dictado', () => {
+    assert.deepEqual(interpretarDictado('250 oxxo'), { tipo: 'gasto', monto: 250, desc: 'Oxxo' });
+    assert.deepEqual(interpretarDictado('$1,250.50 en el súper'), { tipo: 'gasto', monto: 1250.5, desc: 'Súper' });
+    assert.deepEqual(interpretarDictado('gasté 80 pesos en tacos'), { tipo: 'gasto', monto: 80, desc: 'Tacos' });
+    assert.deepEqual(interpretarDictado('ingreso 5000 nómina'), { tipo: 'ingreso', monto: 5000, desc: 'Nómina' });
+    assert.deepEqual(interpretarDictado('Uber 135'), { tipo: 'gasto', monto: 135, desc: 'Uber' });
+    assert.equal(interpretarDictado('café'), null);
+});

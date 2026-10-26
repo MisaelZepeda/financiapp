@@ -10,6 +10,7 @@ import { toast, confirmar, abrirHoja, cerrarHoja } from '../components/capas.js'
 import { exportarRespaldo } from '../lib/exportar.js';
 import { migrarV1 } from '../domain/migracion.js';
 import { aplicarApariencia, temaElegido, elegirTema, hayTemaDeSesion, temaEfectivo } from '../lib/apariencia.js';
+import * as Push from '../lib/push.js';
 
 export const titulo = () => ({ titulo: 'Ajustes' });
 
@@ -61,9 +62,15 @@ export function render() {
         </section>
 
         <section class="card">
-            <h2 class="card-title" style="margin-bottom:6px;">Siri y Atajos</h2>
-            <p class="card-desc" style="margin:0 0 12px;">Di "Oye Siri, gasto", dicta el monto y confírmalo con un toque. Se abre en Safari y llega a la app al instante.</p>
-            <button class="btn btn-soft" data-action="ajSiri">${icon('sparkle')}Ver cómo configurarlo</button>
+            <h2 class="card-title" style="margin-bottom:6px;">Avisos</h2>
+            <p class="card-desc" style="margin:0 0 12px;">Tlaco te avisa cuando vence una tarjeta, toca un pago recurrente, te acercas a un presupuesto o tu fin de mes se ve apretado, y cada domingo te resume la semana. Llegan aunque la app esté cerrada.</p>
+            ${avisosHTML()}
+        </section>
+
+        <section class="card">
+            <h2 class="card-title" style="margin-bottom:6px;">Siri</h2>
+            <p class="card-desc" style="margin:0 0 12px;">Di "Oye Siri, gasto" y dicta algo como "250 Oxxo". Siri lo anota sin abrir nada y te confirma en voz alta; se guarda en Morralla la próxima vez que la abras.</p>
+            ${siriHTML()}
         </section>
 
         <section class="card">
@@ -105,7 +112,95 @@ on('ajBorrarFav', async (el) => {
     await A.borrarPlantilla(el.dataset.id); toast('Favorito quitado');
 });
 
-// Siri y Atajos: la URL #/nuevo abre el registro prellenado.
+// ---------- Avisos ----------
+function avisosHTML() {
+    if (store.demo) return '<p class="hint">Disponible al iniciar sesión con tu cuenta.</p>';
+    if (!Push.soportado()) return '<p class="hint">Este navegador no admite avisos. En iPhone necesitas iOS 16.4 o más reciente y abrir Morralla desde su ícono en la pantalla de inicio.</p>';
+    if (Push.avisosActivos()) return `<p class="aviso-estado pos">${icon('check-circle')}Activos en este dispositivo</p>
+        <div class="botones-fila"><button class="btn btn-soft" data-action="ajAvisoPrueba">${icon('bell')}Enviar aviso de prueba</button>
+        <button class="btn btn-ghost" data-action="ajAvisosOff">Desactivar</button></div>`;
+    const iphoneSinInstalar = /iPhone|iPad/.test(navigator.userAgent) && !Push.enAppInstalada();
+    return iphoneSinInstalar
+        ? '<p class="hint">Abre Morralla desde su ícono en la pantalla de inicio para activar los avisos (Safari no los permite).</p>'
+        : `<button class="btn btn-primary" data-action="ajAvisosOn">${icon('bell')}Activar avisos</button>`;
+}
+
+on('ajAvisosOn', async (el) => {
+    el.disabled = true;
+    try { await Push.activarAvisos(); toast('¡Listo! Tlaco te avisará'); repintar(); }
+    catch (e) { toast(e.message, { tipo: 'error' }); el.disabled = false; }
+});
+on('ajAvisosOff', async () => {
+    try { await Push.desactivarAvisos(); toast('Avisos desactivados'); }
+    catch (e) { toast(e.message, { tipo: 'error' }); }
+    repintar();
+});
+on('ajAvisoPrueba', async (el) => {
+    el.disabled = true;
+    try {
+        const r = await Push.avisoDePrueba();
+        toast(r.delivered ? 'Aviso enviado: debe llegar en unos segundos' : 'No se pudo entregar; desactiva y vuelve a activar los avisos', { tipo: r.delivered ? undefined : 'error' });
+    } catch (e) { toast(e.message, { tipo: 'error' }); }
+    el.disabled = false;
+});
+
+const repintar = () => { const v = document.getElementById('vista'); if (v && location.hash.startsWith('#/ajustes')) v.innerHTML = render(); };
+
+// ---------- Siri ----------
+function siriHTML() {
+    if (store.demo) return '<p class="hint">Disponible al iniciar sesión con tu cuenta.</p>';
+    const cuentas = sel.cuentas();
+    if (!Push.siriActiva()) return `<button class="btn btn-primary" data-action="ajSiriActivar">${icon('sparkle')}Configurar Siri</button>
+        <p class="hint" style="margin-top:10px;">¿Prefieres revisar antes de guardar? <button class="link" data-action="ajSiri">Usa el atajo que abre el registro lleno</button>.</p>`;
+    return `<p class="aviso-estado pos">${icon('check-circle')}Siri está lista</p>
+        <div class="field"><label for="aj-cuenta-siri">Cuenta para lo que dictes</label>
+            <select id="aj-cuenta-siri" data-change="ajCuentaSiri">${cuentas.map(c => `<option value="${escapeHtml(c.id)}" ${c.id === Push.cuentaSiri() ? 'selected' : ''}>${escapeHtml(c.nombre)}</option>`).join('')}</select>
+            <span class="hint">La categoría se elige sola con la descripción; puedes cambiarla después en Movimientos.</span></div>
+        <div class="botones-fila"><button class="btn btn-soft" data-action="ajSiriActivar">${icon('repeat')}Nueva clave e instrucciones</button>
+        <button class="btn btn-ghost" data-action="ajSiriOff">Desactivar</button></div>`;
+}
+
+on('ajCuentaSiri', async (el) => { await A.guardarAjustes({ cuentaSiri: el.value }); toast('Cuenta para Siri actualizada'); }, 'change');
+on('ajSiriOff', async () => {
+    if (!(await confirmar({ titulo: 'Desactivar Siri', texto: 'La clave actual deja de funcionar; tu atajo ya no podrá anotar movimientos.', aceptar: 'Desactivar', peligro: true }))) return;
+    try { await Push.revocarSiri(); toast('Siri desactivada'); } catch (e) { toast(e.message, { tipo: 'error' }); }
+});
+on('ajSiriActivar', async (el) => {
+    if (Push.siriActiva() && !(await confirmar({ titulo: 'Nueva clave', texto: 'La clave anterior deja de funcionar: tendrás que pegar la nueva en tu atajo.', aceptar: 'Generar' }))) return;
+    el.disabled = true;
+    let clave;
+    try { clave = await Push.crearClaveSiri(); }
+    catch (e) { toast(e.message, { tipo: 'error' }); el.disabled = false; return; }
+    const url = `${Push.WORKER_URL}/movimiento`;
+    const paso = (n, t) => `<li><b>${n}.</b> ${t}</li>`;
+    const copiar = (t) => `<div class="copiar"><code>${escapeHtml(t)}</code><button class="btn btn-soft btn-sm" data-action="ajCopiar" data-t="${escapeHtml(t)}">${icon('copy')}Copiar</button></div>`;
+    abrirHoja({
+        titulo: 'Siri: "Oye Siri, gasto"',
+        html: `<div class="siri">
+            <p class="hint" style="margin-top:0;"><b>Tu clave personal</b> (solo se muestra ahora; guárdala en el atajo):</p>
+            ${copiar(`Bearer ${clave}`)}
+            <h3>Arma el atajo</h3>
+            <ol class="pasos">
+                ${paso(1, 'Abre la app <b>Atajos</b> y toca <b>+</b>.')}
+                ${paso(2, 'Agrega <b>Dictar texto</b> (idioma: Español).')}
+                ${paso(3, 'Agrega <b>Obtener contenido de URL</b> y pega esta dirección:')}
+            </ol>
+            ${copiar(url)}
+            <ol class="pasos" start="4">
+                ${paso(4, 'En esa misma acción toca <b>Mostrar más</b>: Método <b>POST</b>.')}
+                ${paso(5, 'En <b>Encabezados</b> agrega uno: clave <b>Authorization</b>, valor tu clave de arriba (empieza con "Bearer").')}
+                ${paso(6, 'En <b>Cuerpo de la solicitud</b> elige <b>JSON</b> y agrega un campo de texto: clave <b>texto</b>, valor la variable <b>Texto dictado</b>.')}
+                ${paso(7, 'Agrega <b>Obtener valor del diccionario</b>: clave <b>mensaje</b>.')}
+                ${paso(8, 'Agrega <b>Mostrar resultado</b> con ese valor: Siri te lo dice en voz alta.')}
+                ${paso(9, 'Nombra el atajo <b>Gasto</b>. Di "Oye Siri, gasto" y dicta "250 Oxxo" o "ingreso 5000 nómina".')}
+            </ol>
+            <p class="hint">Lo dictado se guarda en la cuenta elegida en Ajustes cuando abres Morralla. Si alguien más ve tu clave, genera una nueva.</p>
+        </div>`,
+    });
+    el.disabled = false;
+});
+
+// Atajo alternativo: la URL #/nuevo abre el registro prellenado (en Safari).
 const urlBase = () => `${location.origin}${location.pathname}`;
 on('ajSiri', () => {
     const gasto = `${urlBase()}#/nuevo?tipo=gasto&monto=`;

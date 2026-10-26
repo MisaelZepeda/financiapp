@@ -1,0 +1,13 @@
+{
+  "name": "morralla-push",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "logs": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4"
+  }
+}

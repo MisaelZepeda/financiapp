@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v21'; // v21: estetica y sensacion nativa
+const CACHE_NAME = 'morralla-cache-v22'; // v22: avisos y Siri
 
 const urlsToCache = [
     './',
@@ -39,6 +39,7 @@ const urlsToCache = [
     './js/domain/msi.js',
     './js/domain/notificaciones.js',
     './js/domain/proyeccion.js',
+    './js/domain/recordatorios.js',
     './js/domain/recurrentes.js',
     './js/domain/retos.js',
     './js/domain/saldos.js',
@@ -51,6 +52,7 @@ const urlsToCache = [
     './js/lib/exportar.js',
     './js/lib/format.js',
     './js/lib/icons.js',
+    './js/lib/push.js',
     './js/views/acceso.js',
     './js/views/ajustes.js',
     './js/views/analisis.js',
@@ -93,8 +95,8 @@ self.addEventListener('fetch', (event) => {
     const req = event.request;
     if (req.method !== 'GET') return;
     const url = new URL(req.url);
-    // Firebase (datos y sesión) siempre va directo a la red.
-    if (/firebaseio\.com|googleapis\.com\/identitytoolkit|securetoken/.test(url.href)) return;
+    // Firebase (datos y sesión) y el servidor de avisos siempre van directo a la red.
+    if (/firebaseio\.com|googleapis\.com\/identitytoolkit|securetoken|workers\.dev/.test(url.href)) return;
 
     if (url.origin === self.location.origin) {
         // Archivos de la app: siempre de la versión instalada, para no mezclar
@@ -118,4 +120,30 @@ self.addEventListener('fetch', (event) => {
             return enCache || red;
         })
     );
+});
+
+// ---------- Avisos (Web Push desde el Worker de Cloudflare) ----------
+self.addEventListener('push', (event) => {
+    let m = {};
+    try { m = event.data ? event.data.json() : {}; } catch { m = { title: 'Morralla', body: event.data?.text() || '' }; }
+    event.waitUntil(self.registration.showNotification(m.title || 'Morralla', {
+        body: m.body || '',
+        icon: 'icon-192x192.png',
+        badge: 'icon-192x192.png',
+        tag: m.tag || undefined,
+        data: { url: (m.data && m.data.url) || '#/inicio' },
+    }));
+});
+
+// Al tocar el aviso: abre (o enfoca) Morralla en la pantalla que corresponde.
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const ruta = event.notification.data?.url || '#/inicio';
+    const destino = new URL(`./${ruta.startsWith('#') ? ruta : '#/inicio'}`, self.registration.scope).href;
+    event.waitUntil((async () => {
+        const ventanas = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        const abierta = ventanas.find(v => v.url.startsWith(self.registration.scope));
+        if (abierta) { await abierta.focus(); return abierta.navigate(destino).catch(() => abierta.postMessage({ tipo: 'navegar', ruta })); }
+        return self.clients.openWindow(destino);
+    })());
 });
