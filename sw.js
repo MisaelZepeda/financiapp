@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v17'; // v17: registrar en dos toques
+const CACHE_NAME = 'morralla-cache-v18'; // v18: atajos en Safari
 
 const urlsToCache = [
     './',

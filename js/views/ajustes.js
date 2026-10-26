@@ -62,7 +62,7 @@ export function render() {
 
         <section class="card">
             <h2 class="card-title" style="margin-bottom:6px;">Siri y Atajos</h2>
-            <p class="card-desc" style="margin:0 0 12px;">Di "Oye Siri, gasto" y Morralla se abre con el registro lleno para confirmarlo.</p>
+            <p class="card-desc" style="margin:0 0 12px;">Di "Oye Siri, gasto", dicta el monto y confírmalo con un toque. Se abre en Safari y llega a la app al instante.</p>
             <button class="btn btn-soft" data-action="ajSiri">${icon('sparkle')}Ver cómo configurarlo</button>
         </section>
 
@@ -130,7 +130,7 @@ on('ajSiri', () => {
                 ${paso(2, 'Nómbralo <b>Mi saldo</b>.')}
             </ol>
             <div class="copiar"><code>${escapeHtml(saldo)}</code><button class="btn btn-soft btn-sm" data-action="ajCopiar" data-t="${escapeHtml(saldo)}">${icon('copy')}Copiar</button></div>
-            <p class="hint">Si Morralla está en tu pantalla de inicio, iOS puede abrir la dirección en Safari; en ese caso abre la app una vez después de usar el atajo.</p>
+            <p class="hint"><b>Importante:</b> iOS abre los atajos en Safari, no en la app de la pantalla de inicio (Apple no lo permite). Inicia sesión una vez en Morralla desde Safari; lo que guardes ahí aparece en la app al instante.</p>
         </div>`,
     });
 });

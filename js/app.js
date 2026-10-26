@@ -103,7 +103,7 @@ function abrirDesdeAtajo(q) {
     const cuenta = q.cuenta ? buscarPorNombre(q.cuenta, sel.cuentas()) : null;
     setTimeout(() => abrirRegistro({
         tipo, monto: monto ? Math.round(monto * 100) / 100 : undefined,
-        desc: (q.desc || '').slice(0, 80), categoriaId: cat?.id, cuentaId: cuenta?.id,
+        desc: (q.desc || '').slice(0, 80), categoriaId: cat?.id, cuentaId: cuenta?.id, desdeAtajo: true,
     }), 50);
 }
 

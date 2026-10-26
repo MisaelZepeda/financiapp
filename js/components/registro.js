@@ -10,6 +10,7 @@ import { escapeHtml, money, fechaCorta } from '../lib/format.js';
 import { hoyISO, sumarDias } from '../domain/fechas.js';
 import { teclear, evaluar, tieneOperacion, expresionLegible, normalizarTexto } from '../domain/calculadora.js';
 import { sugerirCategoria } from '../domain/autocategoria.js';
+import { tlacoSVG } from './tlaco.js';
 
 let r = null; // estado del formulario
 
@@ -36,6 +37,7 @@ export function abrirRegistro(opts = {}) {
         desc: tx?.desc || opts.desc || '',
         dividir: partes.length > 1, partes,
         etiquetas: [...(tx?.etiquetas || [])], favorito: false,
+        desdeAtajo: !!opts.desdeAtajo,
     };
     if (!r.categoriaId && r.desc) aplicarSugerencia();
     if (!r.cuentaId) r.cuentaId = cuentaSugerida(r.tipo, r.categoriaId);
@@ -320,7 +322,11 @@ async function guardar(otro) {
         const id = await guardarTransaccion(tx);
         toast(texto, { deshacer: () => original ? guardarTransaccion({ ...original }) : borrarTransaccion(id) });
         if (otro && r) { Object.assign(r, { montoTxt: '', desc: '', etiquetas: [], favorito: false, dividir: false, partes: [] }); if (!r.catManual) r.categoriaId = null; pintar(); hojaAbierta()?.querySelector('#reg-monto')?.focus(); }
-        else cerrarHoja();
+        else {
+            const avisarSafari = r?.desdeAtajo && !enAppInstalada();
+            cerrarHoja();
+            if (avisarSafari) setTimeout(() => listoDesdeSafari(texto), 250);
+        }
     } catch (e) { toast('No se pudo guardar: ' + e.message, { tipo: 'error' }); }
 }
 
@@ -444,3 +450,18 @@ on('regFavorito', (el) => {
     });
     pintar();
 });
+
+// ---------- Atajos de Siri ----------
+// iOS abre las direcciones de Atajos en Safari, nunca en la app de la pantalla
+// de inicio. Lo guardado en Safari llega a la app al instante por Firebase.
+const enAppInstalada = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+function listoDesdeSafari(texto) {
+    abrirHoja({
+        titulo: 'Listo',
+        html: `<div class="listo-atajo">${tlacoSVG('celebrando', { tamano: 88 })}
+            <p class="listo-monto">${escapeHtml(texto)}</p>
+            <p class="hint">Ya está en Morralla y aparece en la app de tu pantalla de inicio. Puedes cerrar esta pestaña de Safari.</p>
+            <button class="btn btn-soft btn-block" data-action="cerrarHoja">Cerrar</button></div>`,
+    });
+}
