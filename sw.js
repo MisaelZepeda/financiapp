@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v15'; // v15: MSI y calendario de pagos
+const CACHE_NAME = 'morralla-cache-v16'; // v16: proyección de fin de mes
 
 const urlsToCache = [
     './',
@@ -33,6 +33,7 @@ const urlsToCache = [
     './js/domain/migracion.js',
     './js/domain/msi.js',
     './js/domain/notificaciones.js',
+    './js/domain/proyeccion.js',
     './js/domain/recurrentes.js',
     './js/domain/saldos.js',
     './js/domain/salud.js',

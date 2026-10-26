@@ -7,6 +7,7 @@ import { seriePatrimonio } from '../domain/saldos.js';
 import { resumenMes, serieMensual, variacion } from '../domain/analisis.js';
 import { estadoPago } from '../domain/tarjetas.js';
 import { tarjetaTlacoHTML } from '../components/salud.js';
+import { proyectarFinDeMes } from '../domain/proyeccion.js';
 import { pendientes, proximos } from '../domain/recurrentes.js';
 import { mesKey, sumarMeses } from '../domain/fechas.js';
 
@@ -132,11 +133,39 @@ function categoriasHTML() {
     </section>`;
 }
 
+// Proyección de fin de mes con tu dinero disponible (débito y efectivo).
+function proyeccionActual() {
+    return proyectarFinDeMes({ cuentas: sel.cuentas(), saldos: sel.saldos(), transacciones: sel.transacciones(), recurrentes: sel.recurrentes() });
+}
+
+function finMesHTML() {
+    if (!sel.cuentas().some(c => c.tipo !== 'credito')) return '';
+    const p = proyeccionActual();
+    const dia = Number(p.minimo.fecha.slice(8));
+    const titular = p.negativo
+        ? `<p class="fin-titular neg">El día ${dia} te faltarían <span class="num privado">${money(Math.abs(p.minimo.saldo))}</span></p>`
+        : `<p class="fin-titular">Cierras con <span class="num privado ${p.cierre >= p.disponible ? 'pos' : ''}">${money(p.cierre)}</span></p>`;
+    const chip = (signo, texto, monto) => monto ? `<span class="fin-chip"><b class="${signo === '+' ? 'pos' : ''}">${signo}</b>${texto} <span class="num privado">${money(monto)}</span></span>` : '';
+    return `<section class="card">
+        <div class="card-head"><h2 class="card-title">Fin de mes</h2><span class="card-meta">${p.diasRestantes ? `Faltan ${p.diasRestantes} día${p.diasRestantes === 1 ? '' : 's'}` : 'Hoy cierra el mes'}</span></div>
+        ${titular}
+        <p class="hint" style="margin-top:2px;">Hoy tienes <span class="privado">${money(p.disponible)}</span> disponibles en débito y efectivo${p.negativo ? '' : `; tu punto más bajo será el día ${dia} (<span class="privado">${money(p.minimo.saldo)}</span>)`}.</p>
+        <div class="grafica" style="height:70px; margin:12px 0 10px;"><canvas id="spark-fin" aria-label="Saldo disponible proyectado hasta fin de mes"></canvas></div>
+        <div class="fin-chips">
+            ${chip('+', 'Ingresos programados', p.detalle.ingresos)}
+            ${chip('−', 'Pagos de tarjeta', p.detalle.tarjetas)}
+            ${chip('−', 'Recurrentes', p.detalle.recurrentes)}
+            ${chip('−', `Gasto diario (${money(p.diario)})`, p.detalle.variable)}
+        </div>
+    </section>`;
+}
+
 export function render() {
     return `${tarjetaTlacoHTML()}${heroHTML()}
         <div class="stack" style="margin-top:14px;">
             ${cuentasHTML()}
             ${mesHTML()}
+            ${finMesHTML()}
             <div class="grid-2">${proximosHTML()}${categoriasHTML()}</div>
         </div>`;
 }
@@ -144,6 +173,8 @@ export function render() {
 export function montar() {
     const serie = seriePatrimonio(sel.cuentas(), sel.transacciones(), 6);
     sparkline(document.getElementById('spark-neto'), serie.map(s => s.neto));
+    const fin = document.getElementById('spark-fin');
+    if (fin) { const p = proyeccionActual(); sparkline(fin, p.serie.map(x => x.saldo), p.negativo ? 'neg' : 'accent'); }
     const meses = serieMensual(sel.transacciones(), 6);
     barrasIngresosGastos(document.getElementById('barras-mes'), meses.map(m => nombreMes(m.mes, 'short')), meses.map(m => m.ingresos), meses.map(m => m.gastos));
     const { filas, total } = datosCategoriasMes();

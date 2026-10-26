@@ -18,7 +18,7 @@ const TITULO_ESTADO = {
 export function saludActual() {
     return evaluarSalud({
         cuentas: sel.cuentas(), saldos: sel.saldos(), transacciones: sel.transacciones(),
-        categorias: sel.categorias(), metas: sel.metas(),
+        categorias: sel.categorias(), metas: sel.metas(), recurrentes: sel.recurrentes(),
     });
 }
 

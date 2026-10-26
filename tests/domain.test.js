@@ -310,3 +310,45 @@ test('calendario: cortes, pagos con monto, recurrentes y semanas', () => {
     assert.equal(semanas[1].total, 1000);                     // 5–11 oct: pago de tarjeta
     assert.equal(semanas.reduce((a, s) => a + s.total, 0), 1219);
 });
+
+import { proyectarFinDeMes, gastoDiarioVariable } from '../js/domain/proyeccion.js';
+
+test('proyección: simula hasta fin de mes con nómina, renta, tarjeta y gasto diario', () => {
+    const dia20 = new Date(2026, 8, 20, 12);
+    const datos = (saldoDeb) => ({
+        cuentas: [{ id: 'deb', tipo: 'debito' }, { id: 'tdc', tipo: 'credito', diaCorte: 18, diaPago: 5 }],
+        saldos: { deb: saldoDeb, tdc: 800 },
+        transacciones: [
+            { tipo: 'gasto', monto: 9200, fecha: '2026-07-10', cuentaId: 'deb' },  // 92 días → $100 diarios
+            { tipo: 'gasto', monto: 800, fecha: '2026-08-10', cuentaId: 'tdc' },   // estado del 18 ago, vence 5 sep, sin pagar
+            { tipo: 'gasto', monto: 50, fecha: '2026-09-02', cuentaId: 'deb', recurrenteId: 'x' }, // recurrente: no es variable
+        ],
+        recurrentes: [
+            { id: 'nom', tipo: 'ingreso', monto: 9000, frecuencia: 'mensual', diaMes: 30, activo: true, proximaFecha: '2026-09-30', cuentaId: 'deb' },
+            { id: 'renta', tipo: 'gasto', monto: 3000, frecuencia: 'mensual', diaMes: 25, activo: true, proximaFecha: '2026-09-25', cuentaId: 'deb' },
+            { id: 'netflix', tipo: 'gasto', monto: 219, frecuencia: 'mensual', diaMes: 22, activo: true, proximaFecha: '2026-09-22', cuentaId: 'tdc' },
+        ],
+    });
+    assert.equal(gastoDiarioVariable(datos(0).cuentas, datos(0).transacciones, dia20), 100);
+    const p = proyectarFinDeMes(datos(5000), dia20);
+    assert.equal(p.diasRestantes, 10);
+    assert.deepEqual(p.minimo, { fecha: '2026-09-29', saldo: 300 });
+    assert.equal(p.cierre, 9200);
+    assert.equal(p.negativo, false);
+    assert.deepEqual(p.detalle, { ingresos: 9000, recurrentes: 3000, tarjetas: 800, variable: 1000 });
+    const apretado = proyectarFinDeMes(datos(3000), dia20);
+    assert.equal(apretado.negativo, true);
+    assert.deepEqual(apretado.minimo, { fecha: '2026-09-29', saldo: -1700 });
+});
+
+test('salud: proyección negativa preocupa a Tlaco', () => {
+    const dia20 = new Date(2026, 8, 20, 12);
+    const s = evaluarSalud({
+        cuentas: [{ id: 'deb', tipo: 'debito' }], saldos: { deb: 500 },
+        transacciones: [{ tipo: 'gasto', monto: 9200, fecha: '2026-07-10', cuentaId: 'deb' }, { tipo: 'ingreso', monto: 100, fecha: '2026-09-01', cuentaId: 'deb' }],
+        recurrentes: [],
+    }, dia20);
+    assert.equal(s.estado, 'preocupado');
+    assert.match(s.mensaje, /te faltarían/);
+    assert.equal(s.factores.find(f => f.id === 'fin').nivel, 'mal');
+});

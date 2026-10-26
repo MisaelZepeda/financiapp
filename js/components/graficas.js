@@ -79,12 +79,16 @@ export function lineaPatrimonio(el, etiquetas, valores) {
 }
 
 // Mini línea sin ejes (tendencia en tarjetas).
-export function sparkline(el, valores) {
+export function sparkline(el, valores, tono = 'accent') {
     const ctx = lienzo(el); if (!ctx) return;
-    const acento = css('--accent-ink', '#c6f432');
+    const color = css(tono === 'neg' ? '--neg' : '--accent-ink', '#f2b544');
+    const cruzaCero = Math.min(...valores) < 0 && Math.max(...valores) > 0;
     new Chart(ctx, {
         type: 'line',
-        data: { labels: valores.map((_, i) => i), datasets: [{ data: valores, borderColor: acento, borderWidth: 2, tension: 0.4, pointRadius: 0, fill: false }] },
+        data: { labels: valores.map((_, i) => i), datasets: [
+            { data: valores, borderColor: color, borderWidth: 2, tension: 0.35, pointRadius: 0, fill: false },
+            ...(cruzaCero ? [{ data: valores.map(() => 0), borderColor: css('--line-strong', '#44382d'), borderWidth: 1, borderDash: [4, 4], pointRadius: 0 }] : []),
+        ] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } }, scales: { x: { display: false }, y: { display: false } }, animation: { duration: 600 } },
     });
 }

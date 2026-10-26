@@ -3,7 +3,7 @@
 //
 // Estados de Tlaco, del más urgente al más tranquilo:
 //   triste      gastos > ingresos del mes (si ya hubo ingresos), pago vencido o presupuesto rebasado
-//   preocupado  presupuesto al 90 %, tarjeta que vence en ≤3 días sin cubrir o crédito usado > 70 %
+//   preocupado  presupuesto al 90 %, tarjeta que vence en ≤3 días sin cubrir, crédito usado > 70 % o proyección negativa
 //   celebrando  meta cumplida este mes o ahorro ≥ 30 % de lo que entró
 //   contento    balance del mes positivo
 //   tranquilo   sin movimientos este mes, o ingresos y gastos parejos
@@ -11,12 +11,13 @@
 import { mesKey, sumarMeses } from './fechas.js';
 import { resumenMes } from './analisis.js';
 import { estadoPago } from './tarjetas.js';
+import { proyectarFinDeMes } from './proyeccion.js';
 
 const r0 = (n) => Math.round(n);
 const fmt = (n) => '$' + Number(Math.abs(n) || 0).toLocaleString('es-MX', { maximumFractionDigits: 0 });
 
 // Cada factor: { id, titulo, detalle, valor, nivel: 'bien'|'regular'|'mal'|'sin', peso, puntos (0–1) }
-export function evaluarSalud({ cuentas = [], saldos = {}, transacciones = [], categorias = [], metas = [] }, hoy = new Date()) {
+export function evaluarSalud({ cuentas = [], saldos = {}, transacciones = [], categorias = [], metas = [], recurrentes = [] }, hoy = new Date()) {
     const mes = mesKey(hoy);
     const r = resumenMes(transacciones, mes);
     const hayMovs = r.ingresos > 0 || r.gastos > 0;
@@ -102,6 +103,14 @@ export function evaluarSalud({ cuentas = [], saldos = {}, transacciones = [], ca
         const meses = disponible / (gastoProm.reduce((a, b) => a + b, 0) / gastoProm.length);
         const nivel = meses >= 3 ? 'bien' : meses >= 1 ? 'regular' : 'mal';
         factores.push({ id: 'fondo', titulo: 'Fondo de emergencia', detalle: 'Meta sugerida: 3 meses de gastos', valor: `${meses >= 10 ? r0(meses) : meses.toFixed(1)} meses`, nivel, peso: 10, puntos: Math.min(1, meses / 3) });
+    }
+
+    // 7. Proyección de fin de mes (dinero disponible en débito y efectivo)
+    if (cuentas.some(c => c.tipo !== 'credito')) {
+        const p = proyectarFinDeMes({ cuentas, saldos, transacciones, recurrentes }, hoy);
+        const nivel = p.negativo ? 'mal' : p.cierre < p.disponible * 0.1 ? 'regular' : 'bien';
+        factores.push({ id: 'fin', titulo: 'Fin de mes', detalle: p.negativo ? `El ${Number(p.minimo.fecha.slice(8))} te faltarían ${fmt(p.minimo.saldo)}` : 'Proyección de tu dinero disponible', valor: `${p.cierre < 0 ? '−' : ''}${fmt(p.cierre)}`, nivel, peso: 10, puntos: nivel === 'bien' ? 1 : nivel === 'regular' ? 0.5 : 0 });
+        if (p.negativo) motivos.preocupado.push({ texto: `A este ritmo, el día ${Number(p.minimo.fecha.slice(8))} te faltarían ${fmt(p.minimo.saldo)}.`, sugerencia: `Baja tu gasto diario de ${fmt(p.diario)} o pasa dinero de tus ahorros antes de esa fecha.`, ruta: '#/inicio' });
     }
 
     // Metas cumplidas este mes (con abono en el mes)
