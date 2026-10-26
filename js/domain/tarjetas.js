@@ -28,17 +28,25 @@ export function fechaPagoDe(cuenta, corte) {
     return diaPago > dia(cuenta) ? fechaEnMes(mes, diaPago) : fechaEnMes(sumarMeses(mes, 1), diaPago);
 }
 
+// Primer corte en o después de `fecha`: ahí se factura la primera mensualidad de una compra a MSI.
+export function primerCorteDesde(cuenta, fecha) {
+    const enMes = fechaEnMes(mesKey(fecha), dia(cuenta));
+    return enMes >= fecha ? enMes : fechaEnMes(sumarMeses(mesKey(fecha), 1), dia(cuenta));
+}
+
+// Meses completos entre dos fechas (por mes calendario).
+export function mesesEntre(desde, hasta) {
+    const [y1, m1] = mesKey(desde).split('-').map(Number);
+    const [y2, m2] = mesKey(hasta).split('-').map(Number);
+    return (y2 - y1) * 12 + (m2 - m1);
+}
+
 // Mensualidad de una compra a MSI que se factura en el corte `corte`, o 0.
-// La primera mensualidad cae en el primer corte en o después de la compra.
 function mensualidadMSI(cuenta, tx, corte) {
     const meses = Number(tx.msi) || 0;
-    const enMes = fechaEnMes(mesKey(tx.fecha), dia(cuenta));
-    const primerCorte = enMes >= tx.fecha ? enMes : fechaEnMes(sumarMeses(mesKey(tx.fecha), 1), dia(cuenta));
+    const primerCorte = primerCorteDesde(cuenta, tx.fecha);
     if (corte < primerCorte) return 0;
-    const [y1, m1] = mesKey(primerCorte).split('-').map(Number);
-    const [y2, m2] = mesKey(corte).split('-').map(Number);
-    const n = (y2 - y1) * 12 + (m2 - m1);
-    return n < meses ? Number(tx.monto) / meses : 0;
+    return mesesEntre(primerCorte, corte) < meses ? Number(tx.monto) / meses : 0;
 }
 
 const r2 = (n) => Math.round(n * 100) / 100;

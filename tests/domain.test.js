@@ -264,3 +264,49 @@ test('consejos: hay suficientes y no se repite el anterior', () => {
     const a = consejoAlAzar();
     for (let i = 0; i < 20; i++) assert.notEqual(consejoAlAzar(a), a);
 });
+
+import { detalleMSI, msiDeCuenta } from '../js/domain/msi.js';
+import { eventosMes, semanasMes } from '../js/domain/calendario.js';
+
+test('msi: mensualidades facturadas, restantes y liberación', () => {
+    const tdc = cuentas[1]; // corte 18, pago 5
+    const d = detalleMSI(tdc, { tipo: 'gasto', monto: 1200, fecha: '2026-07-15', msi: 12, cuentaId: 'tdc' }, HOY);
+    assert.deepEqual([d.mensualidad, d.facturadas, d.restantes, d.pendiente], [100, 3, 9, 900]);
+    assert.equal(d.ultimoCorte, '2027-06-18');
+    assert.equal(d.ultimoPago, '2027-07-05');
+    // Compra el mismo día del corte: entra en ese corte. Después del corte: en el siguiente.
+    assert.equal(detalleMSI(tdc, { monto: 600, fecha: '2026-09-18', msi: 6 }, HOY).facturadas, 1);
+    assert.equal(detalleMSI(tdc, { monto: 600, fecha: '2026-09-20', msi: 6 }, HOY).facturadas, 0);
+    const resumen = msiDeCuenta(tdc, [
+        { tipo: 'gasto', monto: 1200, fecha: '2026-07-15', msi: 12, cuentaId: 'tdc' },
+        { tipo: 'gasto', monto: 300, fecha: '2026-01-10', msi: 3, cuentaId: 'tdc' },   // ya terminó
+        { tipo: 'gasto', monto: 50, fecha: '2026-09-10', cuentaId: 'tdc' },            // de contado: no cuenta
+    ], HOY);
+    assert.equal(resumen.activas.length, 1);
+    assert.equal(resumen.terminadas.length, 1);
+    assert.deepEqual([resumen.mensualidadTotal, resumen.pendienteTotal], [100, 900]);
+});
+
+test('calendario: cortes, pagos con monto, recurrentes y semanas', () => {
+    const tdc = cuentas[1];
+    const datos = {
+        cuentas: [cuentas[0], tdc],
+        transacciones: [{ tipo: 'gasto', monto: 1000, fecha: '2026-09-10', cuentaId: 'tdc' }],
+        recurrentes: [
+            { id: 'n', tipo: 'gasto', desc: 'Netflix', monto: 219, frecuencia: 'mensual', diaMes: 12, activo: true, proximaFecha: '2026-09-12' },
+            { id: 'q', tipo: 'ingreso', desc: 'Nómina', monto: 9000, frecuencia: 'quincenal', activo: true, proximaFecha: '2026-10-01' },
+            { id: 'p', tipo: 'gasto', desc: 'Pausado', monto: 1, frecuencia: 'mensual', activo: false, proximaFecha: '2026-10-02' },
+        ],
+    };
+    const ev = eventosMes('2026-10', datos, HOY);
+    const pago = ev.find(e => e.tipo === 'pago');
+    assert.deepEqual([pago.fecha, pago.monto, pago.pagado], ['2026-10-05', 1000, false]);
+    assert.ok(ev.some(e => e.tipo === 'corte' && e.fecha === '2026-10-18'));
+    assert.deepEqual(ev.filter(e => e.recurrenteId === 'n').map(e => e.fecha), ['2026-10-12']);
+    assert.deepEqual(ev.filter(e => e.recurrenteId === 'q').map(e => e.fecha), ['2026-10-01', '2026-10-16', '2026-10-31']);
+    assert.ok(!ev.some(e => e.recurrenteId === 'p'));
+    const semanas = semanasMes('2026-10', ev);
+    assert.equal(semanas[0].desde, '2026-09-28');            // la semana empieza en lunes
+    assert.equal(semanas[1].total, 1000);                     // 5–11 oct: pago de tarjeta
+    assert.equal(semanas.reduce((a, s) => a + s.total, 0), 1219);
+});

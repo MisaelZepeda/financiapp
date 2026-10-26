@@ -5,6 +5,7 @@ import { icon } from '../lib/icons.js';
 import { money, moneyPartes, escapeHtml, TIPO_CUENTA, fechaLarga, cuandoRelativo } from '../lib/format.js';
 import { txAgrupadasHTML, vacioHTML, monogramaHTML } from '../components/piezas.js';
 import { estadoPago, porFacturar } from '../domain/tarjetas.js';
+import { msiDeCuenta } from '../domain/msi.js';
 
 export const titulo = ({ id }) => {
     const c = sel.cuenta(id);
@@ -50,9 +51,34 @@ export function render({ id }) {
             ${credito}
             <div class="acciones-rapidas">${acciones.map(([a, i, t]) => `<button data-action="${a}" data-id="${escapeHtml(id)}"><span>${icon(i === 'minus' ? 'trending-down' : i)}</span>${t}</button>`).join('')}</div>
         </section>
+        ${cred ? msiHTML(c) : ''}
         <section class="seccion">
             <div class="seccion-head"><h2>Movimientos</h2><span class="card-meta">${txs.length}</span></div>
             <div class="card card-flush">${txs.length ? txAgrupadasHTML(txs.slice(0, 60)) : vacioHTML('list', 'Sin movimientos en esta cuenta.')}
             ${txs.length > 60 ? `<div style="padding:14px 18px;"><a class="btn btn-soft btn-block" href="#/movimientos?cuenta=${encodeURIComponent(id)}">Ver todos</a></div>` : ''}</div>
         </section>`;
+}
+
+// Compras a meses sin intereses de la tarjeta: avance, lo que falta y cuándo se libera.
+function msiHTML(c) {
+    const { activas, terminadas, mensualidadTotal, pendienteTotal } = msiDeCuenta(c, sel.transacciones());
+    if (!activas.length && !terminadas.length) return '';
+    const fila = (m) => `<div class="fila fila-link msi-fila" data-action="editarTx" data-id="${escapeHtml(m.tx.id)}">
+        <div class="fila-body">
+            <div class="fila-titulo">${escapeHtml(m.tx.desc || 'Compra a meses')}</div>
+            <div class="barra sm" style="margin:7px 0 5px;"><i style="width:${(m.facturadas / m.meses) * 100}%"></i></div>
+            <div class="fila-sub">${m.activa ? `${m.facturadas} de ${m.meses} · se libera ${fechaLarga(m.ultimoPago)}` : `Terminada · ${m.meses} meses`}</div>
+        </div>
+        <div class="fila-der"><span class="num privado">${money(m.mensualidad)}</span><small>${m.activa ? `faltan <span class="privado">${money(m.pendiente)}</span>` : 'al mes'}</small></div>
+    </div>`;
+    return `<section class="seccion">
+        <div class="seccion-head"><h2>Meses sin intereses</h2><span class="card-meta">${activas.length} activa${activas.length === 1 ? '' : 's'}</span></div>
+        <div class="card">
+            ${activas.length ? `<div class="msi-totales">
+                <div><small>Pagas al mes</small><b class="num privado">${money(mensualidadTotal)}</b></div>
+                <div><small>Te falta por pagar</small><b class="num privado">${money(pendienteTotal)}</b></div>
+            </div>` : ''}
+            <div class="lista">${activas.map(fila).join('')}${terminadas.slice(0, 3).map(fila).join('')}</div>
+        </div>
+    </section>`;
 }

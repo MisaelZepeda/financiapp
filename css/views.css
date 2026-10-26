@@ -215,3 +215,49 @@
 .sugerencia p:first-child { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 4px; }
 .sugerencia p:last-child { font-size: 15px; line-height: 1.45; }
 .consejo-extra { margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: var(--surface-2); font-size: 14px; line-height: 1.45; }
+
+/* ---------- Pestañas de Planear (se desplazan si no caben) ---------- */
+.tabs-planear { overflow-x: auto; scrollbar-width: none; }
+.tabs-planear::-webkit-scrollbar { display: none; }
+.tabs-planear a { flex: 1 0 auto; padding: 0 14px; }
+
+/* ---------- MSI ---------- */
+.msi-totales { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-bottom: 14px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+.msi-totales small { display: block; font-size: 12px; color: var(--muted); }
+.msi-totales b { font-size: 18px; font-weight: 600; }
+
+/* ---------- Calendario ---------- */
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.cal-head .card-title { margin: 0; }
+.cal-resumen { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.cal-resumen b { color: var(--text); font-weight: 600; }
+.cal-resumen b.pos { color: var(--pos); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cal-dow { text-align: center; font-size: 11.5px; font-weight: 600; color: var(--muted); padding-bottom: 4px; }
+.cal-dia { aspect-ratio: 1 / 1.05; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-family: var(--font-num); font-size: 14px; font-weight: 500; color: var(--text); background: transparent; }
+.cal-dia:hover { background: var(--surface-2); }
+.cal-dia.pasado { color: var(--muted); }
+.cal-dia.hoy { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.cal-dia.activo { background: var(--accent); color: var(--on-accent); }
+.cal-puntos { display: flex; gap: 2px; height: 5px; }
+.cal-puntos i, .cal-leyenda i { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+.cal-dia.activo .cal-puntos i { box-shadow: 0 0 0 1px var(--on-accent); }
+.cal-leyenda { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+.cal-leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+.cal-leyenda i { width: 8px; height: 8px; }
+.ev-pago { background: var(--neg); }
+.ev-rec { background: var(--warn); }
+.ev-ingreso { background: var(--pos); }
+.ev-corte { background: var(--muted); }
+.ev-msi { background: var(--accent); }
+.ev-pago-ico { background: var(--neg-soft); color: var(--neg); }
+.ev-rec-ico { background: var(--warn-soft); color: var(--warn); }
+.ev-ingreso-ico { background: var(--pos-soft); color: var(--pos); }
+.ev-corte-ico { background: var(--surface-3); color: var(--muted); }
+.ev-msi-ico { background: var(--accent-soft); color: var(--accent-ink); }
+.semanas { display: flex; flex-direction: column; gap: 10px; }
+.semana { display: grid; grid-template-columns: 112px minmax(0, 1fr) auto; align-items: center; gap: 10px; font-size: 13px; }
+.semana-fechas { color: var(--muted); white-space: nowrap; }
+.semana .num { font-weight: 600; min-width: 84px; text-align: right; }
+.semana.pesada .semana-fechas, .semana.pesada .num { color: var(--warn); }
+.semana.pesada .barra > i { background: var(--warn); }

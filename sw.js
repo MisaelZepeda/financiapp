@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v14'; // v14: Morralla y Tlaco
+const CACHE_NAME = 'morralla-cache-v15'; // v15: MSI y calendario de pagos
 
 const urlsToCache = [
     './',
@@ -26,10 +26,12 @@ const urlsToCache = [
     './js/core/store.js',
     './js/domain/analisis.js',
     './js/domain/calculadora.js',
+    './js/domain/calendario.js',
     './js/domain/categorias.js',
     './js/domain/consejos.js',
     './js/domain/fechas.js',
     './js/domain/migracion.js',
+    './js/domain/msi.js',
     './js/domain/notificaciones.js',
     './js/domain/recurrentes.js',
     './js/domain/saldos.js',
@@ -45,6 +47,7 @@ const urlsToCache = [
     './js/views/acceso.js',
     './js/views/ajustes.js',
     './js/views/analisis.js',
+    './js/views/calendario.js',
     './js/views/cuenta.js',
     './js/views/cuentas.js',
     './js/views/inicio.js',

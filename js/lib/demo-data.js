@@ -59,6 +59,8 @@ export function construirDemo(hoy = new Date()) {
         add(26, { tipo: 'ingreso', subtipo: 'cashback', monto: 64, desc: 'Cashback', cuentaId: 'platino' });
     }
     tx({ tipo: 'gasto', monto: 14400, desc: 'Laptop', categoriaId: 'otros', cuentaId: 'platino', msi: 12, fecha: hace(95) });
+    tx({ tipo: 'gasto', monto: 9000, desc: 'Refrigerador', categoriaId: 'vivienda', cuentaId: 'platino', msi: 6, fecha: hace(40) });
+    tx({ tipo: 'gasto', monto: 2400, desc: 'Audífonos', categoriaId: 'ocio', cuentaId: 'viajes', msi: 3, fecha: hace(150) });
     tx({ tipo: 'gasto', monto: 2350, desc: 'Veterinario', categoriaId: 'mascotas', cuentaId: 'viajes', fecha: hace(1) });
 
     const metas = {

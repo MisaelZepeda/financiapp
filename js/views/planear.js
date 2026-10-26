@@ -6,12 +6,13 @@ import * as A from '../core/actions.js';
 import { icon } from '../lib/icons.js';
 import { money, escapeHtml, fechaLarga, cuandoRelativo, nombreMesAnio } from '../lib/format.js';
 import { vacioHTML } from '../components/piezas.js';
+import { calendarioHTML } from './calendario.js';
 import { abrirHoja, cerrarHoja, toast } from '../components/capas.js';
 import { resumenMes } from '../domain/analisis.js';
 import { pendientes, FRECUENCIAS } from '../domain/recurrentes.js';
 import { mesKey, hoyISO, ultimoDiaMes, diasEntre, aFecha } from '../domain/fechas.js';
 
-const TABS = { presupuestos: 'Presupuestos', metas: 'Metas', recurrentes: 'Recurrentes' };
+const TABS = { presupuestos: 'Presupuestos', calendario: 'Calendario', metas: 'Metas', recurrentes: 'Recurrentes' };
 
 export const titulo = () => ({ titulo: 'Planear' });
 
@@ -128,7 +129,7 @@ function recurrentesHTML() {
 export function render({ tab = 'presupuestos' }) {
     const t = TABS[tab] ? tab : 'presupuestos';
     return `<div class="seg tabs-planear">${Object.entries(TABS).map(([k, n]) => `<a class="${k === t ? 'activo' : ''}" href="#/planear/${k}">${n}</a>`).join('')}</div>
-        <div style="margin-top:14px;">${t === 'presupuestos' ? presupuestosHTML() : t === 'metas' ? metasHTML() : recurrentesHTML()}</div>`;
+        <div id="planear-contenido" style="margin-top:14px;">${t === 'presupuestos' ? presupuestosHTML() : t === 'calendario' ? calendarioHTML() : t === 'metas' ? metasHTML() : recurrentesHTML()}</div>`;
 }
 
 on('pausarRecurrente', async (el) => {
