@@ -161,11 +161,11 @@ function finMesHTML() {
     </section>`;
 }
 
-// Los primeros días del mes se ofrece el resumen del mes que terminó.
+// Se ofrece el resumen del mes que terminó hasta que lo veas.
 function resumenListoHTML() {
     const key = resumenPendiente();
     if (!key) return '';
-    return `<button class="card resumen-cta" data-action="anResumen" data-mes="${key}">
+    return `<button class="card resumen-cta" data-action="anResumen" data-mes="${key}" data-pendiente>
         <span class="resumen-cta-ico">${icon('sparkle')}</span>
         <span class="resumen-cta-txt"><b>Tu ${nombreMes(key).toLowerCase()} en resumen ya está listo</b><small>Tlaco te cuenta cómo te fue</small></span>
         ${icon('chevron-right', 'chev')}</button>`;

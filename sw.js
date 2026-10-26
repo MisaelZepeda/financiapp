@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v19'; // v19: entender tu dinero
+const CACHE_NAME = 'morralla-cache-v20'; // v20: resumen visible en Inicio
 
 const urlsToCache = [
     './',

@@ -121,6 +121,7 @@ function cerrar() {
     clearTimeout(estado.timer);
     estado.el.remove();
     document.removeEventListener('keydown', teclas);
+    document.querySelectorAll('.resumen-cta[data-pendiente]').forEach(b => b.remove());   // ya se vio
     estado = null;
 }
 
@@ -133,11 +134,10 @@ function teclas(e) {
 on('historiaPaso', (el) => paso(Number(el.dataset.d)));
 on('historiaCerrar', () => cerrar());
 
-// Se ofrece en Inicio durante los primeros días del mes, hasta que lo veas.
+// Se ofrece en Inicio hasta que veas el resumen del mes pasado.
 const CLAVE = 'morralla_resumen_visto';
 function marcarVisto(key) { try { localStorage.setItem(CLAVE, key); } catch { /* sin almacenamiento */ } }
 export function resumenPendiente(hoy = new Date()) {
-    if (hoy.getDate() > 7) return null;
     const key = sumarMeses(mesKey(hoy), -1);
     let visto = null;
     try { visto = localStorage.getItem(CLAVE); } catch { /* sin almacenamiento */ }
