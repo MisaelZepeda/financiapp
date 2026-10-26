@@ -55,6 +55,18 @@ export function render() {
         </section>
 
         <section class="card">
+            <h2 class="card-title" style="margin-bottom:6px;">Favoritos</h2>
+            <p class="card-desc" style="margin:0 0 10px;">Aparecen arriba del registro para llenarlo con un toque. Se crean marcando "Guardar también como favorito" al registrar.</p>
+            ${favoritosAjustesHTML()}
+        </section>
+
+        <section class="card">
+            <h2 class="card-title" style="margin-bottom:6px;">Siri y Atajos</h2>
+            <p class="card-desc" style="margin:0 0 12px;">Di "Oye Siri, gasto" y Morralla se abre con el registro lleno para confirmarlo.</p>
+            <button class="btn btn-soft" data-action="ajSiri">${icon('sparkle')}Ver cómo configurarlo</button>
+        </section>
+
+        <section class="card">
             <h2 class="card-title" style="margin-bottom:6px;">Tus datos</h2>
             <p class="card-desc" style="margin:0 0 14px;">Descarga una copia o restaura una anterior (acepta respaldos de la versión anterior de la app).</p>
             <div class="botones-col">
@@ -76,6 +88,56 @@ export function render() {
         <p class="hint" style="text-align:center; margin-top:14px;">Morralla · tu dinero, hasta la última moneda</p>
     </div>`;
 }
+
+function favoritosAjustesHTML() {
+    const favs = sel.plantillas();
+    if (!favs.length) return '<p class="hint">Todavía no tienes favoritos.</p>';
+    const nombreCat = (id) => sel.categorias().find(c => c.id === id)?.nombre;
+    return `<div class="lista">${favs.map(f => `<div class="fila">
+        <div class="fila-ico">${icon('star')}</div>
+        <div class="fila-body"><div class="fila-titulo">${escapeHtml(f.desc || nombreCat(f.categoriaId) || 'Favorito')}</div>
+            <div class="fila-sub">${[f.monto ? `<span class="privado">${money(f.monto)}</span>` : 'Sin monto fijo', nombreCat(f.categoriaId), sel.cuenta(f.cuentaId)?.nombre].filter(Boolean).map(x => x.startsWith('<') ? x : escapeHtml(x)).join(' · ')}</div></div>
+        <button class="icon-btn" data-action="ajBorrarFav" data-id="${escapeHtml(f.id)}" aria-label="Quitar favorito">${icon('trash')}</button></div>`).join('')}</div>`;
+}
+
+on('ajBorrarFav', async (el) => {
+    if (!(await confirmar({ titulo: 'Quitar favorito', texto: 'Se quita de la lista de favoritos. Tus movimientos no cambian.', aceptar: 'Quitar', peligro: true }))) return;
+    await A.borrarPlantilla(el.dataset.id); toast('Favorito quitado');
+});
+
+// Siri y Atajos: la URL #/nuevo abre el registro prellenado.
+const urlBase = () => `${location.origin}${location.pathname}`;
+on('ajSiri', () => {
+    const gasto = `${urlBase()}#/nuevo?tipo=gasto&monto=`;
+    const saldo = `${urlBase()}#/inicio`;
+    const paso = (n, t) => `<li><b>${n}.</b> ${t}</li>`;
+    abrirHoja({
+        titulo: 'Siri y Atajos',
+        html: `<div class="siri">
+            <h3>"Oye Siri, gasto"</h3>
+            <ol class="pasos">
+                ${paso(1, 'Abre la app <b>Atajos</b> y toca <b>+</b> para crear uno nuevo.')}
+                ${paso(2, 'Agrega la acción <b>Pedir entrada</b>: tipo <b>Número</b>, pregunta "¿Cuánto gastaste?".')}
+                ${paso(3, 'Agrega <b>Texto</b> y pega la dirección de abajo; al final inserta la variable <b>Entrada proporcionada</b>.')}
+                ${paso(4, 'Agrega <b>Abrir URL</b> (usa el Texto anterior).')}
+                ${paso(5, 'Nombra el atajo <b>Gasto</b>. Ya puedes decir "Oye Siri, gasto" y dictar el monto.')}
+            </ol>
+            <div class="copiar"><code>${escapeHtml(gasto)}</code><button class="btn btn-soft btn-sm" data-action="ajCopiar" data-t="${escapeHtml(gasto)}">${icon('copy')}Copiar</button></div>
+            <p class="hint">Puedes agregar más datos a la dirección: <code>&amp;cat=comida</code> (categoría), <code>&amp;cuenta=nu</code> (cuenta), <code>&amp;desc=Oxxo</code>. Se buscan por nombre; si no se encuentran, eliges tú.</p>
+            <h3>"Oye Siri, mi saldo"</h3>
+            <ol class="pasos">
+                ${paso(1, 'Crea otro atajo con la acción <b>Abrir URL</b> y esta dirección.')}
+                ${paso(2, 'Nómbralo <b>Mi saldo</b>.')}
+            </ol>
+            <div class="copiar"><code>${escapeHtml(saldo)}</code><button class="btn btn-soft btn-sm" data-action="ajCopiar" data-t="${escapeHtml(saldo)}">${icon('copy')}Copiar</button></div>
+            <p class="hint">Si Morralla está en tu pantalla de inicio, iOS puede abrir la dirección en Safari; en ese caso abre la app una vez después de usar el atajo.</p>
+        </div>`,
+    });
+});
+on('ajCopiar', async (el) => {
+    try { await navigator.clipboard.writeText(el.dataset.t); toast('Copiado'); }
+    catch { toast('No se pudo copiar; mantén presionada la dirección para copiarla', { tipo: 'error' }); }
+});
 
 // Reduce la foto a 300 px antes de guardarla (se guarda como data URL).
 function comprimirImagen(file) {

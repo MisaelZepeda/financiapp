@@ -352,3 +352,34 @@ test('salud: proyección negativa preocupa a Tlaco', () => {
     assert.match(s.mensaje, /te faltarían/);
     assert.equal(s.factores.find(f => f.id === 'fin').nivel, 'mal');
 });
+
+import { sugerirCategoria, buscarPorNombre } from '../js/domain/autocategoria.js';
+import { partesDe } from '../js/domain/analisis.js';
+
+test('autocategoría: historial primero, luego diccionario', () => {
+    const historial = [
+        { tipo: 'gasto', desc: 'Tacos El Güero', categoriaId: 'ocio' },
+        { tipo: 'gasto', desc: 'Tacos El Güero', categoriaId: 'ocio' },
+    ];
+    assert.deepEqual(sugerirCategoria('tacos el guero', historial), { categoriaId: 'ocio', fuente: 'historial' });
+    assert.equal(sugerirCategoria('Tacos de canasta', []).categoriaId, 'comida');
+    assert.equal(sugerirCategoria('OXXO Insurgentes', []).categoriaId, 'comida');
+    assert.equal(sugerirCategoria('Uber al aeropuerto', []).categoriaId, 'transporte');
+    assert.equal(sugerirCategoria('Uber Eats', []).categoriaId, 'comida');
+    assert.equal(sugerirCategoria('Recibo CFE', []).categoriaId, 'servicios');
+    assert.equal(sugerirCategoria('gas natural', []).categoriaId, 'servicios');
+    assert.equal(sugerirCategoria('Netflix', []).categoriaId, 'suscripciones');
+    assert.equal(sugerirCategoria('zzz', []), null);
+    assert.equal(sugerirCategoria('Netflix', [], ['comida']), null);   // solo categorías existentes
+    const cats = [{ id: 'comida', nombre: 'Comida' }, { id: 'transporte', nombre: 'Transporte' }];
+    assert.equal(buscarPorNombre('comida', cats).id, 'comida');
+    assert.equal(buscarPorNombre('Transp', cats).id, 'transporte');
+});
+
+test('gastos divididos: el resumen reparte por categoría y el total no cambia', () => {
+    const tx = { tipo: 'gasto', monto: 1000, fecha: '2026-09-05', categoriaId: 'comida', partes: [{ categoriaId: 'comida', monto: 700 }, { categoriaId: 'vivienda', monto: 300 }] };
+    const r = resumenMes([tx], '2026-09');
+    assert.equal(r.gastos, 1000);
+    assert.deepEqual(r.porCategoria, { comida: 700, vivienda: 300 });
+    assert.deepEqual(partesDe({ tipo: 'gasto', monto: 50, categoriaId: 'ocio' }), [{ categoriaId: 'ocio', monto: 50 }]);
+});

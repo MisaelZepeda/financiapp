@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v16'; // v16: proyección de fin de mes
+const CACHE_NAME = 'morralla-cache-v17'; // v17: registrar en dos toques
 
 const urlsToCache = [
     './',
@@ -25,6 +25,7 @@ const urlsToCache = [
     './js/core/router.js',
     './js/core/store.js',
     './js/domain/analisis.js',
+    './js/domain/autocategoria.js',
     './js/domain/calculadora.js',
     './js/domain/calendario.js',
     './js/domain/categorias.js',

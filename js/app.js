@@ -21,6 +21,7 @@ import { mostrarAcceso, ocultarAcceso, mostrarMigracion, nombreRegistro } from '
 import { confirmarMigracion, selectorTema } from './views/ajustes.js';
 import './components/salud.js';
 import { consejoAlAzar } from './domain/consejos.js';
+import { buscarPorNombre } from './domain/autocategoria.js';
 
 import * as inicio from './views/inicio.js';
 import * as movimientos from './views/movimientos.js';
@@ -38,6 +39,7 @@ definirRuta('/planear/:tab', planear);
 definirRuta('/cuentas', cuentas);
 definirRuta('/cuenta/:id', cuenta);
 definirRuta('/ajustes', ajustes);
+definirRuta('/nuevo', {}); // Siri y Atajos: abre el registro prellenado
 
 const NAV = [
     ['#/inicio', 'home', 'Inicio', ['/inicio']],
@@ -80,6 +82,7 @@ function pintarVista(nuevaVista = false) {
     if (!store.cargado) return;
     const r = rutaActual();
     if (!r?.vista) return;
+    if (r.patron === '/nuevo') { abrirDesdeAtajo(r.params); return; }
     const el = document.getElementById('vista');
     const scroll = window.scrollY;
     pintarNav();
@@ -88,6 +91,20 @@ function pintarVista(nuevaVista = false) {
     if (nuevaVista) { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; window.scrollTo(0, 0); }
     else window.scrollTo(0, scroll);
     r.vista.montar?.(el, r.params);
+}
+
+// #/nuevo?tipo=gasto&monto=250&cat=super&desc=Oxxo&cuenta=nu
+// La categoría y la cuenta se buscan por nombre; el monto acepta "250", "$1,250.50" o "250 pesos".
+function abrirDesdeAtajo(q) {
+    location.replace('#/inicio');
+    const tipo = ['gasto', 'ingreso', 'transferencia'].includes(q.tipo) ? q.tipo : 'gasto';
+    const monto = parseFloat(String(q.monto || '').replace(/,/g, '').replace(/[^0-9.]/g, '')) || 0;
+    const cat = tipo === 'gasto' && q.cat ? buscarPorNombre(q.cat, sel.categorias()) : null;
+    const cuenta = q.cuenta ? buscarPorNombre(q.cuenta, sel.cuentas()) : null;
+    setTimeout(() => abrirRegistro({
+        tipo, monto: monto ? Math.round(monto * 100) / 100 : undefined,
+        desc: (q.desc || '').slice(0, 80), categoriaId: cat?.id, cuentaId: cuenta?.id,
+    }), 50);
 }
 
 alNavegar((r, cambio) => { if (cambio) r.vista.alEntrar?.(r.params); pintarVista(cambio); });

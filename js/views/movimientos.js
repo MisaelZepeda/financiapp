@@ -6,6 +6,7 @@ import { icon } from '../lib/icons.js';
 import { money, escapeHtml, nombreMesAnio } from '../lib/format.js';
 import { txAgrupadasHTML, vacioHTML } from '../components/piezas.js';
 import { mesKey, ultimosMeses } from '../domain/fechas.js';
+import { partesDe } from '../domain/analisis.js';
 
 const f = { tipo: 'todos', cuentaId: '', categoriaId: '', mes: '', q: '', limite: 80 };
 
@@ -24,7 +25,7 @@ function filtradas() {
     return sel.transacciones().filter(t => {
         if (f.tipo !== 'todos' && t.tipo !== f.tipo) return false;
         if (f.cuentaId && t.cuentaId !== f.cuentaId && t.cuentaDestinoId !== f.cuentaId) return false;
-        if (f.categoriaId && t.categoriaId !== f.categoriaId) return false;
+        if (f.categoriaId && (t.tipo !== 'gasto' || !partesDe(t).some(p => p.categoriaId === f.categoriaId))) return false;
         if (f.mes && !t.fecha?.startsWith(f.mes)) return false;
         if (q) {
             const texto = `${t.desc || ''} ${sel.categoria(t.categoriaId).nombre || ''} ${sel.cuenta(t.cuentaId)?.nombre || ''} ${t.monto}`.toLowerCase();

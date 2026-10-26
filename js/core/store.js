@@ -17,14 +17,14 @@ export const store = {
 };
 
 function vacio() {
-    return { meta: null, perfil: {}, ajustes: {}, cuentas: {}, categorias: {}, transacciones: {}, metas: {}, recurrentes: {}, notifDescartadas: {} };
+    return { meta: null, perfil: {}, ajustes: {}, cuentas: {}, categorias: {}, transacciones: {}, metas: {}, recurrentes: {}, plantillas: {}, retos: {}, notifDescartadas: {} };
 }
 
 // Asegura objetos y que cada elemento tenga su id (la clave de Firebase).
 function normalizar(d = {}) {
     const out = vacio();
     Object.keys(out).forEach(k => { if (d[k] != null) out[k] = d[k]; });
-    ['cuentas', 'categorias', 'transacciones', 'metas', 'recurrentes'].forEach(k => {
+    ['cuentas', 'categorias', 'transacciones', 'metas', 'recurrentes', 'plantillas', 'retos'].forEach(k => {
         const col = {};
         Object.entries(out[k] || {}).forEach(([id, v]) => { if (v) col[id] = { ...v, id }; });
         out[k] = col;
@@ -72,6 +72,8 @@ export const sel = {
     saldo: (id) => sel.saldos()[id] || 0,
     patrimonio: () => memorizar('patrimonio', () => patrimonio(Object.values(store.datos.cuentas), sel.saldos())),
     metas: () => memorizar('metas', () => Object.values(store.datos.metas).sort((a, b) => (a.fechaLimite || '9999').localeCompare(b.fechaLimite || '9999'))),
+    plantillas: () => memorizar('plantillas', () => Object.values(store.datos.plantillas).sort((a, b) => (a.creadoEn || 0) - (b.creadoEn || 0))),
+    retos: () => memorizar('retos', () => Object.values(store.datos.retos).sort((a, b) => (b.inicio || '').localeCompare(a.inicio || ''))),
     recurrentes: () => memorizar('recs', () => Object.values(store.datos.recurrentes).sort((a, b) => (a.proximaFecha || '').localeCompare(b.proximaFecha || ''))),
     avisos: () => memorizar('avisos', () => construirAvisos({
         cuentas: sel.cuentas(), transacciones: sel.transacciones(), categorias: sel.categorias(),

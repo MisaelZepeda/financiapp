@@ -220,3 +220,25 @@
 .aviso-actualizacion > .icon { width: 22px; height: 22px; color: var(--accent-ink); flex-shrink: 0; }
 .aviso-actualizacion span { flex: 1; font-size: 13px; color: var(--muted); }
 .aviso-actualizacion b { display: block; font-size: 14px; color: var(--text); }
+
+/* ---------- Registro: dividir, etiquetas, favoritos ---------- */
+.chip-outline { background: transparent; border-color: var(--line-strong); }
+.favs .icon { color: var(--accent-ink); }
+.partes { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.parte { display: grid; grid-template-columns: 1fr 110px 36px; gap: 8px; align-items: center; }
+.parte .icon-btn { width: 36px; height: 36px; }
+.partes-pie { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.partes-pie .hint.neg { color: var(--neg); }
+.partes-pie .hint.pos { color: var(--pos); }
+input.etiqueta-input { width: 130px; height: 30px; padding: 0 11px; border-radius: var(--r-full); flex: 0 1 auto; }
+.check-fav { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-2); margin: 4px 0 14px; cursor: pointer; }
+.check-fav input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+/* ---------- Siri y Atajos ---------- */
+.siri h3 { font-family: var(--font-display); font-size: 16px; margin: 4px 0 10px; }
+.siri h3:not(:first-child) { margin-top: 22px; }
+.pasos { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--text-2); }
+.pasos b { color: var(--text); }
+.copiar { display: flex; gap: 8px; align-items: center; background: var(--surface-2); border-radius: var(--r-md); padding: 8px 8px 8px 12px; margin-bottom: 8px; }
+.copiar code { flex: 1; min-width: 0; font-size: 12px; overflow-wrap: anywhere; color: var(--text-2); }
+.siri .hint code { font-size: 12px; }

@@ -6,6 +6,12 @@ import { mesKey, ultimosMeses, sumarMeses } from './fechas.js';
 const monto = (tx) => Number(tx.monto) || 0;
 const r2 = (n) => Math.round(n * 100) / 100;
 
+// Un gasto dividido reparte su monto entre categorías; uno normal va completo a la suya.
+export function partesDe(tx) {
+    if (Array.isArray(tx.partes) && tx.partes.length) return tx.partes.map(p => ({ categoriaId: p.categoriaId || 'otros', monto: Number(p.monto) || 0 }));
+    return [{ categoriaId: tx.categoriaId || 'otros', monto: monto(tx) }];
+}
+
 export function resumenMes(transacciones, key) {
     let ingresos = 0, gastos = 0;
     const porCategoria = {};
@@ -14,8 +20,7 @@ export function resumenMes(transacciones, key) {
         if (tx.tipo === 'ingreso') ingresos += monto(tx);
         else if (tx.tipo === 'gasto') {
             gastos += monto(tx);
-            const c = tx.categoriaId || 'otros';
-            porCategoria[c] = (porCategoria[c] || 0) + monto(tx);
+            partesDe(tx).forEach(p => { porCategoria[p.categoriaId] = (porCategoria[p.categoriaId] || 0) + p.monto; });
         }
     });
     return { mes: key, ingresos: r2(ingresos), gastos: r2(gastos), balance: r2(ingresos - gastos), porCategoria };

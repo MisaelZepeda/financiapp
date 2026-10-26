@@ -62,6 +62,11 @@ export function construirDemo(hoy = new Date()) {
     tx({ tipo: 'gasto', monto: 9000, desc: 'Refrigerador', categoriaId: 'vivienda', cuentaId: 'platino', msi: 6, fecha: hace(40) });
     tx({ tipo: 'gasto', monto: 2400, desc: 'Audífonos', categoriaId: 'ocio', cuentaId: 'viajes', msi: 3, fecha: hace(150) });
     tx({ tipo: 'gasto', monto: 2350, desc: 'Veterinario', categoriaId: 'mascotas', cuentaId: 'viajes', fecha: hace(1) });
+    tx({ tipo: 'gasto', monto: 1840, desc: 'Costco', categoriaId: 'comida', cuentaId: 'platino', fecha: hace(3),
+        partes: [{ categoriaId: 'comida', monto: 1240 }, { categoriaId: 'vivienda', monto: 600 }] });
+    tx({ tipo: 'gasto', monto: 2600, desc: 'Hotel Valle', categoriaId: 'ocio', cuentaId: 'viajes', fecha: hace(38), etiquetas: ['vacaciones'] });
+    tx({ tipo: 'gasto', monto: 780, desc: 'Cena en el pueblo', categoriaId: 'comida', cuentaId: 'viajes', fecha: hace(37), etiquetas: ['vacaciones'] });
+    tx({ tipo: 'gasto', monto: 450, desc: 'Gasolina', categoriaId: 'transporte', cuentaId: 'nomina', fecha: hace(38), etiquetas: ['vacaciones'] });
 
     const metas = {
         emergencia: { nombre: 'Fondo de emergencia', icono: 'shield', montoObjetivo: 60000, montoActual: 32500, fechaLimite: `${Number(mes.slice(0, 4))}-12-31` },
@@ -76,9 +81,15 @@ export function construirDemo(hoy = new Date()) {
         nomina: { tipo: 'ingreso', desc: 'Nómina', monto: 18500, cuentaId: 'nomina', frecuencia: 'quincenal', activo: false, proximaFecha: sumarDias(h, 5) },
     };
 
+    const plantillas = {
+        cafe: { tipo: 'gasto', desc: 'Café', monto: 65, categoriaId: 'comida', cuentaId: 'efectivo', creadoEn: 1 },
+        uber: { tipo: 'gasto', desc: 'Uber', categoriaId: 'transporte', cuentaId: 'platino', creadoEn: 2 },
+        super: { tipo: 'gasto', desc: 'Supermercado', categoriaId: 'comida', cuentaId: 'platino', creadoEn: 3 },
+    };
+
     return {
         meta: { version: 4, origen: 'demo' },
         perfil: { nombre: 'Cuenta Demo', foto: '' },
-        ajustes: {}, cuentas, categorias, transacciones, metas, recurrentes, notifDescartadas: {},
+        ajustes: {}, cuentas, categorias, transacciones, metas, recurrentes, plantillas, retos: {}, notifDescartadas: {},
     };
 }

@@ -109,6 +109,24 @@ export function borrarRecurrente(id) { return actualizar({ [`recurrentes/${id}`]
 
 export function pausarRecurrente(id, activo) { return actualizar({ [`recurrentes/${id}/activo`]: activo }); }
 
+// ---------- Favoritos (plantillas) ----------
+export function guardarPlantilla(p) {
+    const id = p.id || nuevoId();
+    const previo = datos().plantillas[id] || {};
+    return actualizar({ [`plantillas/${id}`]: { creadoEn: Date.now(), ...previo, ...p, id: undefined } }).then(() => id);
+}
+
+export function borrarPlantilla(id) { return actualizar({ [`plantillas/${id}`]: null }); }
+
+// ---------- Retos ----------
+export function guardarReto(reto) {
+    const id = reto.id || nuevoId();
+    const previo = datos().retos[id] || {};
+    return actualizar({ [`retos/${id}`]: { ...previo, ...reto, id: undefined } }).then(() => id);
+}
+
+export function borrarReto(id) { return actualizar({ [`retos/${id}`]: null }); }
+
 // Registra la ocurrencia pendiente de cada recurrente y avanza su fecha.
 // Si un recurrente lleva varios periodos atrasado, registra uno por periodo.
 export function generarRecurrentes(recs) {

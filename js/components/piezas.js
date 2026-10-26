@@ -54,10 +54,11 @@ export function describirTx(tx) {
         };
     }
     const cat = sel.categoria(tx.categoriaId);
+    const dividido = Array.isArray(tx.partes) && tx.partes.length > 1;
     return {
-        icono: cat.icono || 'tag', tono: '',
+        icono: dividido ? 'list' : (cat.icono || 'tag'), tono: '',
         titulo: tx.desc || cat.nombre,
-        sub: [cat.nombre, origen?.nombre, tx.msi > 1 ? `${tx.msi} MSI` : ''].filter(Boolean).join(' · '),
+        sub: [dividido ? tx.partes.map(p => sel.categoria(p.categoriaId).nombre).join(' + ') : cat.nombre, origen?.nombre, tx.msi > 1 ? `${tx.msi} MSI` : ''].filter(Boolean).join(' · '),
         signo: '−', clase: '',
     };
 }
