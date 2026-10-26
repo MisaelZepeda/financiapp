@@ -6,6 +6,7 @@ import { barrasIngresosGastos, sparkline, donaCategorias, colorSerie, MAX_SERIES
 import { seriePatrimonio } from '../domain/saldos.js';
 import { resumenMes, serieMensual, variacion } from '../domain/analisis.js';
 import { estadoPago } from '../domain/tarjetas.js';
+import { tarjetaTlacoHTML } from '../components/salud.js';
 import { pendientes, proximos } from '../domain/recurrentes.js';
 import { mesKey, sumarMeses } from '../domain/fechas.js';
 
@@ -132,7 +133,7 @@ function categoriasHTML() {
 }
 
 export function render() {
-    return `${heroHTML()}
+    return `${tarjetaTlacoHTML()}${heroHTML()}
         <div class="stack" style="margin-top:14px;">
             ${cuentasHTML()}
             ${mesHTML()}

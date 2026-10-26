@@ -211,3 +211,56 @@ test('calculadora: precedencia, decimales y edición', () => {
     assert.equal(tieneOperacion('1200'), false);
     assert.equal(tieneOperacion('1200+5'), true);
 });
+
+import { evaluarSalud } from '../js/domain/salud.js';
+import { CONSEJOS, consejoAlAzar } from '../js/domain/consejos.js';
+
+const tdcSalud = { id: 'tdc', tipo: 'credito', limite: 10000, diaCorte: 18, diaPago: 5 };
+const debSalud = { id: 'deb', tipo: 'debito' };
+const basesSalud = (txs, extra = {}) => ({ cuentas: [debSalud, tdcSalud], saldos: { deb: 30000, tdc: 1000 }, transacciones: txs, categorias: [], metas: [], ...extra });
+
+test('salud: tranquilo sin movimientos y contento con balance positivo', () => {
+    const t = evaluarSalud(basesSalud([]), HOY);
+    assert.equal(t.estado, 'tranquilo');
+    const c = evaluarSalud(basesSalud([{ tipo: 'ingreso', monto: 10000, fecha: '2026-09-01', cuentaId: 'deb' }, { tipo: 'gasto', monto: 8500, fecha: '2026-09-02', cuentaId: 'deb' }]), HOY);
+    assert.equal(c.estado, 'contento');
+    assert.match(c.mensaje, /\+\$1,500/);
+    assert.ok(c.puntaje > 0 && c.puntaje <= 100);
+});
+
+test('salud: celebrando con ahorro ≥ 30 % y con meta cumplida este mes', () => {
+    const txs = [{ tipo: 'ingreso', monto: 10000, fecha: '2026-09-01', cuentaId: 'deb' }, { tipo: 'gasto', monto: 6000, fecha: '2026-09-02', cuentaId: 'deb' }];
+    assert.equal(evaluarSalud(basesSalud(txs), HOY).estado, 'celebrando');
+    const meta = { nombre: 'Viaje', montoObjetivo: 500, montoActual: 500, historial: { a: { fecha: '2026-09-10', monto: 100 } } };
+    const m = evaluarSalud(basesSalud([], { metas: [meta] }), HOY);
+    assert.equal(m.estado, 'celebrando');
+    assert.match(m.mensaje, /Viaje/);
+});
+
+test('salud: preocupado por tarjeta próxima y por presupuesto al 90 %', () => {
+    const cerca = new Date(2026, 9, 3, 12); // 3 oct: Platino (corte 18 sep) vence el 5 oct
+    const compra = [{ tipo: 'gasto', monto: 2000, fecha: '2026-09-10', cuentaId: 'tdc' }];
+    const p = evaluarSalud(basesSalud(compra), cerca);
+    assert.equal(p.estado, 'preocupado');
+    assert.equal(p.accion.action, 'pagarTarjeta');
+    const cat = [{ id: 'comida', nombre: 'Comida', presupuesto: 1000 }];
+    const p2 = evaluarSalud(basesSalud([{ tipo: 'gasto', monto: 950, fecha: '2026-09-02', cuentaId: 'deb', categoriaId: 'comida' }], { categorias: cat }), HOY);
+    assert.equal(p2.estado, 'preocupado');
+    assert.match(p2.sugerencia, /\$50/);
+});
+
+test('salud: triste gana a todo (gastos > ingresos o pago vencido)', () => {
+    const txs = [{ tipo: 'ingreso', monto: 1000, fecha: '2026-09-01', cuentaId: 'deb' }, { tipo: 'gasto', monto: 3000, fecha: '2026-09-02', cuentaId: 'deb' }];
+    const t = evaluarSalud(basesSalud(txs), HOY);
+    assert.equal(t.estado, 'triste');
+    // Pago vencido: estado del 18 ago se pagaba el 5 sep y no se cubrió.
+    const vencido = evaluarSalud(basesSalud([{ tipo: 'gasto', monto: 500, fecha: '2026-08-10', cuentaId: 'tdc' }]), new Date(2026, 8, 10, 12));
+    assert.equal(vencido.estado, 'triste');
+    assert.match(vencido.mensaje, /venció/);
+});
+
+test('consejos: hay suficientes y no se repite el anterior', () => {
+    assert.ok(CONSEJOS.length >= 30);
+    const a = consejoAlAzar();
+    for (let i = 0; i < 20; i++) assert.notEqual(consejoAlAzar(a), a);
+});

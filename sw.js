@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiapp-cache-v13'; // v13: sin zoom al escribir en iPhone
+const CACHE_NAME = 'morralla-cache-v14'; // v14: Morralla y Tlaco
 
 const urlsToCache = [
     './',
@@ -17,6 +17,8 @@ const urlsToCache = [
     './js/components/graficas.js',
     './js/components/piezas.js',
     './js/components/registro.js',
+    './js/components/salud.js',
+    './js/components/tlaco.js',
     './js/core/actions.js',
     './js/core/db.js',
     './js/core/eventos.js',
@@ -25,11 +27,13 @@ const urlsToCache = [
     './js/domain/analisis.js',
     './js/domain/calculadora.js',
     './js/domain/categorias.js',
+    './js/domain/consejos.js',
     './js/domain/fechas.js',
     './js/domain/migracion.js',
     './js/domain/notificaciones.js',
     './js/domain/recurrentes.js',
     './js/domain/saldos.js',
+    './js/domain/salud.js',
     './js/domain/tarjetas.js',
     './js/firebase-init.js',
     './js/lib/apariencia.js',

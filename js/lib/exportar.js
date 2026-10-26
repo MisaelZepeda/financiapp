@@ -26,11 +26,11 @@ export function exportarCSV() {
         (t.tipo === 'gasto' ? -1 : 1) * t.monto, t.msi || '',
     ]));
     // BOM para que Excel respete los acentos.
-    descargar(`FinanciApp_movimientos_${hoyISO()}.csv`, '﻿' + filas.map(f => f.map(celda).join(',')).join('\r\n'), 'text/csv;charset=utf-8');
+    descargar(`Morralla_movimientos_${hoyISO()}.csv`, '﻿' + filas.map(f => f.map(celda).join(',')).join('\r\n'), 'text/csv;charset=utf-8');
 }
 
 export function exportarRespaldo(datos) {
-    descargar(`FinanciApp_respaldo_${hoyISO()}.json`, JSON.stringify({ ...datos, exportadoEn: new Date().toISOString() }, null, 2), 'application/json');
+    descargar(`Morralla_respaldo_${hoyISO()}.json`, JSON.stringify({ ...datos, exportadoEn: new Date().toISOString() }, null, 2), 'application/json');
 }
 
 // Estado de cuenta del mes `key` ('AAAA-MM'), con saldos al cierre de ese mes.
@@ -41,7 +41,7 @@ export async function generarPDF(key = mesKey()) {
     const limpiar = (t) => (t ? String(t).replace(/[^\x00-\x7F\xC0-\xFF]/g, '').trim() : '');
     const fmt = (n) => '$' + Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    const OSCURO = [14, 15, 18], ACENTO = [198, 244, 50], GRIS = [110, 114, 125];
+    const OSCURO = [31, 26, 21], ACENTO = [242, 181, 68], GRIS = [122, 106, 88];
     const VERDE = [21, 128, 61], ROJO = [220, 38, 38];
 
     const cierre = key === mesKey() ? hoyISO() : ultimoDiaMes(key);
@@ -104,7 +104,7 @@ export async function generarPDF(key = mesKey()) {
         doc.setPage(i);
         doc.setFillColor(...OSCURO); doc.rect(0, 0, 210, 38, 'F');
         doc.setFillColor(...ACENTO); doc.rect(0, 38, 210, 1.5, 'F');
-        doc.setTextColor(...ACENTO); doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text('FINANCIAPP · ESTADO DE CUENTA', 15, 14);
+        doc.setTextColor(...ACENTO); doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.text('MORRALLA · ESTADO DE CUENTA', 15, 14);
         doc.setTextColor(255, 255, 255); doc.setFontSize(18); doc.text(nombre.toUpperCase() || 'MIS FINANZAS', 15, 24);
         doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.text(`Periodo: ${periodo}`, 15, 31);
         const alto = doc.internal.pageSize.height;

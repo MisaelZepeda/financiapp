@@ -1,13 +1,13 @@
 {
-  "name": "FinanciApp",
-  "short_name": "FinanciApp",
+  "name": "Morralla",
+  "short_name": "Morralla",
   "id": "/?source=pwa",
   "orientation": "portrait",
-  "description": "Cuentas, tarjetas, presupuestos, metas, recurrentes y análisis de tus finanzas personales.",
+  "description": "Tu dinero, hasta la última moneda: cuentas, tarjetas, presupuestos, metas y análisis, con Tlaco como compañero.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0e0f12",
-  "theme_color": "#0e0f12",
+  "background_color": "#15110d",
+  "theme_color": "#15110d",
   "icons": [
     {
       "src": "icon-192x192.png",

@@ -9,6 +9,8 @@
 const CLAVE = 'financiapp_apariencia';
 const CLAVE_SESION = 'financiapp_tema_sesion';
 const sistemaOscuro = window.matchMedia('(prefers-color-scheme: dark)');
+// Acentos alternativos; cualquier otro valor (o uno retirado, como lima) usa latón.
+export const ACENTOS_ALTERNOS = ['cobre', 'menta', 'cielo', 'violeta'];
 
 export function leerApariencia() {
     try { return JSON.parse(localStorage.getItem(CLAVE)) || {}; } catch { return {}; }
@@ -40,8 +42,8 @@ export function aplicarApariencia(cambios = {}) {
     const root = document.documentElement;
     const efectivo = temaEfectivo();
     root.setAttribute('data-theme', efectivo === 'claro' ? 'light' : 'dark');
-    if (ap.acento && ap.acento !== 'lima') root.setAttribute('data-accent', ap.acento); else root.removeAttribute('data-accent');
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', efectivo === 'claro' ? '#f3f4f6' : '#0e0f12');
+    if (ACENTOS_ALTERNOS.includes(ap.acento)) root.setAttribute('data-accent', ap.acento); else root.removeAttribute('data-accent');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', efectivo === 'claro' ? '#fbf6ee' : '#15110d');
     document.dispatchEvent(new CustomEvent('apariencia'));
     return ap;
 }

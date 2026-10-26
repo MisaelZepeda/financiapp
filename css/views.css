@@ -5,12 +5,29 @@
 .rot180 { transform: rotate(180deg); }
 .cent { font-size: 0.55em; color: var(--muted); letter-spacing: 0; }
 
-/* ---------- Carga ---------- */
-.cargando { position: fixed; inset: 0; z-index: 300; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
-.cargando img { border-radius: 12px; }
-.cargando-barra { width: 120px; height: 3px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+/* ---------- Carga (Tlaco + consejo) ---------- */
+.cargando { position: fixed; inset: 0; z-index: 300; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 24px; }
+.cargando-centro { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.cargando-marca { font-family: var(--font-display); font-weight: 800; font-size: 34px; letter-spacing: -0.04em; margin-top: 4px; }
+.cargando-barra { width: 120px; height: 4px; border-radius: 4px; background: var(--surface-2); overflow: hidden; margin-top: 10px; }
 .cargando-barra i { display: block; width: 40%; height: 100%; background: var(--accent); animation: cargar 1s infinite var(--ease); }
 @keyframes cargar { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
+.cargando-consejo { width: 100%; max-width: 380px; background: var(--surface); border-radius: 22px; padding: 16px 18px 18px; animation: fadeIn var(--t) var(--ease); }
+.cargando-consejo p:last-child { font-size: 16px; line-height: 1.45; }
+.cargando-etiqueta { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; color: var(--accent-ink); margin-bottom: 6px; }
+
+/* ---------- Tlaco: animaciones suaves ---------- */
+.tlaco { overflow: visible; flex-shrink: 0; }
+.tlaco-animado .tlaco-cuerpo { animation: tlacoRespira 3.2s ease-in-out infinite; transform-origin: 100px 210px; }
+.tlaco-animado .tlaco-ojos { animation: tlacoParpadea 4.6s infinite; transform-origin: 100px 108px; }
+.tlaco-animado .tlaco-saludo { animation: tlacoSaluda 1.6s ease-in-out infinite; transform-origin: 174px 120px; }
+.tlaco-animado.tlaco-celebrando .tlaco-cuerpo { animation: tlacoBrinca 0.9s ease-in-out infinite; }
+.tlaco-animado .tlaco-brillo { animation: tlacoBrillo 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes tlacoRespira { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-3px) scale(1.01, 0.99); } }
+@keyframes tlacoBrinca { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes tlacoParpadea { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes tlacoSaluda { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-14deg); } }
+@keyframes tlacoBrillo { 0%, 100% { opacity: 0.4; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.1); } }
 
 /* ---------- Acceso ---------- */
 .acceso { min-height: 100vh; display: flex; }
@@ -164,3 +181,37 @@
 .seg-tema { max-width: 420px; }
 .seg-tema button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 8px; }
 .seg-tema .icon { width: 15px; height: 15px; }
+
+/* ---------- Títulos con la tipografía de marca ---------- */
+.top-title h1, .seccion-head h2, .acc-form h2, .acc-lado h1, .migracion h1, .brand, .hoja-head h3 { font-family: var(--font-display); letter-spacing: -0.025em; }
+.brand img { border-radius: 9px; }
+
+/* ---------- Tarjeta de Tlaco en Inicio ---------- */
+.tlaco-card { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 16px 12px 8px; margin-bottom: 14px; border-radius: var(--r-xl); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent); color: var(--text); }
+.tlaco-card:hover { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.tlaco-card-texto { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.tlaco-card-estado { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.tlaco-card-msg { font-size: 15px; line-height: 1.4; }
+.tlaco-card-link { font-size: 13px; font-weight: 600; color: var(--accent-ink); }
+.estado-celebrando { color: var(--accent-ink); }
+.estado-contento { color: var(--pos); }
+.estado-tranquilo { color: var(--muted); }
+.estado-preocupado { color: var(--warn); }
+.estado-triste { color: var(--neg); }
+:root[data-theme="light"] .estado-preocupado { color: #9a5b0b; }
+
+/* ---------- Hoja "Tu salud financiera" ---------- */
+.salud-top { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+.salud-puntaje { font-family: var(--font-num); font-weight: 700; font-size: 46px; letter-spacing: -0.03em; line-height: 1; }
+.salud-puntaje small { font-size: 20px; color: var(--muted); }
+.salud-etiqueta { font-size: 15px; font-weight: 600; }
+.factor-ico { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 800; font-size: 15px; }
+.factor-ico .icon { width: 16px; height: 16px; }
+.nivel-bien { background: var(--pos-soft); color: var(--pos); }
+.nivel-regular { background: var(--warn-soft); color: var(--warn); }
+.nivel-mal { background: var(--neg-soft); color: var(--neg); }
+.nivel-sin { background: var(--surface-3); color: var(--muted); }
+.sugerencia { margin-top: 14px; padding: 14px 16px; border-radius: 18px; background: color-mix(in srgb, var(--accent) 10%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent); }
+.sugerencia p:first-child { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 4px; }
+.sugerencia p:last-child { font-size: 15px; line-height: 1.45; }
+.consejo-extra { margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: var(--surface-2); font-size: 14px; line-height: 1.45; }

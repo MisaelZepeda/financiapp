@@ -1,4 +1,6 @@
-# FinanciApp
+# Morralla
+
+*Tu dinero, hasta la última moneda.*
 
 App web de finanzas personales: cuentas, tarjetas de crédito, presupuestos, metas de ahorro y pagos recurrentes en un solo lugar. Se instala en el celular como app (PWA) y sincroniza los datos con Firebase.
 
@@ -6,6 +8,7 @@ App web de finanzas personales: cuentas, tarjetas de crédito, presupuestos, met
 
 ## Funciones
 
+- **Tlaco, la mascota:** una moneda de cobre que reacciona a tu mes (celebrando, contento, tranquilo, preocupado o triste), te explica por qué y te da consejos mientras carga la app. Al tocarla se abre **Tu salud financiera**: un puntaje de 0 a 100 con sus factores (balance, ahorro, tarjetas, presupuestos, uso de crédito y fondo de emergencia) y una sugerencia concreta.
 - **Inicio:** patrimonio neto con su tendencia real, saldos por cuenta (débito y luego crédito), el mes contra el anterior, próximos pagos (tarjetas y recurrentes) y gastos por categoría.
 - **Registro rápido:** el monto primero (teclado propio en el celular) y categoría, cuenta y fecha en fichas de un toque; sugiere descripciones anteriores y la cuenta más usada. Deshacer con un toque.
 - **Movimientos:** agrupados por día, con búsqueda y filtros por tipo, cuenta, categoría y mes.
@@ -45,7 +48,7 @@ npm test
 
 GitHub Pages publica automáticamente la rama `master` desde la raíz del repositorio. Para cada versión:
 
-1. Sube el número de `CACHE_NAME` en `sw.js` (p. ej. `financiapp-cache-v7` → `v8`). Si no cambia, los celulares con la app instalada seguirán mostrando la versión anterior.
+1. Sube el número de `CACHE_NAME` en `sw.js` (p. ej. `morralla-cache-v14` → `v15`). Si no cambia, la app instalada no se entera de la versión nueva; si cambia, al abrirla aparece el aviso "Hay una nueva versión · Actualizar".
 2. Si agregas un archivo JS o CSS, añádelo también a `urlsToCache` en `sw.js`.
 3. Haz commit y push a `master`.
 
@@ -57,9 +60,9 @@ manifest.json, sw.js  Instalación como app (PWA) y caché sin conexión
 css/                  tokens (tema y acentos), base, componentes y vistas
 js/app.js             Arranque: sesión, migración, datos, rutas y acciones globales
 js/core/              Estado (store), acceso a datos (db), escrituras (actions), rutas y eventos
-js/domain/            Lógica pura sin DOM: saldos, tarjetas, recurrentes, análisis, avisos, migración
+js/domain/            Lógica pura sin DOM: saldos, tarjetas, recurrentes, análisis, salud, consejos, avisos, migración
 js/views/             Una vista por pantalla (inicio, movimientos, cuenta, análisis, planear, ajustes…)
-js/components/        Registro rápido, formularios, hojas, toasts, gráficas y piezas de lista
+js/components/        Tlaco, registro rápido, formularios, hojas, toasts, gráficas y piezas de lista
 js/lib/               Formato, íconos, apariencia, exportación PDF/CSV, datos demo
 tests/                Pruebas de js/domain (npm test)
 ```

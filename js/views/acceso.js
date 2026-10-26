@@ -5,6 +5,7 @@ import { on } from '../core/eventos.js';
 import { icon } from '../lib/icons.js';
 import { escapeHtml, money } from '../lib/format.js';
 import { toast } from '../components/capas.js';
+import { tlacoSVG } from '../components/tlaco.js';
 
 const raiz = () => document.getElementById('acceso');
 let modo = 'login';
@@ -54,11 +55,12 @@ export function mostrarAcceso() {
     el.hidden = false;
     el.innerHTML = `<div class="acceso">
         <div class="acc-panel">
-            <div class="brand"><img src="logo.svg" alt="">FinanciApp</div>
+            <div class="brand"><img src="logo.svg" alt="">morralla</div>
             <div class="acc-form">${formHTML()}</div>
         </div>
         <aside class="acc-lado">
-            <p class="acc-eyebrow">Tu dinero, claro</p>
+            ${tlacoSVG('contento', { tamano: 110 })}
+            <p class="acc-eyebrow">Tu dinero, hasta la última moneda</p>
             <h1>Cuentas, tarjetas, metas y análisis en un solo lugar.</h1>
             <div class="acc-muestra card">
                 <small class="muted">Patrimonio neto</small>
@@ -97,7 +99,7 @@ export function mostrarMigracion(resultado, alAceptar) {
     el.hidden = false;
     const { reporte, ok, resumen } = resultado;
     el.innerHTML = `<div class="migracion">
-        <div class="brand"><img src="logo.svg" alt="">FinanciApp</div>
+        <div class="brand"><img src="logo.svg" alt="">morralla</div>
         <h1>Bienvenido a la nueva versión</h1>
         <p class="muted">Vamos a crear una <b>copia de prueba</b> de tus datos en el formato nuevo. Tus datos originales no se modifican: la versión publicada sigue funcionando igual.</p>
         <div class="card" style="margin:18px 0;">

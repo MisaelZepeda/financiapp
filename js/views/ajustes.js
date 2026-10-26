@@ -19,13 +19,13 @@ export function selectorTema(tema) {
         .map(([v, i, t]) => `<button class="${tema === v ? 'activo' : ''}" data-action="ajTema" data-v="${v}">${icon(i)} ${t}</button>`).join('')}</div>`;
 }
 
-const ACENTOS = [['lima', '#c6f432', 'Lima'], ['menta', '#5eead4', 'Menta'], ['cielo', '#7cc4ff', 'Cielo'], ['violeta', '#b69cff', 'Violeta'], ['coral', '#ff9b7a', 'Coral']];
+const ACENTOS = [['laton', '#f2b544', 'Latón'], ['cobre', '#e8894a', 'Cobre'], ['menta', '#6fdcc4', 'Menta'], ['cielo', '#7cc4ff', 'Cielo'], ['violeta', '#b69cff', 'Violeta']];
 
 export function render() {
     const p = sel.perfil();
     const aj = sel.ajustes();
     const tema = temaElegido();
-    const acento = aj.acento || 'lima';
+    const acento = ACENTOS.some(a => a[0] === aj.acento) ? aj.acento : 'laton';
     return `<div class="ajustes">
         <section class="card">
             <h2 class="card-title" style="margin-bottom:14px;">Perfil</h2>
@@ -73,7 +73,7 @@ export function render() {
         </section>
 
         <button class="btn btn-ghost btn-block" data-action="cerrarSesion">${icon('log-out')}${store.demo ? 'Salir de la demo' : 'Cerrar sesión'}</button>
-        <p class="hint" style="text-align:center; margin-top:14px;">FinanciApp v4</p>
+        <p class="hint" style="text-align:center; margin-top:14px;">Morralla · tu dinero, hasta la última moneda</p>
     </div>`;
 }
 
@@ -130,7 +130,7 @@ on('ajRestaurar', async (el) => {
         await A.restaurar(datos); toast('Respaldo restaurado');
     } else if (datos?.cuentas || datos?.transacciones) {
         confirmarMigracion({ titulo: 'Restaurar respaldo anterior', resultado: migrarV1(datos), alAceptar: async () => { await A.restaurar(migrarV1(datos).v4); toast('Respaldo restaurado'); } });
-    } else toast('El archivo no es un respaldo de FinanciApp', { tipo: 'error' });
+    } else toast('El archivo no es un respaldo de Morralla', { tipo: 'error' });
 }, 'change');
 
 on('ajBorrarMovs', async () => {

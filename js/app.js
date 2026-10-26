@@ -1,4 +1,4 @@
-// Arranque de FinanciApp v4: sesión, migración, datos, rutas y acciones globales.
+// Arranque de Morralla: sesión, migración, datos, rutas y acciones globales.
 
 import { auth } from './firebase-init.js';
 import { store, sel, setDatos, setUi, suscribir } from './core/store.js';
@@ -19,6 +19,8 @@ import { migrarV1 } from './domain/migracion.js';
 import { pendientes } from './domain/recurrentes.js';
 import { mostrarAcceso, ocultarAcceso, mostrarMigracion, nombreRegistro } from './views/acceso.js';
 import { confirmarMigracion, selectorTema } from './views/ajustes.js';
+import './components/salud.js';
+import { consejoAlAzar } from './domain/consejos.js';
 
 import * as inicio from './views/inicio.js';
 import * as movimientos from './views/movimientos.js';
@@ -49,7 +51,7 @@ function activo(prefijos) { const p = rutaActual().path || ''; return prefijos.s
 
 function pintarNav() {
     document.getElementById('sidebar').innerHTML = `
-        <div class="brand"><img src="logo.svg" alt="">FinanciApp</div>
+        <div class="brand"><img src="logo.svg" alt="">morralla</div>
         <button class="btn btn-primary side-add" data-action="nuevo">${icon('plus')}Nuevo movimiento</button>
         ${NAV.map(([h, i, t, p]) => `<a class="side-link ${activo(p) ? 'activo' : ''}" href="${h}">${icon(i)}${t}</a>`).join('')}
         <div class="side-sep"></div>
@@ -104,10 +106,24 @@ function alRecibirDatos(datos, uid) {
     mostrarApp();
 }
 
+// La pantalla de carga muestra un consejo de Tlaco; se deja al menos
+// 1.6 s para alcanzar a leerlo (tocarla la cierra antes).
+const inicioCarga = performance.now();
+function ocultarCarga() {
+    const el = document.getElementById('cargando');
+    if (el.hidden) return;
+    setTimeout(() => { el.hidden = true; }, Math.max(0, 1600 - (performance.now() - inicioCarga)));
+}
+document.getElementById('cargando').addEventListener('click', (e) => { e.currentTarget.hidden = true; });
+(function mostrarConsejoCarga() {
+    document.getElementById('consejo-carga-texto').textContent = consejoAlAzar();
+    document.getElementById('consejo-carga').hidden = false;
+})();
+
 function mostrarApp() {
     ocultarAcceso();
     document.getElementById('app').hidden = false;
-    document.getElementById('cargando').hidden = true;
+    ocultarCarga();
 }
 
 function entrarDemo() {
@@ -134,7 +150,7 @@ async function entrarUsuario(user) {
             await db.escribirV4(user.uid, resultado.v4);
             db.conectarFirebase(user.uid, (d) => alRecibirDatos(d, user.uid));
         };
-        document.getElementById('cargando').hidden = true;
+        ocultarCarga();
         // Cuenta nueva o sin datos: se crea directo. Con datos: se muestra la comparación.
         if (!resultado.resumen.cuentas && !resultado.resumen.transacciones) await conectar();
         else mostrarMigracion(resultado, conectar);
@@ -157,12 +173,15 @@ on('ingresoCuenta', (el) => abrirRegistro({ tipo: 'ingreso', cuentaId: id(el) })
 on('traspasar', (el) => abrirRegistro({ tipo: 'transferencia', cuentaId: id(el) }));
 on('rendimiento', (el) => abrirRegistro({ tipo: 'ingreso', cuentaId: id(el), subtipo: 'rendimiento' }));
 on('cashback', (el) => abrirRegistro({ tipo: 'ingreso', cuentaId: id(el), subtipo: 'cashback' }));
-on('pagarTarjeta', (el) => {
+function pagarTarjeta(tarjetaId) {
     // Origen: la cuenta con la que se pagó esta tarjeta la última vez.
-    const ultimo = sel.transacciones().find(t => t.tipo === 'transferencia' && t.cuentaDestinoId === id(el) && sel.cuenta(t.cuentaId));
+    const ultimo = sel.transacciones().find(t => t.tipo === 'transferencia' && t.cuentaDestinoId === tarjetaId && sel.cuenta(t.cuentaId));
     const origen = ultimo ? sel.cuenta(ultimo.cuentaId) : (sel.cuentas().find(c => c.tipo === 'debito') || sel.cuentas().find(c => c.tipo !== 'credito'));
-    abrirRegistro({ tipo: 'transferencia', cuentaId: origen?.id, cuentaDestinoId: id(el) });
-});
+    abrirRegistro({ tipo: 'transferencia', cuentaId: origen?.id, cuentaDestinoId: tarjetaId });
+}
+on('pagarTarjeta', (el) => pagarTarjeta(id(el)));
+// Acciones sugeridas por Tlaco en "Tu salud financiera".
+document.addEventListener('accionTlaco', (e) => { if (e.detail.action === 'pagarTarjeta') pagarTarjeta(e.detail.id); });
 on('marcarPagada', async (el) => { await A.marcarTarjetaPagada(id(el), true); toast('Tarjeta marcada como pagada'); });
 on('desmarcarPagada', async (el) => { await A.marcarTarjetaPagada(id(el), false); toast('Se quitó la marca de pagada'); });
 on('compartirCuenta', (el) => compartirTarjeta(id(el)));
