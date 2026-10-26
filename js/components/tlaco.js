@@ -1,4 +1,4 @@
-// Tlaco, la mascota: una moneda de cobre con cinco expresiones.
+// Tlaco, la mascota: una moneda de cobre con siete expresiones.
 // tlacoSVG(estado, { tamano }) → SVG en texto (sin datos del usuario).
 
 const CUERPO = (dy = 0) => `
@@ -40,9 +40,21 @@ const CARAS = {
         <circle cx="79" cy="117" r="2.3" fill="#fff"/><circle cx="123" cy="117" r="2.3" fill="#fff"/></g>
         ${GOTA(70, 124)}
         <path d="M82 150 q18 -16 36 0" stroke="#3a1f0e" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+    sorprendido: () => `${PIES}${brazo('M30 112 q-22 -6 -20 -34')}${brazo('M170 112 q22 -6 20 -34')}${CUERPO()}${MEJILLAS(0.5)}
+        <path d="M64 82 q14 -12 28 -2" stroke="#3a1f0e" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M136 82 q-14 -12 -28 -2" stroke="#3a1f0e" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <g class="tlaco-ojos"><circle cx="78" cy="106" r="12" fill="#fff"/><circle cx="122" cy="106" r="12" fill="#fff"/>
+        <circle cx="78" cy="107" r="6.5" fill="#3a1f0e"/><circle cx="122" cy="107" r="6.5" fill="#3a1f0e"/></g>
+        <ellipse cx="100" cy="142" rx="10" ry="13" fill="#3a1f0e"/>`,
+    dormido: () => `${PIES}${brazo('M26 124 q-14 14 -4 32')}${brazo('M174 124 q14 14 4 32')}${CUERPO(2)}${MEJILLAS(0.4)}
+        <path d="M66 112 q12 9 24 0" stroke="#3a1f0e" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M110 112 q12 9 24 0" stroke="#3a1f0e" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="100" cy="140" rx="7" ry="5" fill="#3a1f0e"/>
+        <g class="tlaco-zzz" fill="#f2b544" font-family="Bricolage Grotesque, Inter, sans-serif" font-weight="700">
+            <text x="150" y="58" font-size="26">Z</text><text x="172" y="34" font-size="18">z</text><text x="186" y="18" font-size="13">z</text></g>`,
 };
 
-export const NOMBRE_ESTADO = { celebrando: 'celebrando', contento: 'contento', tranquilo: 'tranquilo', preocupado: 'preocupado', triste: 'triste' };
+export const NOMBRE_ESTADO = { celebrando: 'celebrando', contento: 'contento', tranquilo: 'tranquilo', preocupado: 'preocupado', triste: 'triste', sorprendido: 'sorprendido', dormido: 'dormido' };
 
 export function tlacoSVG(estado = 'tranquilo', { tamano = 96, animado = true } = {}) {
     const cara = (CARAS[estado] || CARAS.tranquilo)();

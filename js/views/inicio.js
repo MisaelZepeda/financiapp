@@ -7,6 +7,7 @@ import { seriePatrimonio } from '../domain/saldos.js';
 import { resumenMes, serieMensual, variacion } from '../domain/analisis.js';
 import { estadoPago } from '../domain/tarjetas.js';
 import { tarjetaTlacoHTML } from '../components/salud.js';
+import { resumenPendiente } from '../components/resumen-mes.js';
 import { proyectarFinDeMes } from '../domain/proyeccion.js';
 import { pendientes, proximos } from '../domain/recurrentes.js';
 import { mesKey, sumarMeses } from '../domain/fechas.js';
@@ -160,8 +161,18 @@ function finMesHTML() {
     </section>`;
 }
 
+// Los primeros días del mes se ofrece el resumen del mes que terminó.
+function resumenListoHTML() {
+    const key = resumenPendiente();
+    if (!key) return '';
+    return `<button class="card resumen-cta" data-action="anResumen" data-mes="${key}">
+        <span class="resumen-cta-ico">${icon('sparkle')}</span>
+        <span class="resumen-cta-txt"><b>Tu ${nombreMes(key).toLowerCase()} en resumen ya está listo</b><small>Tlaco te cuenta cómo te fue</small></span>
+        ${icon('chevron-right', 'chev')}</button>`;
+}
+
 export function render() {
-    return `${tarjetaTlacoHTML()}${heroHTML()}
+    return `${resumenListoHTML()}${tarjetaTlacoHTML()}${heroHTML()}
         <div class="stack" style="margin-top:14px;">
             ${cuentasHTML()}
             ${mesHTML()}

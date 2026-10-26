@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v18'; // v18: atajos en Safari
+const CACHE_NAME = 'morralla-cache-v19'; // v19: entender tu dinero
 
 const urlsToCache = [
     './',
@@ -17,6 +17,7 @@ const urlsToCache = [
     './js/components/graficas.js',
     './js/components/piezas.js',
     './js/components/registro.js',
+    './js/components/resumen-mes.js',
     './js/components/salud.js',
     './js/components/tlaco.js',
     './js/core/actions.js',
@@ -31,11 +32,13 @@ const urlsToCache = [
     './js/domain/categorias.js',
     './js/domain/consejos.js',
     './js/domain/fechas.js',
+    './js/domain/historias.js',
     './js/domain/migracion.js',
     './js/domain/msi.js',
     './js/domain/notificaciones.js',
     './js/domain/proyeccion.js',
     './js/domain/recurrentes.js',
+    './js/domain/retos.js',
     './js/domain/saldos.js',
     './js/domain/salud.js',
     './js/domain/tarjetas.js',
@@ -55,6 +58,7 @@ const urlsToCache = [
     './js/views/inicio.js',
     './js/views/movimientos.js',
     './js/views/planear.js',
+    './js/views/retos.js',
 ];
 
 // Ciclo de actualización:

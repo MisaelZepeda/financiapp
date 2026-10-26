@@ -88,3 +88,66 @@ export function insightPrincipal(transacciones, hoy = new Date()) {
     });
     return mejor;
 }
+
+// Total de gasto por etiqueta en un rango ('AAAA-MM' a 'AAAA-MM', ambos incluidos).
+export function porEtiqueta(transacciones, desde = '0000-00', hasta = '9999-99') {
+    const grupos = {};
+    transacciones.forEach(tx => {
+        if (tx.tipo !== 'gasto' || !tx.etiquetas?.length || !tx.fecha) return;
+        const m = tx.fecha.slice(0, 7);
+        if (m < desde || m > hasta) return;
+        tx.etiquetas.forEach(e => {
+            const g = grupos[e] || (grupos[e] = { etiqueta: e, total: 0, veces: 0, desde: tx.fecha, hasta: tx.fecha });
+            g.total += monto(tx); g.veces += 1;
+            if (tx.fecha < g.desde) g.desde = tx.fecha;
+            if (tx.fecha > g.hasta) g.hasta = tx.fecha;
+        });
+    });
+    return Object.values(grupos).map(g => ({ ...g, total: r2(g.total) })).sort((a, b) => b.total - a.total);
+}
+
+// Este año contra el anterior: gasto de cada mes (enero a diciembre) y el mes actual
+// contra el mismo mes del año pasado. Los meses futuros de este año quedan en null.
+export function comparativoAnual(transacciones, hoy = new Date()) {
+    const actual = mesKey(hoy);
+    const anio = Number(actual.slice(0, 4));
+    const mesN = Number(actual.slice(5, 7));
+    const gastoMes = (k) => resumenMes(transacciones, k).gastos;
+    const k = (a, m) => `${a}-${String(m).padStart(2, '0')}`;
+    const meses = Array.from({ length: 12 }, (_, i) => i + 1);
+    const este = resumenMes(transacciones, actual);
+    const pasado = resumenMes(transacciones, k(anio - 1, mesN));
+    const acumulado = (a) => r2(meses.filter(m => m <= mesN).reduce((s, m) => s + gastoMes(k(a, m)), 0));
+    // Antes de tu primer movimiento no hay datos (null), no gasto en cero.
+    const primero = transacciones.reduce((min, t) => (t.fecha && t.fecha.slice(0, 7) < min ? t.fecha.slice(0, 7) : min), actual);
+    const valor = (key) => (key < primero ? null : gastoMes(key));
+    return {
+        anio, mes: actual,
+        serieActual: meses.map(m => (m <= mesN ? valor(k(anio, m)) : null)),
+        serieAnterior: meses.map(m => valor(k(anio - 1, m))),
+        este, pasado,
+        variacionMes: variacion(este.gastos, pasado.gastos),
+        acumuladoActual: acumulado(anio), acumuladoAnterior: acumulado(anio - 1),
+        hayAnterior: meses.some(m => gastoMes(k(anio - 1, m)) > 0),
+    };
+}
+
+// Gasto de cada día del mes: { 'AAAA-MM-DD': total }, el máximo y la referencia
+// de la escala (percentil 85), para que un solo día enorme (la renta) no deje
+// todos los demás en el tono más claro.
+export function gastoPorDia(transacciones, key) {
+    const dias = {};
+    transacciones.forEach(tx => {
+        if (tx.tipo !== 'gasto' || !tx.fecha?.startsWith(key)) return;
+        dias[tx.fecha] = r2((dias[tx.fecha] || 0) + monto(tx));
+    });
+    const valores = Object.values(dias).sort((a, b) => a - b);
+    const referencia = valores.length ? valores[Math.min(valores.length - 1, Math.floor(valores.length * 0.85))] : 0;
+    return { dias, maximo: valores[valores.length - 1] || 0, referencia };
+}
+
+// Nivel 0–4 de un día para el mapa de calor (0 = sin gasto).
+export function nivelCalor(valor, maximo) {
+    if (!valor || !maximo) return 0;
+    return Math.min(4, Math.max(1, Math.ceil((valor / maximo) * 4)));
+}

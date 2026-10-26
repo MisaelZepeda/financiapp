@@ -67,7 +67,7 @@ export function txFilaHTML(tx) {
     const d = describirTx(tx);
     return `<div class="fila fila-link" data-action="editarTx" data-id="${escapeHtml(tx.id)}" role="button" tabindex="0">
         <div class="fila-ico ${d.tono}">${icon(d.icono)}</div>
-        <div class="fila-body"><div class="fila-titulo">${escapeHtml(d.titulo)}</div><div class="fila-sub">${escapeHtml(d.sub)}</div></div>
+        <div class="fila-body"><div class="fila-titulo">${escapeHtml(d.titulo)}</div><div class="fila-sub">${escapeHtml(d.sub)}${tx.etiquetas?.length ? ` ${tx.etiquetas.map(e => `<span class="tag">#${escapeHtml(e)}</span>`).join(' ')}` : ''}</div></div>
         <div class="fila-der"><span class="num privado ${d.clase}">${d.signo}${money(Math.abs(tx.monto))}</span></div>
     </div>`;
 }

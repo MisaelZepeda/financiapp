@@ -87,9 +87,14 @@ export function construirDemo(hoy = new Date()) {
         super: { tipo: 'gasto', desc: 'Supermercado', categoriaId: 'comida', cuentaId: 'platino', creadoEn: 3 },
     };
 
+    const retos = {
+        sinocio: { tipo: 'sin-categoria', categoriaId: 'mascotas', dias: 7, inicio: hace(0), creadoEn: 2 },
+        registro: { tipo: 'registrar-diario', dias: 7, inicio: hace(30), creadoEn: 1, celebrado: true },
+    };
+
     return {
         meta: { version: 4, origen: 'demo' },
         perfil: { nombre: 'Cuenta Demo', foto: '' },
-        ajustes: {}, cuentas, categorias, transacciones, metas, recurrentes, plantillas, retos: {}, notifDescartadas: {},
+        ajustes: {}, cuentas, categorias, transacciones, metas, recurrentes, plantillas, retos, notifDescartadas: {},
     };
 }

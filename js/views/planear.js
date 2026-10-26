@@ -1,4 +1,4 @@
-// Planear: Presupuestos, Metas y Recurrentes en una sola sección con pestañas.
+// Planear: Presupuestos, Calendario, Metas, Recurrentes y Retos en una sola sección con pestañas.
 
 import { sel } from '../core/store.js';
 import { on } from '../core/eventos.js';
@@ -7,12 +7,13 @@ import { icon } from '../lib/icons.js';
 import { money, escapeHtml, fechaLarga, cuandoRelativo, nombreMesAnio } from '../lib/format.js';
 import { vacioHTML } from '../components/piezas.js';
 import { calendarioHTML } from './calendario.js';
+import { retosHTML, celebrarRetos } from './retos.js';
 import { abrirHoja, cerrarHoja, toast } from '../components/capas.js';
 import { resumenMes } from '../domain/analisis.js';
 import { pendientes, FRECUENCIAS } from '../domain/recurrentes.js';
 import { mesKey, hoyISO, ultimoDiaMes, diasEntre, aFecha } from '../domain/fechas.js';
 
-const TABS = { presupuestos: 'Presupuestos', calendario: 'Calendario', metas: 'Metas', recurrentes: 'Recurrentes' };
+const TABS = { presupuestos: 'Presupuestos', calendario: 'Calendario', metas: 'Metas', recurrentes: 'Recurrentes', retos: 'Retos' };
 
 export const titulo = () => ({ titulo: 'Planear' });
 
@@ -129,7 +130,14 @@ function recurrentesHTML() {
 export function render({ tab = 'presupuestos' }) {
     const t = TABS[tab] ? tab : 'presupuestos';
     return `<div class="seg tabs-planear">${Object.entries(TABS).map(([k, n]) => `<a class="${k === t ? 'activo' : ''}" href="#/planear/${k}">${n}</a>`).join('')}</div>
-        <div id="planear-contenido" style="margin-top:14px;">${t === 'presupuestos' ? presupuestosHTML() : t === 'calendario' ? calendarioHTML() : t === 'metas' ? metasHTML() : recurrentesHTML()}</div>`;
+        <div id="planear-contenido" style="margin-top:14px;">${t === 'presupuestos' ? presupuestosHTML() : t === 'calendario' ? calendarioHTML() : t === 'metas' ? metasHTML() : t === 'retos' ? retosHTML() : recurrentesHTML()}</div>`;
+}
+
+export function montar(el, { tab } = {}) {
+    // La pestaña activa queda a la vista en pantallas angostas (sin mover la página).
+    const tabs = el.querySelector('.tabs-planear'), activa = tabs?.querySelector('.activo');
+    if (tabs && activa) tabs.scrollLeft = activa.offsetLeft - (tabs.clientWidth - activa.offsetWidth) / 2;
+    if (tab === 'retos') celebrarRetos();
 }
 
 on('pausarRecurrente', async (el) => {

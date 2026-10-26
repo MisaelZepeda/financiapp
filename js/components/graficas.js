@@ -121,3 +121,24 @@ export function donaCategorias(el, datos, total) {
         }],
     });
 }
+
+// Gasto por mes: este año contra el anterior (un solo eje). Este año en el acento
+// con línea sólida; el anterior en gris y punteado para que la identidad no dependa del color.
+export function lineasAnual(el, etiquetas, actual, anterior, anio) {
+    const ctx = lienzo(el); if (!ctx) return;
+    const acento = css('--accent-ink', '#c6f432');
+    const gris = css('--muted', '#8a8f9c');
+    new Chart(ctx, {
+        type: 'line',
+        data: { labels: etiquetas, datasets: [
+            { label: String(anio), data: actual, borderColor: acento, backgroundColor: acento, borderWidth: 2, tension: 0.3, pointRadius: 0, pointHoverRadius: 5, spanGaps: false },
+            { label: String(anio - 1), data: anterior, borderColor: gris, backgroundColor: gris, borderWidth: 2, borderDash: [5, 4], tension: 0.3, pointRadius: 0, pointHoverRadius: 5 },
+        ] },
+        options: {
+            responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+            scales: ejes({ min: 0 }),
+            plugins: { legend: { display: false }, tooltip: { ...tooltip(), filter: (c) => c.parsed.y != null, callbacks: { label: (c) => ` ${c.dataset.label}: ${fmt(c.parsed.y)}` } } },
+            animation: { duration: 600 },
+        },
+    });
+}

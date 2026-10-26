@@ -383,3 +383,119 @@ test('gastos divididos: el resumen reparte por categoría y el total no cambia',
     assert.deepEqual(r.porCategoria, { comida: 700, vivienda: 300 });
     assert.deepEqual(partesDe({ tipo: 'gasto', monto: 50, categoriaId: 'ocio' }), [{ categoriaId: 'ocio', monto: 50 }]);
 });
+
+// ---------- Fase 4 ----------
+import { porEtiqueta, comparativoAnual, gastoPorDia, nivelCalor } from '../js/domain/analisis.js';
+import { evaluarReto, sugerirRetos, tituloReto } from '../js/domain/retos.js';
+import { datosResumenMes, tonoResumen } from '../js/domain/historias.js';
+
+test('etiquetas: total por etiqueta, solo gastos y en el rango', () => {
+    const txs = [
+        { tipo: 'gasto', monto: 500, fecha: '2026-08-10', etiquetas: ['vacaciones'] },
+        { tipo: 'gasto', monto: 300, fecha: '2026-08-11', etiquetas: ['vacaciones', 'playa'] },
+        { tipo: 'ingreso', monto: 900, fecha: '2026-08-11', etiquetas: ['vacaciones'] },
+        { tipo: 'gasto', monto: 100, fecha: '2026-06-01', etiquetas: ['playa'] },
+    ];
+    const r = porEtiqueta(txs);
+    assert.deepEqual(r.map(g => [g.etiqueta, g.total, g.veces]), [['vacaciones', 800, 2], ['playa', 400, 2]]);
+    assert.equal(r[1].desde, '2026-06-01');
+    assert.deepEqual(porEtiqueta(txs, '2026-08', '2026-08').map(g => g.total), [800, 300]);
+});
+
+test('comparativo anual: meses futuros en null y mismo mes del año pasado', () => {
+    const txs = [
+        { tipo: 'gasto', monto: 1000, fecha: '2025-09-03' },
+        { tipo: 'gasto', monto: 1500, fecha: '2026-09-03' },
+        { tipo: 'gasto', monto: 200, fecha: '2026-01-15' },
+        { tipo: 'gasto', monto: 999, fecha: '2025-12-15' },
+    ];
+    const c = comparativoAnual(txs, HOY);
+    assert.equal(c.serieActual[8], 1500);
+    assert.equal(c.serieActual[9], null);
+    assert.equal(c.serieAnterior[11], 999);
+    assert.equal(c.serieAnterior[7], null);     // agosto 2025: antes del primer movimiento
+    assert.equal(c.variacionMes, 50);
+    assert.equal(c.acumuladoActual, 1700);
+    assert.equal(c.acumuladoAnterior, 1000);   // diciembre pasado no entra al acumulado a septiembre
+    assert.ok(c.hayAnterior);
+});
+
+test('mapa de calor: gasto por día y niveles 0–4', () => {
+    const { dias, maximo } = gastoPorDia([
+        { tipo: 'gasto', monto: 100, fecha: '2026-09-02' }, { tipo: 'gasto', monto: 300, fecha: '2026-09-02' },
+        { tipo: 'gasto', monto: 50, fecha: '2026-09-05' }, { tipo: 'ingreso', monto: 9000, fecha: '2026-09-05' },
+    ], '2026-09');
+    assert.deepEqual(dias, { '2026-09-02': 400, '2026-09-05': 50 });
+    assert.equal(maximo, 400);
+    const conRenta = gastoPorDia([9000, 100, 120, 90, 110, 80, 95].map((m, i) => ({ tipo: 'gasto', monto: m, fecha: `2026-09-0${i + 1}` })), '2026-09');
+    assert.equal(conRenta.referencia, 120);                 // la renta no fija la escala
+    assert.equal(nivelCalor(9000, conRenta.referencia), 4);
+    assert.equal(nivelCalor(0, 400), 0);
+    assert.equal(nivelCalor(50, 400), 1);
+    assert.equal(nivelCalor(400, 400), 4);
+});
+
+test('retos: sin gastar en una categoría', () => {
+    const reto = { tipo: 'sin-categoria', categoriaId: 'ocio', dias: 7, inicio: '2026-09-25' };
+    const limpio = [{ tipo: 'gasto', monto: 80, fecha: '2026-09-26', categoriaId: 'comida' }];
+    const e = evaluarReto(reto, limpio, HOY);
+    assert.equal(e.estado, 'activo');
+    assert.equal(e.diasOk, 3);            // 25, 26, 27; hoy (28) aún no termina
+    assert.equal(e.fin, '2026-10-01');
+    const roto = [...limpio, { tipo: 'gasto', monto: 1000, fecha: '2026-09-27', categoriaId: 'comida', partes: [{ categoriaId: 'comida', monto: 800 }, { categoriaId: 'ocio', monto: 200 }] }];
+    const f = evaluarReto(reto, roto, HOY);
+    assert.equal(f.estado, 'fallido');
+    assert.equal(f.falloEn, '2026-09-27');
+    assert.equal(evaluarReto(reto, limpio, new Date(2026, 9, 2, 12)).estado, 'cumplido');
+    assert.equal(tituloReto(reto, 'Ocio'), '7 días sin gastar en Ocio');
+});
+
+test('retos: tope diario ignora recurrentes y registrar todos los días', () => {
+    const tope = { tipo: 'tope-diario', tope: 300, dias: 3, inicio: '2026-09-26' };
+    const txs = [
+        { tipo: 'gasto', monto: 250, fecha: '2026-09-26' },
+        { tipo: 'gasto', monto: 8000, fecha: '2026-09-27', recurrenteId: 'renta' },
+        { tipo: 'gasto', monto: 120, fecha: '2026-09-28' },
+    ];
+    const e = evaluarReto(tope, txs, HOY);
+    assert.equal(e.estado, 'activo');
+    assert.equal(e.hoyGastado, 120);
+    assert.equal(evaluarReto(tope, [...txs, { tipo: 'gasto', monto: 200, fecha: '2026-09-28' }], HOY).estado, 'fallido');
+
+    const reg = { tipo: 'registrar-diario', dias: 3, inicio: '2026-09-26' };
+    assert.equal(evaluarReto(reg, txs.slice(0, 2), HOY).estado, 'activo');        // hoy aún puede registrar
+    assert.equal(evaluarReto(reg, txs, HOY).estado, 'cumplido');                  // los 3 días tienen registro
+    assert.equal(evaluarReto(reg, [txs[0], txs[2]], HOY).estado, 'fallido');      // faltó el 27
+});
+
+test('retos sugeridos: categoría variable con más gasto y tope redondeado', () => {
+    const txs = [
+        { tipo: 'gasto', monto: 9000, fecha: '2026-08-01', categoriaId: 'vivienda' },
+        { tipo: 'gasto', monto: 2700, fecha: '2026-08-05', categoriaId: 'ocio' },
+        { tipo: 'gasto', monto: 900, fecha: '2026-07-05', categoriaId: 'comida' },
+    ];
+    const s = sugerirRetos(txs, HOY);
+    assert.equal(s.categoriaId, 'ocio');
+    assert.equal(s.tope % 50, 0);
+    assert.ok(s.tope >= 50);
+});
+
+test('tu mes en resumen: cifras y tono', () => {
+    const txs = [
+        { tipo: 'ingreso', monto: 20000, fecha: '2026-08-15' },
+        { tipo: 'gasto', monto: 3000, fecha: '2026-08-02', categoriaId: 'comida' },
+        { tipo: 'gasto', monto: 1000, fecha: '2026-08-02', categoriaId: 'ocio' },
+        { tipo: 'gasto', monto: 2000, fecha: '2026-07-02', categoriaId: 'comida' },
+    ];
+    const metas = [{ nombre: 'Viaje', montoObjetivo: 1000, montoActual: 900 }, { nombre: 'Auto', montoObjetivo: 10000, montoActual: 100 }];
+    const d = datosResumenMes(txs, metas, '2026-08');
+    assert.equal(d.gastos, 4000);
+    assert.equal(d.top.categoriaId, 'comida');
+    assert.equal(d.top.porcentaje, 75);
+    assert.equal(d.top.variacion, 50);
+    assert.deepEqual(d.masCaro, { fecha: '2026-08-02', monto: 4000 });
+    assert.equal(d.diasSinGasto, 30);
+    assert.equal(d.meta.nombre, 'Viaje');
+    assert.equal(tonoResumen(d), 'celebrando');
+    assert.equal(tonoResumen({ ingresos: 0, balance: -50 }), 'preocupado');
+});

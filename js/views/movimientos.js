@@ -1,4 +1,4 @@
-// Movimientos: filtros en fichas (tipo, cuenta, categoría, mes) y búsqueda.
+// Movimientos: filtros en fichas (tipo, cuenta, categoría, etiqueta, mes) y búsqueda.
 
 import { sel } from '../core/store.js';
 import { on } from '../core/eventos.js';
@@ -8,14 +8,15 @@ import { txAgrupadasHTML, vacioHTML } from '../components/piezas.js';
 import { mesKey, ultimosMeses } from '../domain/fechas.js';
 import { partesDe } from '../domain/analisis.js';
 
-const f = { tipo: 'todos', cuentaId: '', categoriaId: '', mes: '', q: '', limite: 80 };
+const f = { tipo: 'todos', cuentaId: '', categoriaId: '', etiqueta: '', mes: '', q: '', limite: 80 };
 
 export const titulo = () => ({ titulo: 'Movimientos' });
 
 // Los parámetros de la URL (p. ej. ?cuenta=…) fijan filtros al entrar.
 export function alEntrar(params) {
-    if (params.cuenta !== undefined) { Object.assign(f, { cuentaId: params.cuenta, tipo: 'todos', categoriaId: '', mes: '', q: '' }); }
-    if (params.categoria !== undefined) { Object.assign(f, { categoriaId: params.categoria, tipo: 'gasto', cuentaId: '', q: '' }); }
+    if (params.cuenta !== undefined) { Object.assign(f, { cuentaId: params.cuenta, tipo: 'todos', categoriaId: '', etiqueta: '', mes: '', q: '' }); }
+    if (params.categoria !== undefined) { Object.assign(f, { categoriaId: params.categoria, tipo: 'gasto', cuentaId: '', etiqueta: '', q: '' }); }
+    if (params.etiqueta !== undefined) { Object.assign(f, { etiqueta: params.etiqueta, tipo: 'todos', cuentaId: '', categoriaId: '', mes: '', q: '' }); }
     if (params.mes !== undefined) f.mes = params.mes;
     f.limite = 80;
 }
@@ -26,9 +27,10 @@ function filtradas() {
         if (f.tipo !== 'todos' && t.tipo !== f.tipo) return false;
         if (f.cuentaId && t.cuentaId !== f.cuentaId && t.cuentaDestinoId !== f.cuentaId) return false;
         if (f.categoriaId && (t.tipo !== 'gasto' || !partesDe(t).some(p => p.categoriaId === f.categoriaId))) return false;
+        if (f.etiqueta && !t.etiquetas?.includes(f.etiqueta)) return false;
         if (f.mes && !t.fecha?.startsWith(f.mes)) return false;
         if (q) {
-            const texto = `${t.desc || ''} ${sel.categoria(t.categoriaId).nombre || ''} ${sel.cuenta(t.cuentaId)?.nombre || ''} ${t.monto}`.toLowerCase();
+            const texto = `${t.desc || ''} ${sel.categoria(t.categoriaId).nombre || ''} ${sel.cuenta(t.cuentaId)?.nombre || ''} ${t.monto} ${(t.etiquetas || []).map(e => '#' + e).join(' ')}`.toLowerCase();
             if (!texto.includes(q)) return false;
         }
         return true;
@@ -47,7 +49,7 @@ function listaHTML() {
         ${txs.length > f.limite ? `<div style="padding:14px 18px;"><button class="btn btn-soft btn-block" data-action="movMas">Cargar más (${txs.length - f.limite})</button></div>` : ''}</div>`;
 }
 
-const hayFiltros = () => f.tipo !== 'todos' || f.cuentaId || f.categoriaId || f.mes || f.q;
+const hayFiltros = () => f.tipo !== 'todos' || f.cuentaId || f.categoriaId || f.etiqueta || f.mes || f.q;
 
 function selectChip(nombre, valor, opciones, etiquetaVacia) {
     const activo = !!valor;
@@ -61,12 +63,14 @@ function selectChip(nombre, valor, opciones, etiquetaVacia) {
 
 export function render() {
     const meses = ultimosMeses(12, mesKey()).reverse().map(k => [k, nombreMesAnio(k)]);
+    const etiquetas = [...new Set(sel.transacciones().flatMap(t => t.etiquetas || []))].sort();
     return `
         <div class="search"><span>${icon('search')}</span><input type="search" placeholder="Buscar por descripción, categoría o monto" value="${escapeHtml(f.q)}" data-input="movBuscar" aria-label="Buscar movimientos"></div>
         <div class="chips chips-scroll" style="margin:12px -16px 4px;">
             ${[['todos', 'Todos'], ['gasto', 'Gastos'], ['ingreso', 'Ingresos'], ['transferencia', 'Transferencias']].map(([v, t]) => `<button class="chip ${f.tipo === v ? 'activo' : ''}" data-action="movTipo" data-v="${v}">${t}</button>`).join('')}
             ${selectChip('cuentaId', f.cuentaId, sel.cuentas().map(c => [c.id, c.nombre]), 'Cuenta')}
             ${selectChip('categoriaId', f.categoriaId, sel.categorias().map(c => [c.id, c.nombre]), 'Categoría')}
+            ${etiquetas.length ? selectChip('etiqueta', f.etiqueta, etiquetas.map(e => [e, '#' + e]), 'Etiqueta') : ''}
             ${selectChip('mes', f.mes, meses, 'Mes')}
             ${hayFiltros() ? `<button class="chip" data-action="movLimpiar">${icon('x')}Limpiar</button>` : ''}
         </div>
@@ -80,4 +84,4 @@ on('movBuscar', (el) => { f.q = el.value; f.limite = 80; repintarLista(); }, 'in
 on('movTipo', (el) => { f.tipo = el.dataset.v; f.limite = 80; repintarTodo(); });
 on('movFiltro', (el) => { f[el.dataset.f] = el.value; f.limite = 80; repintarTodo(); }, 'change');
 on('movMas', () => { f.limite += 80; repintarLista(); });
-on('movLimpiar', () => { Object.assign(f, { tipo: 'todos', cuentaId: '', categoriaId: '', mes: '', q: '', limite: 80 }); if (location.hash.includes('?')) location.hash = '#/movimientos'; else repintarTodo(); });
+on('movLimpiar', () => { Object.assign(f, { tipo: 'todos', cuentaId: '', categoriaId: '', etiqueta: '', mes: '', q: '', limite: 80 }); if (location.hash.includes('?')) location.hash = '#/movimientos'; else repintarTodo(); });
