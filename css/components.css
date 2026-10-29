@@ -273,7 +273,10 @@ input.etiqueta-input { width: 130px; height: 30px; padding: 0 11px; border-radiu
 .swipe + .swipe, .fila + .swipe, .swipe + .fila { border-top: 1px solid var(--line); }
 .swipe-fila { position: relative; z-index: 1; background: var(--surface); transition: transform .25s var(--ease); touch-action: pan-y; }
 .capa .swipe-fila { background: var(--surface); }
-.swipe-acciones { position: absolute; top: 0; right: 0; bottom: 0; display: flex; width: 148px; }
+/* Ocultas hasta que deslizas: si no, el rojo de Borrar se asoma por las esquinas redondeadas */
+.swipe-acciones { position: absolute; top: 0; right: 0; bottom: 0; display: flex; width: 148px; visibility: hidden; }
+.swipe.deslizando .swipe-acciones, .swipe.abierta .swipe-acciones { visibility: visible; }
+.swipe .swipe-fila { border-radius: 0; }
 .swipe-acciones button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 0; font-size: 12px; font-weight: 600; cursor: pointer; }
 .swipe-acciones .icon { width: 18px; height: 18px; }
 .swipe-editar { background: var(--surface-3); color: var(--text); }

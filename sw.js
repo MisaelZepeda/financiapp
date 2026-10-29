@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v23'; // v23: blanco y violeta, navegacion con Mas
+const CACHE_NAME = 'morralla-cache-v24'; // v24: logo dorado y sin picos rojos
 
 const urlsToCache = [
     './',

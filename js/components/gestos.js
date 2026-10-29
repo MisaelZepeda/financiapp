@@ -17,7 +17,11 @@ let abierta = null;    // .swipe abierta
 let toque = null;      // { fila, swipe, x0, y0, dx, decidido, horizontal, base }
 
 function cerrarAbierta(excepto) {
-    if (abierta && abierta !== excepto) { abierta.classList.remove('abierta'); abierta.querySelector('.swipe-fila').style.transform = ''; abierta = null; }
+    if (abierta && abierta !== excepto) {
+        const s = abierta;
+        s.classList.remove('abierta'); s.querySelector('.swipe-fila').style.transform = ''; abierta = null;
+        setTimeout(() => { if (!s.classList.contains('abierta')) s.classList.remove('deslizando'); }, 260);
+    }
 }
 
 document.addEventListener('touchstart', (e) => {
@@ -36,6 +40,7 @@ document.addEventListener('touchmove', (e) => {
     if (!toque.decidido && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) { toque.decidido = true; toque.horizontal = Math.abs(dx) > Math.abs(dy) * 1.2; }
     if (!toque.horizontal) return;
     e.preventDefault();
+    toque.swipe.classList.add('deslizando');
     toque.dx = dx;
     const x = Math.max(-ANCHO - 30, Math.min(0, toque.base + dx));
     toque.fila.style.transition = 'none';
@@ -52,6 +57,8 @@ document.addEventListener('touchend', () => {
     fila.style.transform = abrir ? `translateX(${-ANCHO}px)` : '';
     swipe.classList.toggle('abierta', abrir);
     abierta = abrir ? swipe : null;
+    // Las acciones se ocultan cuando la fila termina de regresar.
+    if (!abrir) setTimeout(() => { if (!swipe.classList.contains('abierta')) swipe.classList.remove('deslizando'); }, 260);
     // El clic que sigue a un deslizamiento no debe abrir el movimiento.
     swipe.dataset.recienDeslizada = '1';
     setTimeout(() => { delete swipe.dataset.recienDeslizada; }, 350);
