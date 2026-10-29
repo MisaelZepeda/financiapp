@@ -2,15 +2,17 @@
 //
 // - Preferencia guardada (Ajustes): 'auto' | 'claro' | 'oscuro'. Se guarda en
 //   Firebase (ajustes) y en localStorage, y se respeta cada vez que se entra.
-//   'auto' sigue al sistema del dispositivo. Predeterminado: 'oscuro'.
+//   'auto' sigue al sistema del dispositivo. Predeterminado: 'claro'.
+// - La clave es nueva desde el estilo blanco y violeta: las preferencias del
+//   estilo anterior (café y latón) no se arrastran.
 // - Cambio rápido (botón sol/luna del encabezado): solo dura la sesión
 //   (sessionStorage). No toca la preferencia guardada.
 
-const CLAVE = 'financiapp_apariencia';
+const CLAVE = 'morralla_apariencia_v2';
 const CLAVE_SESION = 'financiapp_tema_sesion';
 const sistemaOscuro = window.matchMedia('(prefers-color-scheme: dark)');
-// Acentos alternativos; cualquier otro valor (o uno retirado, como lima) usa latón.
-export const ACENTOS_ALTERNOS = ['cobre', 'menta', 'cielo', 'violeta'];
+// Acentos alternativos; cualquier otro valor usa el violeta predeterminado.
+export const ACENTOS_ALTERNOS = ['laton', 'cobre', 'menta', 'cielo'];
 
 export function leerApariencia() {
     try { return JSON.parse(localStorage.getItem(CLAVE)) || {}; } catch { return {}; }
@@ -21,7 +23,7 @@ function temaSesion() {
 }
 
 // Preferencia guardada: 'auto' | 'claro' | 'oscuro'.
-export function temaElegido() { return leerApariencia().tema || 'oscuro'; }
+export function temaElegido() { return leerApariencia().tema || 'claro'; }
 
 // ¿Hay un cambio rápido activo solo en esta sesión?
 export function hayTemaDeSesion() { return !!temaSesion(); }
@@ -32,7 +34,7 @@ export function temaEfectivo() {
     if (sesion) return sesion;
     const tema = temaElegido();
     if (tema === 'auto') return sistemaOscuro.matches ? 'oscuro' : 'claro';
-    return tema === 'claro' ? 'claro' : 'oscuro';
+    return tema === 'oscuro' ? 'oscuro' : 'claro';
 }
 
 // Aplica la apariencia (y guarda los cambios de preferencia que se pasen).
@@ -43,7 +45,7 @@ export function aplicarApariencia(cambios = {}) {
     const efectivo = temaEfectivo();
     root.setAttribute('data-theme', efectivo === 'claro' ? 'light' : 'dark');
     if (ACENTOS_ALTERNOS.includes(ap.acento)) root.setAttribute('data-accent', ap.acento); else root.removeAttribute('data-accent');
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', efectivo === 'claro' ? '#fbf6ee' : '#15110d');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', efectivo === 'claro' ? '#f6f5fa' : '#110e1c');
     document.dispatchEvent(new CustomEvent('apariencia'));
     return ap;
 }

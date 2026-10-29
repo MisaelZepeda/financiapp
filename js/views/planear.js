@@ -13,9 +13,10 @@ import { resumenMes } from '../domain/analisis.js';
 import { pendientes, FRECUENCIAS } from '../domain/recurrentes.js';
 import { mesKey, hoyISO, ultimoDiaMes, diasEntre, aFecha } from '../domain/fechas.js';
 
-const TABS = { presupuestos: 'Presupuestos', calendario: 'Calendario', metas: 'Metas', recurrentes: 'Recurrentes', retos: 'Retos' };
+const TABS = { presupuestos: 'Presupuestos', calendario: 'Calendario', metas: 'Metas', recurrentes: 'Pagos fijos', retos: 'Retos' };
+const TITULOS = { presupuestos: 'Presupuestos', calendario: 'Calendario de pagos', metas: 'Metas de ahorro', recurrentes: 'Pagos fijos', retos: 'Retos de Tlaco' };
 
-export const titulo = () => ({ titulo: 'Planear' });
+export const titulo = ({ tab } = {}) => ({ titulo: TITULOS[tab] || TITULOS.presupuestos, atras: '#/mas' });
 
 // ---------- Presupuestos ----------
 function presupuestosHTML() {
@@ -144,5 +145,5 @@ on('pausarRecurrente', async (el) => {
     const r = sel.recurrentes().find(x => x.id === el.dataset.id);
     if (!r) return;
     await A.pausarRecurrente(r.id, r.activo === false);
-    toast(r.activo === false ? 'Recurrente reanudado' : 'Recurrente en pausa');
+    toast(r.activo === false ? 'Pago fijo reanudado' : 'Pago fijo en pausa');
 });

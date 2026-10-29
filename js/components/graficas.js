@@ -81,7 +81,7 @@ export function lineaPatrimonio(el, etiquetas, valores) {
 // Mini línea sin ejes (tendencia en tarjetas).
 export function sparkline(el, valores, tono = 'accent') {
     const ctx = lienzo(el); if (!ctx) return;
-    const color = css(tono === 'neg' ? '--neg' : '--accent-ink', '#f2b544');
+    const color = css(tono === 'neg' ? '--neg' : tono === 'sobre-acento' ? '--on-accent' : '--accent-ink', '#5b3df5');
     const cruzaCero = Math.min(...valores) < 0 && Math.max(...valores) > 0;
     new Chart(ctx, {
         type: 'line',

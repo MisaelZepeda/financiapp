@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v22'; // v22: avisos y Siri
+const CACHE_NAME = 'morralla-cache-v23'; // v23: blanco y violeta, navegacion con Mas
 
 const urlsToCache = [
     './',
@@ -60,6 +60,7 @@ const urlsToCache = [
     './js/views/cuenta.js',
     './js/views/cuentas.js',
     './js/views/inicio.js',
+    './js/views/mas.js',
     './js/views/movimientos.js',
     './js/views/planear.js',
     './js/views/retos.js',

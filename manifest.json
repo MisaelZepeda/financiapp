@@ -6,8 +6,8 @@
   "description": "Tu dinero, hasta la última moneda: cuentas, tarjetas, presupuestos, metas y análisis, con Tlaco como compañero.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#15110d",
-  "theme_color": "#15110d",
+  "background_color": "#f6f5fa",
+  "theme_color": "#5b3df5",
   "icons": [
     {
       "src": "icon-192x192.png",

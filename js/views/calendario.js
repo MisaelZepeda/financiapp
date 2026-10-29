@@ -79,7 +79,7 @@ export function calendarioHTML() {
                 <span>Por recibir <b class="num privado pos">+${money(entradas)}</b></span>
             </div>
             <div class="cal-grid">${DIAS.map(d => `<span class="cal-dow">${d}</span>`).join('')}${celdas}</div>
-            <div class="cal-leyenda"><span><i class="ev-pago"></i>Pago de tarjeta</span><span><i class="ev-rec"></i>Recurrente</span><span><i class="ev-ingreso"></i>Ingreso</span><span><i class="ev-corte"></i>Corte</span><span><i class="ev-msi"></i>Fin de MSI</span></div>
+            <div class="cal-leyenda"><span><i class="ev-pago"></i>Pago de tarjeta</span><span><i class="ev-rec"></i>Pago fijo</span><span><i class="ev-ingreso"></i>Ingreso</span><span><i class="ev-corte"></i>Corte</span><span><i class="ev-msi"></i>Fin de MSI</span></div>
         </section>
         <section class="card" style="margin-top:14px;">
             <div class="card-head"><h2 class="card-title">${fechaLarga(dia)}</h2></div>

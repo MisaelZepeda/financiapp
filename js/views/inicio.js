@@ -28,16 +28,16 @@ function heroHTML() {
     return `<section class="card hero">
         <div class="hero-top">
             <div>
-                <p class="card-meta">Patrimonio neto</p>
+                <p class="card-meta">Tu dinero en total</p>
                 <p class="hero-total num privado" id="hero-total">${partes.signo}${partes.entero}<span class="cent">${partes.decimales}</span></p>
                 ${delta}
             </div>
             <div class="hero-spark"><canvas id="spark-neto" aria-label="Tendencia del patrimonio"></canvas></div>
         </div>
         <div class="hero-stats">
-            <div><small>Activos</small><b class="num privado">${money(p.activos)}</b></div>
-            <div><small>Deudas</small><b class="num privado">${money(p.deudas)}</b></div>
-            <div><small>Crédito libre</small><b class="num privado">${money(p.creditoLibre)}</b></div>
+            <div><small>Lo que tienes</small><b class="num privado">${money(p.activos)}</b></div>
+            <div><small>Lo que debes</small><b class="num privado">${money(p.deudas)}</b></div>
+            <div><small>Crédito disponible</small><b class="num privado">${money(p.creditoLibre)}</b></div>
         </div>
     </section>`;
 }
@@ -95,7 +95,7 @@ function proximosHTML() {
     proximos(recs, new Date(), 10).forEach(rec => items.push({ fecha: rec.proximaFecha, prioridad: 1, html: filaRec(rec, false) }));
     items.sort((a, b) => a.prioridad - b.prioridad || a.fecha.localeCompare(b.fecha));
     return `<section class="card">
-        <div class="card-head"><h2 class="card-title">Próximos pagos</h2>${pend.length > 1 ? `<button class="link" data-action="generarPendientes">Registrar todos (${pend.length})</button>` : '<a class="link" href="#/planear/recurrentes">Recurrentes' + icon('chevron-right') + '</a>'}</div>
+        <div class="card-head"><h2 class="card-title">Próximos pagos</h2>${pend.length > 1 ? `<button class="link" data-action="generarPendientes">Registrar todos (${pend.length})</button>` : '<a class="link" href="#/planear/recurrentes">Pagos fijos' + icon('chevron-right') + '</a>'}</div>
         ${items.length ? `<div class="lista">${items.map(i => i.html).join('')}</div>` : vacioHTML('calendar', 'Nada pendiente en los próximos 10 días.')}
     </section>`;
 }
@@ -156,7 +156,7 @@ function finMesHTML() {
         <div class="fin-chips">
             ${chip('+', 'Ingresos programados', p.detalle.ingresos)}
             ${chip('−', 'Pagos de tarjeta', p.detalle.tarjetas)}
-            ${chip('−', 'Recurrentes', p.detalle.recurrentes)}
+            ${chip('−', 'Pagos fijos', p.detalle.recurrentes)}
             ${chip('−', `Gasto diario (${money(p.diario)})`, p.detalle.variable)}
         </div>
     </section>`;
@@ -190,7 +190,7 @@ export function montar() {
     if (netoMostrado != null && Math.abs(netoMostrado - neto) > 0.009) contar(document.getElementById('hero-total'), netoMostrado, neto);
     netoMostrado = neto;
     const serie = seriePatrimonio(sel.cuentas(), sel.transacciones(), 6);
-    sparkline(document.getElementById('spark-neto'), serie.map(s => s.neto));
+    sparkline(document.getElementById('spark-neto'), serie.map(s => s.neto), 'sobre-acento');
     const fin = document.getElementById('spark-fin');
     if (fin) { const p = proyeccionActual(); sparkline(fin, p.serie.map(x => x.saldo), p.negativo ? 'neg' : 'accent'); }
     const meses = serieMensual(sel.transacciones(), 6);

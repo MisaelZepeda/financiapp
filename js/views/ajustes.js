@@ -9,10 +9,10 @@ import { avatarHTML } from '../components/piezas.js';
 import { toast, confirmar, abrirHoja, cerrarHoja } from '../components/capas.js';
 import { exportarRespaldo } from '../lib/exportar.js';
 import { migrarV1 } from '../domain/migracion.js';
-import { aplicarApariencia, temaElegido, elegirTema, hayTemaDeSesion, temaEfectivo } from '../lib/apariencia.js';
+import { aplicarApariencia, leerApariencia, temaElegido, elegirTema, hayTemaDeSesion, temaEfectivo } from '../lib/apariencia.js';
 import * as Push from '../lib/push.js';
 
-export const titulo = () => ({ titulo: 'Ajustes' });
+export const titulo = () => ({ titulo: 'Ajustes', atras: '#/mas' });
 
 // Selector Automático / Claro / Oscuro (también se usa en el menú).
 export function selectorTema(tema) {
@@ -20,13 +20,13 @@ export function selectorTema(tema) {
         .map(([v, i, t]) => `<button class="${tema === v ? 'activo' : ''}" data-action="ajTema" data-v="${v}">${icon(i)} ${t}</button>`).join('')}</div>`;
 }
 
-const ACENTOS = [['laton', '#f2b544', 'Latón'], ['cobre', '#e8894a', 'Cobre'], ['menta', '#6fdcc4', 'Menta'], ['cielo', '#7cc4ff', 'Cielo'], ['violeta', '#b69cff', 'Violeta']];
+const ACENTOS = [['violeta', '#5b3df5', 'Violeta'], ['cielo', '#3b8cf0', 'Cielo'], ['menta', '#2fb89a', 'Menta'], ['cobre', '#e8894a', 'Cobre'], ['laton', '#f2b544', 'Latón']];
 
 export function render() {
     const p = sel.perfil();
     const aj = sel.ajustes();
     const tema = temaElegido();
-    const acento = ACENTOS.some(a => a[0] === aj.acento) ? aj.acento : 'laton';
+    const acento = ACENTOS.some(a => a[0] === leerApariencia().acento) ? leerApariencia().acento : 'violeta';
     return `<div class="ajustes">
         <section class="card">
             <h2 class="card-title" style="margin-bottom:14px;">Perfil</h2>
@@ -257,8 +257,10 @@ on('fotoPerfil', async (el) => {
     catch { toast('No se pudo leer la imagen', { tipo: 'error' }); }
 }, 'change');
 
-on('ajTema', async (el) => { elegirTema(el.dataset.v); await A.guardarAjustes({ tema: el.dataset.v }); });
-on('ajAcento', async (el) => { aplicarApariencia({ acento: el.dataset.v }); await A.guardarAjustes({ acento: el.dataset.v }); });
+// Se guarda en ajustes/apariencia (las claves tema y acento eran del estilo anterior).
+const guardarApariencia = () => { const { tema, acento } = leerApariencia(); return A.guardarAjustes({ apariencia: { tema: tema || 'claro', acento: acento || 'violeta' } }); };
+on('ajTema', async (el) => { elegirTema(el.dataset.v); await guardarApariencia(); });
+on('ajAcento', async (el) => { aplicarApariencia({ acento: el.dataset.v }); await guardarApariencia(); });
 
 on('ajRespaldo', () => { exportarRespaldo(store.datos); toast('Respaldo descargado'); });
 

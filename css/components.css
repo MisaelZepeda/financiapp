@@ -288,3 +288,4 @@ input.etiqueta-input { width: 130px; height: 30px; padding: 0 11px; border-radiu
 @keyframes girar { to { transform: rotate(360deg); } }
 .card:not(.card-flush) .swipe { margin: 0 -10px; border-radius: var(--r-md); }
 .card:not(.card-flush) .swipe .fila-link { margin: 0; }
+:root[data-theme="light"] .card:not(.hero) { box-shadow: 0 0 0 1px var(--line); }

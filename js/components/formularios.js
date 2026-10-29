@@ -153,7 +153,7 @@ export function abrirFormRecurrente(id = null) {
     const tipo = r?.tipo || 'gasto';
     const cuentas = sel.cuentas();
     abrirHoja({
-        titulo: r ? 'Editar recurrente' : 'Nuevo recurrente',
+        titulo: r ? 'Editar pago fijo' : 'Nuevo pago fijo',
         html: `<form data-submit="guardarRecurrente" data-id="${escapeHtml(id || '')}">
             <input type="hidden" name="tipo" value="${tipo}">
             <div class="field"><div class="seg" id="fr-tipo">${['gasto', 'ingreso'].map(t => `<button type="button" class="${t === tipo ? 'activo' : ''}" data-action="frTipo" data-t="${t}">${t === 'gasto' ? 'Gasto' : 'Ingreso'}</button>`).join('')}</div></div>
@@ -191,12 +191,12 @@ on('guardarRecurrente', async (form) => {
     const prox = v(form, 'proximaFecha');
     if (prox) rec.proximaFecha = prox;
     await A.guardarRecurrente(rec);
-    cerrarHoja(); toast('Recurrente guardado');
+    cerrarHoja(); toast('Pago fijo guardado');
 }, 'submit');
 on('frBorrar', async () => {
     const id = hojaAbierta()?.querySelector('form').dataset.id;
-    if (!(await confirmar({ titulo: 'Eliminar recurrente', texto: 'Los movimientos que ya generó se conservan.', aceptar: 'Eliminar', peligro: true }))) return;
-    await A.borrarRecurrente(id); cerrarHoja(); toast('Recurrente eliminado');
+    if (!(await confirmar({ titulo: 'Eliminar pago fijo', texto: 'Los movimientos que ya generó se conservan.', aceptar: 'Eliminar', peligro: true }))) return;
+    await A.borrarRecurrente(id); cerrarHoja(); toast('Pago fijo eliminado');
 });
 
 // ---------- Categoría ----------

@@ -1,48 +1,48 @@
 /* ==========================================================================
-   TOKENS — Morralla: café cálido, latón y cobre
-   Oscuro por defecto; claro (crema) como alternativa (data-theme="light").
-   Acento elegible (data-accent): latón (predeterminado), cobre, menta,
-   cielo y violeta. --accent es el relleno; --accent-ink es el acento
-   usado como texto/ícono sobre superficies (más oscuro en tema claro).
+   TOKENS — Morralla: blanco y violeta
+   Claro por defecto; oscuro (violeta noche) como alternativa (data-theme="dark").
+   Acento elegible (data-accent): violeta (predeterminado), latón, cobre,
+   menta y cielo. --accent es el relleno; --accent-ink es el acento usado
+   como texto/ícono sobre superficies.
    ========================================================================== */
 
 :root {
-    color-scheme: dark;
+    color-scheme: light;
     --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-num: 'Inter Tight', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-display: 'Bricolage Grotesque', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
-    --bg: #15110d;
-    --surface: #1f1a15;
-    --surface-2: #29221c;
-    --surface-3: #342b23;
-    --line: #2f271f;
-    --line-strong: #44382d;
-    --text: #f7f1e8;
-    --text-2: #e3d8c8;
-    --muted: #b3a594;
-    --overlay: rgba(8, 5, 3, 0.66);
+    --bg: #f6f5fa;
+    --surface: #ffffff;
+    --surface-2: #f2f0f8;
+    --surface-3: #e7e3f1;
+    --line: #ebe8f2;
+    --line-strong: #d5d0e3;
+    --text: #1a1530;
+    --text-2: #3d3754;
+    --muted: #6b6585;
+    --overlay: rgba(26, 21, 48, 0.42);
 
-    --accent: #f2b544;
-    --accent-ink: #f2b544;
-    --on-accent: #1a1206;
+    --accent: #5b3df5;
+    --accent-ink: #4f30e6;
+    --on-accent: #ffffff;
     --cobre: #d9773a;
 
-    --pos: #6fd3a0;
-    --neg: #ff7a6b;
-    --warn: #ffc857;
-    --info: #6cb4ff;
+    --pos: #13855c;
+    --neg: #d92d3a;
+    --warn: #b45309;
+    --info: #2563eb;
 
-    --accent-soft: color-mix(in srgb, var(--accent) 13%, transparent);
-    --pos-soft: color-mix(in srgb, var(--pos) 13%, transparent);
-    --neg-soft: color-mix(in srgb, var(--neg) 13%, transparent);
-    --warn-soft: color-mix(in srgb, var(--warn) 14%, transparent);
-    --info-soft: color-mix(in srgb, var(--info) 13%, transparent);
+    --accent-soft: color-mix(in srgb, var(--accent) 10%, transparent);
+    --pos-soft: color-mix(in srgb, var(--pos) 11%, transparent);
+    --neg-soft: color-mix(in srgb, var(--neg) 11%, transparent);
+    --warn-soft: color-mix(in srgb, var(--warn) 12%, transparent);
+    --info-soft: color-mix(in srgb, var(--info) 11%, transparent);
 
-    /* Paleta categórica validada (pasos para fondo oscuro), orden fijo */
-    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
-    --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
-    --chart-grid: #2f271f;
+    /* Paleta categórica validada (pasos para fondo claro), orden fijo */
+    --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+    --series-5: #e87ba4; --series-6: #008300; --series-7: #4a3aa7; --series-8: #e34948;
+    --chart-grid: #ebe8f2;
 
     --r-sm: 8px;
     --r-md: 12px;
@@ -50,7 +50,7 @@
     --r-xl: 22px;
     --r-full: 999px;
 
-    --shadow-pop: 0 20px 50px rgba(0, 0, 0, 0.5);
+    --shadow-pop: 0 20px 50px rgba(26, 21, 48, 0.16);
 
     --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
     --t-fast: 120ms;
@@ -61,38 +61,41 @@
     --max: 1120px;
 }
 
-:root[data-theme="light"] {
-    color-scheme: light;
-    --bg: #fbf6ee;
-    --surface: #ffffff;
-    --surface-2: #f5eee3;
-    --surface-3: #ebe1d3;
-    --line: #eee4d6;
-    --line-strong: #dccdb9;
-    --text: #2b2017;
-    --text-2: #4a3b2e;
-    --muted: #7a6a58;
-    --overlay: rgba(43, 32, 23, 0.42);
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #110e1c;
+    --surface: #1a1628;
+    --surface-2: #241f36;
+    --surface-3: #2f2945;
+    --line: #2a2440;
+    --line-strong: #3e3759;
+    --text: #f3f1fa;
+    --text-2: #d9d4ea;
+    --muted: #a59ec0;
+    --overlay: rgba(6, 4, 14, 0.66);
 
-    --accent-ink: #9a5b0b;
-    --pos: #15803d;
-    --neg: #dc2626;
-    --warn: #b45309;
-    --info: #2563eb;
+    --accent: #6a4dff;
+    --accent-ink: #a99aff;
+    --on-accent: #ffffff;
 
-    --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
-    --series-5: #e87ba4; --series-6: #008300; --series-7: #4a3aa7; --series-8: #e34948;
-    --chart-grid: #eee4d6;
+    --pos: #5fd3a2;
+    --neg: #ff7a7f;
+    --warn: #ffc857;
+    --info: #7cb8ff;
 
-    --shadow-pop: 0 20px 50px rgba(43, 32, 23, 0.16);
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+    --series-5: #d55181; --series-6: #008300; --series-7: #9085e9; --series-8: #e66767;
+    --chart-grid: #2a2440;
+
+    --shadow-pop: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
-/* Acentos alternativos (el predeterminado es latón) */
-:root[data-accent="cobre"] { --accent: #e8894a; --accent-ink: #e8894a; }
-:root[data-accent="menta"] { --accent: #6fdcc4; --accent-ink: #6fdcc4; }
-:root[data-accent="cielo"] { --accent: #7cc4ff; --accent-ink: #7cc4ff; }
-:root[data-accent="violeta"] { --accent: #b69cff; --accent-ink: #b69cff; }
-:root[data-theme="light"][data-accent="cobre"] { --accent-ink: #b4501c; }
-:root[data-theme="light"][data-accent="menta"] { --accent-ink: #0f766e; }
-:root[data-theme="light"][data-accent="cielo"] { --accent-ink: #1d4ed8; }
-:root[data-theme="light"][data-accent="violeta"] { --accent-ink: #6d28d9; }
+/* Acentos alternativos (el predeterminado es violeta) */
+:root[data-accent="laton"] { --accent: #f2b544; --accent-ink: #9a5b0b; --on-accent: #1a1206; }
+:root[data-accent="cobre"] { --accent: #e8894a; --accent-ink: #b4501c; --on-accent: #1a1206; }
+:root[data-accent="menta"] { --accent: #2fb89a; --accent-ink: #0f766e; --on-accent: #062a22; }
+:root[data-accent="cielo"] { --accent: #3b8cf0; --accent-ink: #1d4ed8; --on-accent: #ffffff; }
+:root[data-theme="dark"][data-accent="laton"] { --accent-ink: #f2b544; }
+:root[data-theme="dark"][data-accent="cobre"] { --accent-ink: #f0a06a; }
+:root[data-theme="dark"][data-accent="menta"] { --accent: #6fdcc4; --accent-ink: #6fdcc4; }
+:root[data-theme="dark"][data-accent="cielo"] { --accent-ink: #8cc8ff; }

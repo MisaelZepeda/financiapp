@@ -19,7 +19,7 @@ let meses = 12;
 let calorMes = mesKey();
 let calorDia = null;
 
-export const titulo = () => ({ titulo: 'Análisis' });
+export const titulo = () => ({ titulo: 'Análisis', atras: '#/mas' });
 
 function kpisHTML(serie) {
     const actual = serie[serie.length - 1];
@@ -28,7 +28,7 @@ function kpisHTML(serie) {
     const ahorroMes = tasaAhorro(actual);
     const ahorroProm = tasaAhorro({ ingresos: prom('ingresos'), gastos: prom('gastos') });
     return `<div class="kpi-grid">
-        <div class="card kpi-card"><small>Tasa de ahorro del mes</small><b class="num ${ahorroMes > 0 ? 'pos' : ahorroMes < 0 ? 'neg' : ''}">${pct(ahorroMes)}</b><span class="muted">Promedio: ${pct(ahorroProm)}</span></div>
+        <div class="card kpi-card"><small>Ahorraste este mes</small><b class="num ${ahorroMes > 0 ? 'pos' : ahorroMes < 0 ? 'neg' : ''}">${pct(ahorroMes)}</b><span class="muted">Promedio: ${pct(ahorroProm)}</span></div>
         <div class="card kpi-card"><small>Gasto promedio mensual</small><b class="num privado">${money(prom('gastos'))}</b><span class="muted">Este mes: <span class="privado">${money(actual.gastos)}</span></span></div>
         <div class="card kpi-card"><small>Ingreso promedio mensual</small><b class="num privado">${money(prom('ingresos'))}</b><span class="muted">Este mes: <span class="privado">${money(actual.ingresos)}</span></span></div>
     </div>`;
@@ -164,8 +164,8 @@ export function render() {
         ${resumenMesHTML()}
         ${kpisHTML(serie)}
         <section class="card" style="margin-top:14px;">
-            <div class="card-head"><h2 class="card-title">Patrimonio neto</h2><span class="card-meta">Cierre de cada mes</span></div>
-            <div class="grafica" style="height:220px;"><canvas id="an-neto" aria-label="Patrimonio neto por mes"></canvas></div>
+            <div class="card-head"><h2 class="card-title">Tu dinero en total</h2><span class="card-meta">Lo que tienes menos lo que debes, al cierre de cada mes</span></div>
+            <div class="grafica" style="height:220px;"><canvas id="an-neto" aria-label="Tu dinero en total por mes"></canvas></div>
         </section>
         <section class="card" style="margin-top:14px;">
             <div class="card-head"><h2 class="card-title">Ingresos vs. gastos</h2><span class="card-meta">Por mes</span></div>

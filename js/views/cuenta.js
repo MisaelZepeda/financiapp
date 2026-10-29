@@ -30,10 +30,10 @@ export function render({ id }) {
         ${e ? `<div class="cred-pago">
             <div><small>Pago para no generar intereses</small><b class="num privado">${money(e.pago)}</b></div>
             <div><small>Fecha límite</small><b>${fechaLarga(e.fechaPago)} <span class="muted" style="font-weight:500">(${e.dias < 0 ? 'vencida' : cuandoRelativo(e.fechaPago)})</span></b></div>
-            <div><small>Abonado desde el corte</small><b class="num privado">${money(e.abonado)}</b></div>
+            <div><small>Ya pagaste (desde el corte)</small><b class="num privado">${money(e.abonado)}</b></div>
             <div><small>Estado</small>${e.pagada ? `<span class="badge badge-pos">${icon('check')}Pagada</span>${e.marcada ? ` <button class="link" data-action="desmarcarPagada" data-id="${escapeHtml(id)}">Deshacer</button>` : ''}` : `<span class="badge ${e.dias < 0 ? 'badge-neg' : e.dias <= 3 ? 'badge-warn' : ''}">Faltan <span class="privado">${money(e.pendiente)}</span></span> <button class="link" data-action="marcarPagada" data-id="${escapeHtml(id)}">Marcar pagada</button>`}</div>
             <div><small>Corte</small><b>${fechaLarga(e.corte)}</b></div>
-            <div><small>Por facturar (siguiente corte)</small><b class="num privado">${money(porFacturar(c, sel.transacciones()))}</b></div>
+            <div><small>Compras para el próximo corte</small><b class="num privado">${money(porFacturar(c, sel.transacciones()))}</b></div>
         </div>` : ''}`;
     }
 

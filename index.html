@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -8,11 +8,11 @@
         // Tema y acento antes de pintar (evita el parpadeo).
         (function () {
             try {
-                var ap = JSON.parse(localStorage.getItem('financiapp_apariencia')) || {};
+                var ap = JSON.parse(localStorage.getItem('morralla_apariencia_v2')) || {};
                 var sesion = sessionStorage.getItem('financiapp_tema_sesion');
-                var claro = sesion ? sesion === 'claro' : (ap.tema === 'claro' || (ap.tema === 'auto' && !matchMedia('(prefers-color-scheme: dark)').matches));
-                document.documentElement.setAttribute('data-theme', claro ? 'light' : 'dark');
-                if (['cobre', 'menta', 'cielo', 'violeta'].indexOf(ap.acento) >= 0) document.documentElement.setAttribute('data-accent', ap.acento);
+                var oscuro = sesion ? sesion === 'oscuro' : (ap.tema === 'oscuro' || (ap.tema === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches));
+                document.documentElement.setAttribute('data-theme', oscuro ? 'dark' : 'light');
+                if (['laton', 'cobre', 'menta', 'cielo'].indexOf(ap.acento) >= 0) document.documentElement.setAttribute('data-accent', ap.acento);
             } catch (e) {}
         })();
     </script>
@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/views.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#15110d">
+    <meta name="theme-color" content="#f6f5fa">
 </head>
 <body>
     <!-- Sprite de íconos: formas rellenas y redondeadas (24x24) referenciadas

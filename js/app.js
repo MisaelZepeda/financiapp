@@ -32,6 +32,7 @@ import * as planear from './views/planear.js';
 import * as cuentas from './views/cuentas.js';
 import * as cuenta from './views/cuenta.js';
 import * as ajustes from './views/ajustes.js';
+import * as mas from './views/mas.js';
 
 definirRuta('/inicio', inicio);
 definirRuta('/movimientos', movimientos);
@@ -41,25 +42,41 @@ definirRuta('/planear/:tab', planear);
 definirRuta('/cuentas', cuentas);
 definirRuta('/cuenta/:id', cuenta);
 definirRuta('/ajustes', ajustes);
+definirRuta('/mas', mas);
 definirRuta('/nuevo', {}); // Siri y Atajos: abre el registro prellenado
 
+// Barra de abajo: lo de todos los días. Lo demás vive en "Más".
 const NAV = [
     ['#/inicio', 'home', 'Inicio', ['/inicio']],
     ['#/movimientos', 'list', 'Movimientos', ['/movimientos']],
+    ['#/cuentas', 'landmark', 'Cuentas', ['/cuentas', '/cuenta/']],
+    ['#/mas', 'more-horizontal', 'Más', ['/mas', '/analisis', '/planear', '/ajustes']],
+];
+
+// Barra lateral (computadora): todo a la vista.
+const LATERAL = [
+    ['#/inicio', 'home', 'Inicio', ['/inicio']],
+    ['#/movimientos', 'list', 'Movimientos', ['/movimientos']],
+    ['#/cuentas', 'landmark', 'Cuentas', ['/cuentas', '/cuenta/']],
     ['#/analisis', 'bar-chart', 'Análisis', ['/analisis']],
-    ['#/planear', 'target', 'Planear', ['/planear']],
+    null,
+    ['#/planear/presupuestos', 'target', 'Presupuestos', ['/planear/presupuestos', '/planear?', '/planear']],
+    ['#/planear/calendario', 'calendar', 'Calendario de pagos', ['/planear/calendario']],
+    ['#/planear/metas', 'shield', 'Metas de ahorro', ['/planear/metas']],
+    ['#/planear/recurrentes', 'repeat', 'Pagos fijos', ['/planear/recurrentes']],
+    ['#/planear/retos', 'check-circle', 'Retos', ['/planear/retos']],
 ];
 
 // ---------- Render ----------
-function activo(prefijos) { const p = rutaActual().path || ''; return prefijos.some(x => p.startsWith(x)); }
+function activo(prefijos) { const p = rutaActual().path || ''; return prefijos.some(x => x.endsWith('/') || x.includes('?') ? p.startsWith(x) : p === x || p.startsWith(x + '/') || p.startsWith(x + '?')); }
+// En la lateral, Planear sin pestaña cuenta como Presupuestos.
+function activoLateral(prefijos) { const p = rutaActual().path || ''; return prefijos[0] === '/planear/presupuestos' ? (p === '/planear' || p.startsWith('/planear/presupuestos') || p.startsWith('/planear?')) : activo(prefijos); }
 
 function pintarNav() {
     document.getElementById('sidebar').innerHTML = `
         <div class="brand"><img src="logo.svg" alt="">morralla</div>
         <button class="btn btn-primary side-add" data-action="nuevo">${icon('plus')}Nuevo movimiento</button>
-        ${NAV.map(([h, i, t, p]) => `<a class="side-link ${activo(p) ? 'activo' : ''}" href="${h}">${icon(i)}${t}</a>`).join('')}
-        <div class="side-sep"></div>
-        <a class="side-link ${activo(['/cuenta']) ? 'activo' : ''}" href="#/cuentas">${icon('landmark')}Cuentas</a>
+        ${LATERAL.map(x => x ? `<a class="side-link ${activoLateral(x[3]) ? 'activo' : ''}" href="${x[0]}">${icon(x[1])}${x[2]}</a>` : '<div class="side-sep"></div><p class="side-label">Planear</p>').join('')}
         <div class="side-bottom"><a class="side-link ${activo(['/ajustes']) ? 'activo' : ''}" href="#/ajustes">${icon('settings')}Ajustes</a></div>`;
     const [a, b, c, d] = NAV;
     const tab = ([h, i, t, p]) => `<a class="tab ${activo(p) ? 'activo' : ''}" href="${h}">${icon(i)}<span>${t}</span></a>`;
@@ -120,7 +137,8 @@ function alRecibirDatos(datos, uid) {
     if (uid) { try { localStorage.setItem(CACHE(uid), JSON.stringify(datos)); } catch { /* sin espacio */ } }
     const aj = datos.ajustes || {};
     const ap = leerApariencia();
-    if ((aj.tema && aj.tema !== ap.tema) || (aj.acento && aj.acento !== ap.acento)) aplicarApariencia({ tema: aj.tema, acento: aj.acento });
+    const guardada = aj.apariencia || {};
+    if ((guardada.tema && guardada.tema !== ap.tema) || (guardada.acento && guardada.acento !== ap.acento)) aplicarApariencia({ tema: guardada.tema, acento: guardada.acento });
     setDatos(datos);
     mostrarApp();
 }
@@ -225,7 +243,7 @@ on('generarRecurrente', async (el) => {
 });
 on('generarPendientes', async () => {
     const pend = pendientes(sel.recurrentes()); if (!pend.length) return;
-    await A.generarRecurrentes(pend); toast(`${pend.length} recurrente${pend.length > 1 ? 's' : ''} registrado${pend.length > 1 ? 's' : ''}`);
+    await A.generarRecurrentes(pend); toast(`${pend.length} pago${pend.length > 1 ? 's' : ''} fijo${pend.length > 1 ? 's' : ''} registrado${pend.length > 1 ? 's' : ''}`);
 });
 on('togglePrivacidad', () => {
     const p = !store.ui.privacidad;
