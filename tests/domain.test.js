@@ -85,10 +85,14 @@ test('recurrentes: próximas fechas, pendientes y generación', () => {
         { id: 'c', tipo: 'ingreso', monto: 1, frecuencia: 'mensual', activo: true, proximaFecha: '2026-10-01' },
     ];
     assert.deepEqual(pendientes(recs, HOY).map(r => r.id), ['a']);
-    const { tx, proximaFecha } = generarOcurrencia(recs[0]);
-    assert.equal(tx.fecha, '2026-09-12');
+    const { tx, proximaFecha } = generarOcurrencia(recs[0], '2026-09-28');
+    assert.equal(tx.fecha, '2026-09-28');                 // fecha en que se registra, no la programada
     assert.equal(tx.categoriaId, 'suscripciones');
     assert.equal(proximaFecha, '2026-10-12');
+    // Registrarlo antes de tiempo: fecha de hoy y avanza al periodo siguiente.
+    const antes = generarOcurrencia({ ...recs[0], proximaFecha: '2026-10-12' }, '2026-09-28');
+    assert.equal(antes.tx.fecha, '2026-09-28');
+    assert.equal(antes.proximaFecha, '2026-11-12');
 });
 
 test('análisis: los traspasos no cuentan como gasto ni ingreso', () => {

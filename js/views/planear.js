@@ -118,12 +118,12 @@ function recurrentesHTML() {
                 <div class="fila-sub">${FRECUENCIAS[r.frecuencia] || ''} · ${escapeHtml(sel.cuenta(r.cuentaId)?.nombre || 'Sin cuenta')} · ${pausado ? 'en pausa' : esPend ? '<span class="accent-ink">pendiente</span>' : `próximo ${cuandoRelativo(r.proximaFecha)}`}</div>
             </div>
             <div class="fila-der"><span class="num privado ${r.tipo === 'ingreso' ? 'pos' : ''}">${r.tipo === 'ingreso' ? '+' : ''}${money(r.monto)}</span></div>
-            ${esPend ? `<button class="btn btn-primary btn-sm" data-action="generarRecurrente" data-id="${escapeHtml(r.id)}">Registrar</button>` : ''}
+            ${esPend ? `<button class="btn btn-primary btn-sm" data-action="generarRecurrente" data-id="${escapeHtml(r.id)}">Registrar</button>` : pausado ? '' : `<button class="btn btn-soft btn-sm" data-action="generarRecurrente" data-id="${escapeHtml(r.id)}" title="Registrarlo hoy, antes de su fecha">Registrar ya</button>`}
             <button class="icon-btn" data-action="pausarRecurrente" data-id="${escapeHtml(r.id)}" title="${pausado ? 'Reanudar' : 'Pausar'}" aria-label="${pausado ? 'Reanudar' : 'Pausar'}">${icon(pausado ? 'play' : 'pause')}</button>
         </div>`;
     };
     const mensualGasto = recs.filter(r => r.activo !== false && r.tipo === 'gasto').reduce((a, r) => a + r.monto * (r.frecuencia === 'semanal' ? 4.33 : r.frecuencia === 'quincenal' ? 2 : 1), 0);
-    return `${pend.length ? `<div class="banner">${icon('repeat')}<p><b>${pend.length}</b> recurrente${pend.length > 1 ? 's' : ''} por registrar.</p><button class="btn btn-primary btn-sm" data-action="generarPendientes">Registrar todos</button></div>` : ''}
+    return `${pend.length ? `<div class="banner">${icon('repeat')}<p><b>${pend.length}</b> pago${pend.length > 1 ? 's' : ''} fijo${pend.length > 1 ? 's' : ''} por registrar.</p><button class="btn btn-primary btn-sm" data-action="generarPendientes">Registrar todos</button></div>` : ''}
         <div class="acciones-top"><span class="hint">Gasto fijo aprox.: <b class="privado">${money(mensualGasto)}</b> al mes</span><button class="btn btn-primary" data-action="nuevoRecurrente">${icon('plus')}Nuevo</button></div>
         <section class="card card-flush">${recs.length ? `<div class="lista">${recs.map(fila).join('')}</div>` : vacioHTML('repeat', 'Agrega pagos que se repiten: renta, suscripciones, nómina.')}</section>`;
 }

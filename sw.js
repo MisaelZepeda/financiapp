@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v24'; // v24: logo dorado y sin picos rojos
+const CACHE_NAME = 'morralla-cache-v25'; // v25: pagos fijos con fecha del registro
 
 const urlsToCache = [
     './',

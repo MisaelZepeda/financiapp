@@ -106,7 +106,7 @@ function filaRec(rec, pendiente) {
         <div class="fila-ico ${rec.tipo === 'ingreso' ? 'tono-pos' : ''}">${icon(cat?.icono || 'coin')}</div>
         <div class="fila-body"><div class="fila-titulo">${escapeHtml(rec.desc)}</div><div class="fila-sub">${pendiente ? `Pendiente desde ${cuandoRelativo(rec.proximaFecha).replace('hace ', '')}` : `Programado ${cuandoRelativo(rec.proximaFecha)}`} · ${escapeHtml(sel.cuenta(rec.cuentaId)?.nombre || 'Sin cuenta')}</div></div>
         <div class="fila-der"><span class="num privado ${rec.tipo === 'ingreso' ? 'pos' : ''}">${rec.tipo === 'ingreso' ? '+' : ''}${money(rec.monto)}</span>
-            ${pendiente ? `<button class="btn btn-primary btn-sm" data-action="generarRecurrente" data-id="${escapeHtml(rec.id)}" style="margin-top:4px;">Registrar</button>` : ''}</div>
+            <button class="btn ${pendiente ? 'btn-primary' : 'btn-soft'} btn-sm" data-action="generarRecurrente" data-id="${escapeHtml(rec.id)}" style="margin-top:4px;">${pendiente ? 'Registrar' : 'Registrar ya'}</button></div>
     </div>`;
 }
 

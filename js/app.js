@@ -17,6 +17,7 @@ import { construirDemo } from './lib/demo-data.js';
 import { compartirTarjeta } from './lib/compartir.js';
 import { migrarV1 } from './domain/migracion.js';
 import { pendientes } from './domain/recurrentes.js';
+import { hoyISO } from './domain/fechas.js';
 import { mostrarAcceso, ocultarAcceso, mostrarMigracion, nombreRegistro } from './views/acceso.js';
 import { confirmarMigracion, selectorTema } from './views/ajustes.js';
 import './components/salud.js';
@@ -239,7 +240,9 @@ on('nuevaCategoria', () => abrirFormCategoria());
 on('editarCategoria', (el) => abrirFormCategoria(id(el)));
 on('generarRecurrente', async (el) => {
     const rec = sel.recurrentes().find(r => r.id === id(el)); if (!rec) return;
-    await A.generarRecurrentes([rec]); toast(`${rec.desc} registrado`);
+    // Si aún no toca, se adelanta: se registra hoy y avanza al siguiente periodo.
+    if (rec.proximaFecha > hoyISO()) await A.adelantarRecurrente(rec); else await A.generarRecurrentes([rec]);
+    toast(`${rec.desc} registrado con fecha de hoy`);
 });
 on('generarPendientes', async () => {
     const pend = pendientes(sel.recurrentes()); if (!pend.length) return;

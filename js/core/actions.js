@@ -127,8 +127,8 @@ export function guardarReto(reto) {
 
 export function borrarReto(id) { return actualizar({ [`retos/${id}`]: null }); }
 
-// Registra la ocurrencia pendiente de cada recurrente y avanza su fecha.
-// Si un recurrente lleva varios periodos atrasado, registra uno por periodo.
+// Registra la ocurrencia pendiente de cada recurrente (con la fecha de hoy) y
+// avanza su fecha. Si lleva varios periodos atrasado, registra uno por periodo.
 export function generarRecurrentes(recs) {
     const updates = {};
     const hoy = hoyISO();
@@ -136,13 +136,22 @@ export function generarRecurrentes(recs) {
         let actual = { ...rec };
         let vueltas = 0;
         while (actual.proximaFecha && actual.proximaFecha <= hoy && vueltas++ < 24) {
-            const { tx, proximaFecha } = generarOcurrencia(actual);
+            const { tx, proximaFecha } = generarOcurrencia(actual, hoy);
             updates[`transacciones/${nuevoId()}`] = { ...tx, creadoEn: Date.now() };
             actual.proximaFecha = proximaFecha;
         }
         updates[`recurrentes/${rec.id}/proximaFecha`] = actual.proximaFecha;
     });
     return actualizar(updates);
+}
+
+// Registra hoy la próxima ocurrencia aunque aún no toque, y avanza su fecha.
+export function adelantarRecurrente(rec) {
+    const { tx, proximaFecha } = generarOcurrencia(rec, hoyISO());
+    return actualizar({
+        [`transacciones/${nuevoId()}`]: { ...tx, creadoEn: Date.now() },
+        [`recurrentes/${rec.id}/proximaFecha`]: proximaFecha,
+    });
 }
 
 export function saltarRecurrente(rec) {

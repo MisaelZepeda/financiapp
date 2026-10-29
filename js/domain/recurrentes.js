@@ -27,14 +27,15 @@ export function proximos(recurrentes, hoy = new Date(), dias = 10) {
 }
 
 // Transacción que genera un recurrente en su fecha programada, y la fecha siguiente.
-export function generarOcurrencia(rec) {
-    const fecha = rec.proximaFecha;
+// El movimiento lleva la fecha en que se registra (antes o después de lo
+// programado); la siguiente fecha programada avanza desde la que tocaba.
+export function generarOcurrencia(rec, fecha = rec.proximaFecha) {
     const tx = {
         tipo: rec.tipo, monto: Number(rec.monto), fecha, desc: rec.desc,
         cuentaId: rec.cuentaId, recurrenteId: rec.id,
         ...(rec.tipo === 'gasto' ? { categoriaId: rec.categoriaId || 'otros' } : {}),
     };
-    return { tx, proximaFecha: siguienteFecha(rec, fecha) };
+    return { tx, proximaFecha: siguienteFecha(rec, rec.proximaFecha) };
 }
 
 // Primera fecha programada para un recurrente nuevo: su día en este mes si
