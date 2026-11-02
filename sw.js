@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v28'; // v28: te deben descuenta de lo que debes
+const CACHE_NAME = 'morralla-cache-v29'; // v29: abono de te deben directo a la tarjeta
 
 const urlsToCache = [
     './',

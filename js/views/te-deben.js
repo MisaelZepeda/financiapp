@@ -1,5 +1,6 @@
 // Te deben: compras que hiciste por alguien más, cuánto te han pagado y
-// cuánto falta. Los abonos entran a tu cuenta sin contar como ingreso tuyo.
+// cuánto falta. Los abonos van directo a la tarjeta de la compra (cuentan como
+// pago de la tarjeta) y no cuentan como ingreso tuyo.
 
 import { sel } from '../core/store.js';
 import { on } from '../core/eventos.js';
@@ -70,10 +71,12 @@ export function render() {
 // ---------- Registrar abono ----------
 let abono = null;
 function abonoHTML() {
-    const cuentas = sel.cuentas().filter(c => c.tipo !== 'credito');
+    // Primero las tarjetas donde se hicieron sus compras; luego las demás cuentas.
+    const cuentas = [...sel.cuentas()].sort((a, b) => Number(abono.tarjetas.includes(b.id)) - Number(abono.tarjetas.includes(a.id)));
+    const elegida = sel.cuenta(abono.cuentaId);
     return `<div class="field"><label for="td-monto">Monto</label><input id="td-monto" inputmode="decimal" value="${abono.monto || ''}" data-input="tdMonto"></div>
-        <div class="field"><span class="label">¿A qué cuenta entró?</span><div class="chips">${cuentas.map(c => `<button type="button" class="chip ${c.id === abono.cuentaId ? 'activo' : ''}" data-action="tdCuenta" data-id="${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</button>`).join('')}</div></div>
-        <p class="hint">Entra a esa cuenta, pero no cuenta como ingreso tuyo.</p>
+        <div class="field"><span class="label">¿A dónde se abona?</span><div class="chips">${cuentas.map(c => `<button type="button" class="chip ${c.id === abono.cuentaId ? 'activo' : ''}" data-action="tdCuenta" data-id="${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</button>`).join('')}</div></div>
+        <p class="hint">${elegida?.tipo === 'credito' ? `Se abona directo a ${escapeHtml(elegida.nombre)} y cuenta como pago de la tarjeta.` : 'Entra a esa cuenta.'} No cuenta como ingreso tuyo.</p>
         <div class="hoja-foot"><button class="btn btn-primary" data-action="tdGuardar">Guardar abono</button></div>`;
 }
 const repintarAbono = () => { const el = document.getElementById('td-abono'); if (el) el.innerHTML = abonoHTML(); };
@@ -82,8 +85,11 @@ on('tdAbonar', (el) => {
     const d = deudas().find(x => x.nombre === el.dataset.n);
     if (!d) return;
     const sugerido = d.vencido > 0 ? d.vencido : (d.proximo?.monto || d.pendiente);
-    const cuenta = sel.cuentas().find(c => c.tipo === 'debito') || sel.cuentas().find(c => c.tipo !== 'credito');
-    abono = { nombre: d.nombre, monto: Math.min(sugerido, d.pendiente), cuentaId: cuenta?.id, pendiente: d.pendiente };
+    // Por omisión, la tarjeta de su compra más reciente.
+    const tarjetas = [...new Set(d.compras.map(t => t.cuentaId).filter(id => sel.cuenta(id)?.tipo === 'credito'))];
+    const reciente = [...d.compras].sort((a, b) => b.fecha.localeCompare(a.fecha)).find(t => tarjetas.includes(t.cuentaId));
+    const cuenta = sel.cuenta(reciente?.cuentaId) || sel.cuentas().find(c => c.tipo === 'debito');
+    abono = { nombre: d.nombre, monto: Math.min(sugerido, d.pendiente), cuentaId: cuenta?.id, pendiente: d.pendiente, tarjetas };
     abrirHoja({ titulo: `Abono de ${d.nombre}`, html: `<div id="td-abono">${abonoHTML()}</div>` });
 });
 on('tdMonto', (el) => { abono.monto = parseFloat(el.value.replace(/[^0-9.]/g, '')) || 0; }, 'input');

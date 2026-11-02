@@ -61,7 +61,8 @@ export function montoEstado(cuenta, transacciones, corte) {
         if (tx.tipo === 'gasto') {
             if (Number(tx.msi) > 1) total += mensualidadMSI(cuenta, tx, corte);
             else if (tx.fecha > desde && tx.fecha <= corte) total += Number(tx.monto) || 0;
-        } else if (tx.tipo === 'ingreso' && tx.fecha > desde && tx.fecha <= corte) {
+        } else if (tx.tipo === 'ingreso' && !tx.abonoDe && tx.fecha > desde && tx.fecha <= corte) {
+            // Cashback y reembolsos bajan el estado; un abono de Te deben es un pago (abonadoDesde).
             total -= Number(tx.monto) || 0;
         }
     });
@@ -74,15 +75,17 @@ export function porFacturar(cuenta, transacciones, hoy = new Date()) {
     return r2(transacciones.reduce((a, tx) => {
         if (tx.cuentaId !== cuenta.id || tx.fecha <= corte) return a;
         if (tx.tipo === 'gasto' && !(Number(tx.msi) > 1)) return a + (Number(tx.monto) || 0);
-        if (tx.tipo === 'ingreso') return a - (Number(tx.monto) || 0);
+        if (tx.tipo === 'ingreso' && !tx.abonoDe) return a - (Number(tx.monto) || 0);
         return a;
     }, 0));
 }
 
 // Pagos a la tarjeta hechos después de `corte`.
+// Pagos a la tarjeta después del corte: tus transferencias y los abonos que
+// alguien te hace directo a la tarjeta por una compra que hiciste por él (Te deben).
 export function abonadoDesde(cuenta, transacciones, corte) {
     return r2(transacciones
-        .filter(tx => tx.tipo === 'transferencia' && tx.cuentaDestinoId === cuenta.id && tx.fecha > corte)
+        .filter(tx => tx.fecha > corte && ((tx.tipo === 'transferencia' && tx.cuentaDestinoId === cuenta.id) || (tx.tipo === 'ingreso' && tx.abonoDe && tx.cuentaId === cuenta.id)))
         .reduce((a, tx) => a + (Number(tx.monto) || 0), 0));
 }
 

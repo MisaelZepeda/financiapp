@@ -64,7 +64,7 @@ export function construirDemo(hoy = new Date()) {
     tx({ tipo: 'gasto', monto: 2350, desc: 'Veterinario', categoriaId: 'mascotas', cuentaId: 'viajes', fecha: hace(1) });
     // Compra para un amigo a 6 MSI: te paga la misma mensualidad del banco.
     tx({ tipo: 'gasto', monto: 7200, desc: 'Celular de Juan', categoriaId: 'otros', cuentaId: 'platino', msi: 6, fecha: hace(75), paraTercero: 'Juan' });
-    tx({ tipo: 'ingreso', monto: 1200, desc: 'Abono de Juan', cuentaId: 'nomina', fecha: hace(40), abonoDe: 'Juan' });
+    tx({ tipo: 'ingreso', monto: 1200, desc: 'Abono de Juan', cuentaId: 'platino', fecha: hace(40), abonoDe: 'Juan' });
     tx({ tipo: 'gasto', monto: 1840, desc: 'Costco', categoriaId: 'comida', cuentaId: 'platino', fecha: hace(3),
         partes: [{ categoriaId: 'comida', monto: 1240 }, { categoriaId: 'vivienda', monto: 600 }] });
     tx({ tipo: 'gasto', monto: 2600, desc: 'Hotel Valle', categoriaId: 'ocio', cuentaId: 'viajes', fecha: hace(38), etiquetas: ['vacaciones'] });

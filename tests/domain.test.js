@@ -612,6 +612,25 @@ test('te deben: no cuenta como gasto ni ingreso tuyo, pero sí en el pago de la 
     assert.equal(montoEstado(tdc, txs, '2026-09-18'), 300);   // 100 tuyo + 200 de la mensualidad de Ana
 });
 
+test('te deben: el abono directo a la tarjeta cuenta como pago, no baja el estado', async () => {
+    const { montoEstado, abonadoDesde, estadoPago } = await import('../js/domain/tarjetas.js');
+    const { porCobrar } = await import('../js/domain/saldos.js');
+    const tdc = { id: 'tdc', tipo: 'credito', diaCorte: 18, diaPago: 5, saldoInicial: 0, fechaInicial: '2026-01-01' };
+    const txs = [
+        { tipo: 'gasto', monto: 600, msi: 3, fecha: '2026-09-10', cuentaId: 'tdc', categoriaId: 'otros', paraTercero: 'Ana' },
+        { tipo: 'gasto', monto: 100, fecha: '2026-09-11', cuentaId: 'tdc', categoriaId: 'comida' },
+        { tipo: 'ingreso', monto: 200, fecha: '2026-09-25', cuentaId: 'tdc', abonoDe: 'Ana' },
+    ];
+    assert.equal(montoEstado(tdc, txs, '2026-09-18'), 300);   // el abono no se resta del estado
+    assert.equal(abonadoDesde(tdc, txs, '2026-09-18'), 200);  // cuenta como pago
+    const e = estadoPago(tdc, txs, HOY);
+    assert.equal(e.pendiente, 100);                           // solo te falta tu parte
+    const saldos = calcularSaldos([tdc], txs);
+    assert.equal(saldos.tdc, 500);                            // 700 − 200 abonados
+    const p = patrimonio([tdc], saldos, porCobrar(txs, [tdc]));
+    assert.equal(p.deudasPropias, 100);                       // 500 − 400 que aún paga Ana
+});
+
 test('te deben: una compra para alguien más no baja tu patrimonio', async () => {
     const { porCobrar } = await import('../js/domain/saldos.js');
     const deb = { id: 'deb', tipo: 'debito', saldoInicial: 10000 };
