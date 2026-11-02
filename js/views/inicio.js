@@ -37,7 +37,7 @@ function heroHTML() {
         </div>
         <div class="hero-stats">
             <div><small>Lo que tienes${p.teDeben ? ' (y te deben)' : ''}</small><b class="num privado">${money(p.activos + p.teDeben)}</b></div>
-            <div><small>Lo que debes</small><b class="num privado">${money(p.deudas)}</b></div>
+            <div><small>Lo que debes</small><b class="num privado">${money(p.deudasPropias)}</b></div>
             <div><small>Crédito disponible</small><b class="num privado">${money(p.creditoLibre)}</b></div>
         </div>
     </section>`;

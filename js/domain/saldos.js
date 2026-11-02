@@ -43,28 +43,49 @@ export function redondear(n) { return Math.round(n * 100) / 100; }
 
 // Lo que otras personas te deben por compras que hiciste por ellas (compras
 // marcadas `paraTercero` menos sus abonos `abonoDe`), hasta la fecha `hasta`.
-// Cuenta como algo que tienes: así una compra para alguien más no baja tu patrimonio.
-export function porCobrar(transacciones, hasta = null) {
+// Se separa lo comprado con tarjeta (`credito`: se descuenta de lo que debes,
+// porque esa deuda la paga la otra persona) de lo pagado con débito o efectivo
+// (`otros`: se suma a lo que tienes). Los abonos cubren primero lo de tarjeta,
+// igual que las mensualidades del banco.
+export function porCobrar(transacciones, cuentas = [], hasta = null) {
+    const credito = new Set(cuentas.filter(esCredito).map(c => c.id));
     const porPersona = {};
     transacciones.forEach(tx => {
         if (hasta && tx.fecha > hasta) return;
         const nombre = tx.tipo === 'gasto' ? tx.paraTercero : tx.tipo === 'ingreso' ? tx.abonoDe : null;
         if (!nombre) return;
-        const k = String(nombre).trim().toLowerCase();
-        porPersona[k] = (porPersona[k] || 0) + (tx.tipo === 'gasto' ? 1 : -1) * (Number(tx.monto) || 0);
+        const p = porPersona[String(nombre).trim().toLowerCase()] ||= { credito: 0, otros: 0, abonos: 0 };
+        const m = Number(tx.monto) || 0;
+        if (tx.tipo === 'ingreso') p.abonos += m;
+        else if (credito.has(tx.cuentaId)) p.credito += m;
+        else p.otros += m;
     });
-    return redondear(Object.values(porPersona).reduce((a, v) => a + Math.max(0, v), 0));
+    let enCredito = 0, otros = 0;
+    Object.values(porPersona).forEach(p => {
+        const c = Math.max(0, p.credito - p.abonos);
+        enCredito += c;
+        otros += Math.max(0, p.otros - Math.max(0, p.abonos - p.credito));
+    });
+    return { credito: redondear(enCredito), otros: redondear(otros), total: redondear(enCredito + otros) };
 }
 
-// `activos` es solo el dinero en tus cuentas; `teDeben` se suma aparte al neto.
-export function patrimonio(cuentas, saldos, teDeben = 0) {
+// `deudas` es lo que marcan tus tarjetas; `deudasPropias` le quita lo que pagan
+// otras personas (Te deben). `activos` es el dinero en tus cuentas y `teDeben`
+// lo que te deben por compras pagadas con débito o efectivo.
+export function patrimonio(cuentas, saldos, cobrar = { credito: 0, otros: 0 }) {
     let activos = 0, deudas = 0, creditoLibre = 0;
     cuentas.forEach(c => {
         const s = saldos[c.id] || 0;
         if (esCredito(c)) { deudas += s; if (c.limite > 0) creditoLibre += Math.max(0, c.limite - s); }
         else activos += s;
     });
-    return { activos: redondear(activos), teDeben: redondear(teDeben), deudas: redondear(deudas), creditoLibre: redondear(creditoLibre), neto: redondear(activos + teDeben - deudas) };
+    const deudasPropias = Math.max(0, deudas - (cobrar.credito || 0));
+    const teDeben = (cobrar.otros || 0) + Math.max(0, (cobrar.credito || 0) - deudas);
+    return {
+        activos: redondear(activos), teDeben: redondear(teDeben),
+        deudas: redondear(deudas), deudasPropias: redondear(deudasPropias), creditoLibre: redondear(creditoLibre),
+        neto: redondear(activos + teDeben - deudasPropias),
+    };
 }
 
 // Patrimonio neto al cierre de cada uno de los últimos `n` meses (el mes en curso al día de hoy).
@@ -72,6 +93,6 @@ export function seriePatrimonio(cuentas, transacciones, n = 12, hoy = new Date()
     const actual = mesKey(hoy);
     return ultimosMeses(n, actual).map(key => {
         const corte = key === actual ? null : ultimoDiaMes(key);
-        return { mes: key, neto: patrimonio(cuentas, calcularSaldos(cuentas, transacciones, corte), porCobrar(transacciones, corte)).neto };
+        return { mes: key, neto: patrimonio(cuentas, calcularSaldos(cuentas, transacciones, corte), porCobrar(transacciones, cuentas, corte)).neto };
     });
 }

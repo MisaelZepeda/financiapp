@@ -48,7 +48,7 @@ export async function generarPDF(key = mesKey()) {
     const cuentas = sel.cuentas();
     const todas = sel.transacciones();
     const saldos = calcularSaldos(cuentas, todas, cierre);
-    const p = patrimonio(cuentas, saldos, porCobrar(todas, cierre));
+    const p = patrimonio(cuentas, saldos, porCobrar(todas, cuentas, cierre));
     const r = resumenMes(todas, key);
     const txMes = todas.filter(t => t.fecha?.startsWith(key)).slice().reverse();
     const movMes = txMes.filter(t => t.tipo === 'transferencia').reduce((a, t) => a + t.monto, 0);
@@ -63,8 +63,8 @@ export async function generarPDF(key = mesKey()) {
     const titulo = (t) => { doc.setTextColor(...OSCURO); doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.text(t, 15, y); y += 4; };
 
     titulo(`BALANCE AL ${cierre.split('-').reverse().join('/')}`);
-    tarjeta(15, 58, 'ACTIVOS', fmt(p.activos), OSCURO);
-    tarjeta(76, 58, 'DEUDAS', fmt(p.deudas), OSCURO);
+    tarjeta(15, 58, 'ACTIVOS', fmt(p.activos + p.teDeben), OSCURO);
+    tarjeta(76, 58, 'DEUDAS', fmt(p.deudasPropias), OSCURO);
     tarjeta(137, 58, 'PATRIMONIO NETO', fmt(p.neto), p.neto >= 0 ? VERDE : ROJO);
     y += 30;
     titulo(`FLUJO DE ${periodo.toUpperCase()}`);

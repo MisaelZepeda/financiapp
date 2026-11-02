@@ -70,7 +70,7 @@ export const sel = {
     indiceCategoria: (id) => memorizar('idxcat', () => Object.fromEntries(sel.categorias().map((c, i) => [c.id, i])))[id] ?? 99,
     saldos: () => memorizar('saldos', () => calcularSaldos(Object.values(store.datos.cuentas), Object.values(store.datos.transacciones))),
     saldo: (id) => sel.saldos()[id] || 0,
-    patrimonio: () => memorizar('patrimonio', () => patrimonio(Object.values(store.datos.cuentas), sel.saldos(), porCobrar(sel.transacciones()))),
+    patrimonio: () => memorizar('patrimonio', () => patrimonio(Object.values(store.datos.cuentas), sel.saldos(), porCobrar(sel.transacciones(), Object.values(store.datos.cuentas)))),
     metas: () => memorizar('metas', () => Object.values(store.datos.metas).sort((a, b) => (a.fechaLimite || '9999').localeCompare(b.fechaLimite || '9999'))),
     plantillas: () => memorizar('plantillas', () => Object.values(store.datos.plantillas).sort((a, b) => (a.creadoEn || 0) - (b.creadoEn || 0))),
     retos: () => memorizar('retos', () => Object.values(store.datos.retos).sort((a, b) => (b.inicio || '').localeCompare(a.inicio || ''))),

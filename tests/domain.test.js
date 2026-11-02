@@ -37,7 +37,7 @@ test('saldos: gasto, ingreso, pago de tarjeta y cashback', () => {
     assert.equal(s.deb, 1000 + 500 - 200 - 1000);
     assert.equal(s.tdc, 3000 - 1000 - 50);
     const p = patrimonio(cuentas, s);
-    assert.deepEqual(p, { activos: 300, teDeben: 0, deudas: 1950, creditoLibre: 8050, neto: -1650 });
+    assert.deepEqual(p, { activos: 300, teDeben: 0, deudas: 1950, deudasPropias: 1950, creditoLibre: 8050, neto: -1650 });
     assert.equal(calcularSaldos(cuentas, txs, '2026-09-02').deb, 1300);
 });
 
@@ -621,9 +621,16 @@ test('te deben: una compra para alguien más no baja tu patrimonio', async () =>
         { tipo: 'gasto', monto: 6000, msi: 6, fecha: '2026-09-10', cuentaId: 'tdc', categoriaId: 'otros', paraTercero: 'Juan' },
         { tipo: 'ingreso', monto: 1000, fecha: '2026-10-06', cuentaId: 'deb', abonoDe: 'Juan' },
     ];
-    const p = patrimonio([deb, tdc], calcularSaldos([deb, tdc], txs), porCobrar(txs));
-    assert.equal(p.teDeben, 5000);
-    assert.equal(p.activos, 11000);       // solo el dinero de las cuentas
-    assert.equal(p.neto, antes);           // 11000 + 5000 − 6000 = 10000
-    assert.equal(porCobrar(txs, '2026-09-30'), 6000);   // antes del abono
+    const p = patrimonio([deb, tdc], calcularSaldos([deb, tdc], txs), porCobrar(txs, [deb, tdc]));
+    assert.equal(p.deudas, 6000);          // lo que marca la tarjeta
+    assert.equal(p.deudasPropias, 1000);   // sin los 5000 que paga Juan
+    assert.equal(p.activos, 11000);        // solo el dinero de las cuentas
+    assert.equal(p.teDeben, 0);
+    assert.equal(p.neto, antes);           // 11000 − 1000 = 10000
+    assert.equal(porCobrar(txs, [deb, tdc], '2026-09-30').credito, 6000);   // antes del abono
+    // Una compra pagada con débito sí suma a lo que tienes.
+    const efectivo = [{ tipo: 'gasto', monto: 500, fecha: '2026-09-10', cuentaId: 'deb', categoriaId: 'otros', paraTercero: 'Ana' }];
+    const p2 = patrimonio([deb, tdc], calcularSaldos([deb, tdc], efectivo), porCobrar(efectivo, [deb, tdc]));
+    assert.equal(p2.teDeben, 500);
+    assert.equal(p2.neto, antes);
 });
