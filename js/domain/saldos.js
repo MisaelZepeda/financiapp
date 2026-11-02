@@ -41,14 +41,30 @@ export function calcularSaldos(cuentas, transacciones, hasta = null) {
 
 export function redondear(n) { return Math.round(n * 100) / 100; }
 
-export function patrimonio(cuentas, saldos) {
+// Lo que otras personas te deben por compras que hiciste por ellas (compras
+// marcadas `paraTercero` menos sus abonos `abonoDe`), hasta la fecha `hasta`.
+// Cuenta como algo que tienes: así una compra para alguien más no baja tu patrimonio.
+export function porCobrar(transacciones, hasta = null) {
+    const porPersona = {};
+    transacciones.forEach(tx => {
+        if (hasta && tx.fecha > hasta) return;
+        const nombre = tx.tipo === 'gasto' ? tx.paraTercero : tx.tipo === 'ingreso' ? tx.abonoDe : null;
+        if (!nombre) return;
+        const k = String(nombre).trim().toLowerCase();
+        porPersona[k] = (porPersona[k] || 0) + (tx.tipo === 'gasto' ? 1 : -1) * (Number(tx.monto) || 0);
+    });
+    return redondear(Object.values(porPersona).reduce((a, v) => a + Math.max(0, v), 0));
+}
+
+// `activos` es solo el dinero en tus cuentas; `teDeben` se suma aparte al neto.
+export function patrimonio(cuentas, saldos, teDeben = 0) {
     let activos = 0, deudas = 0, creditoLibre = 0;
     cuentas.forEach(c => {
         const s = saldos[c.id] || 0;
         if (esCredito(c)) { deudas += s; if (c.limite > 0) creditoLibre += Math.max(0, c.limite - s); }
         else activos += s;
     });
-    return { activos: redondear(activos), deudas: redondear(deudas), creditoLibre: redondear(creditoLibre), neto: redondear(activos - deudas) };
+    return { activos: redondear(activos), teDeben: redondear(teDeben), deudas: redondear(deudas), creditoLibre: redondear(creditoLibre), neto: redondear(activos + teDeben - deudas) };
 }
 
 // Patrimonio neto al cierre de cada uno de los últimos `n` meses (el mes en curso al día de hoy).
@@ -56,6 +72,6 @@ export function seriePatrimonio(cuentas, transacciones, n = 12, hoy = new Date()
     const actual = mesKey(hoy);
     return ultimosMeses(n, actual).map(key => {
         const corte = key === actual ? null : ultimoDiaMes(key);
-        return { mes: key, neto: patrimonio(cuentas, calcularSaldos(cuentas, transacciones, corte)).neto };
+        return { mes: key, neto: patrimonio(cuentas, calcularSaldos(cuentas, transacciones, corte), porCobrar(transacciones, corte)).neto };
     });
 }

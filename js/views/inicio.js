@@ -36,7 +36,7 @@ function heroHTML() {
             <div class="hero-spark"><canvas id="spark-neto" aria-label="Tendencia del patrimonio"></canvas></div>
         </div>
         <div class="hero-stats">
-            <div><small>Lo que tienes</small><b class="num privado">${money(p.activos)}</b></div>
+            <div><small>Lo que tienes${p.teDeben ? ' (y te deben)' : ''}</small><b class="num privado">${money(p.activos + p.teDeben)}</b></div>
             <div><small>Lo que debes</small><b class="num privado">${money(p.deudas)}</b></div>
             <div><small>Crédito disponible</small><b class="num privado">${money(p.creditoLibre)}</b></div>
         </div>

@@ -1,7 +1,7 @@
 // Exportaciones: estado de cuenta mensual en PDF y todos los movimientos en CSV.
 
 import { sel } from '../core/store.js';
-import { calcularSaldos, patrimonio } from '../domain/saldos.js';
+import { calcularSaldos, patrimonio, porCobrar } from '../domain/saldos.js';
 import { resumenMes } from '../domain/analisis.js';
 import { ultimoDiaMes, mesKey, hoyISO } from '../domain/fechas.js';
 import { nombreMesAnio } from './format.js';
@@ -48,7 +48,7 @@ export async function generarPDF(key = mesKey()) {
     const cuentas = sel.cuentas();
     const todas = sel.transacciones();
     const saldos = calcularSaldos(cuentas, todas, cierre);
-    const p = patrimonio(cuentas, saldos);
+    const p = patrimonio(cuentas, saldos, porCobrar(todas, cierre));
     const r = resumenMes(todas, key);
     const txMes = todas.filter(t => t.fecha?.startsWith(key)).slice().reverse();
     const movMes = txMes.filter(t => t.tipo === 'transferencia').reduce((a, t) => a + t.monto, 0);

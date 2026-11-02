@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v26'; // v26: te deben
+const CACHE_NAME = 'morralla-cache-v27'; // v27: te deben suma al patrimonio
 
 const urlsToCache = [
     './',

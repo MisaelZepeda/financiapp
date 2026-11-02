@@ -37,7 +37,7 @@ test('saldos: gasto, ingreso, pago de tarjeta y cashback', () => {
     assert.equal(s.deb, 1000 + 500 - 200 - 1000);
     assert.equal(s.tdc, 3000 - 1000 - 50);
     const p = patrimonio(cuentas, s);
-    assert.deepEqual(p, { activos: 300, deudas: 1950, creditoLibre: 8050, neto: -1650 });
+    assert.deepEqual(p, { activos: 300, teDeben: 0, deudas: 1950, creditoLibre: 8050, neto: -1650 });
     assert.equal(calcularSaldos(cuentas, txs, '2026-09-02').deb, 1300);
 });
 
@@ -610,4 +610,20 @@ test('te deben: no cuenta como gasto ni ingreso tuyo, pero sí en el pago de la 
     assert.equal(r.gastos, 100);
     assert.equal(r.ingresos, 0);
     assert.equal(montoEstado(tdc, txs, '2026-09-18'), 300);   // 100 tuyo + 200 de la mensualidad de Ana
+});
+
+test('te deben: una compra para alguien más no baja tu patrimonio', async () => {
+    const { porCobrar } = await import('../js/domain/saldos.js');
+    const deb = { id: 'deb', tipo: 'debito', saldoInicial: 10000 };
+    const tdc = { id: 'tdc', tipo: 'credito', saldoInicial: 0, limite: 20000 };
+    const antes = patrimonio([deb, tdc], calcularSaldos([deb, tdc], [])).neto;
+    const txs = [
+        { tipo: 'gasto', monto: 6000, msi: 6, fecha: '2026-09-10', cuentaId: 'tdc', categoriaId: 'otros', paraTercero: 'Juan' },
+        { tipo: 'ingreso', monto: 1000, fecha: '2026-10-06', cuentaId: 'deb', abonoDe: 'Juan' },
+    ];
+    const p = patrimonio([deb, tdc], calcularSaldos([deb, tdc], txs), porCobrar(txs));
+    assert.equal(p.teDeben, 5000);
+    assert.equal(p.activos, 11000);       // solo el dinero de las cuentas
+    assert.equal(p.neto, antes);           // 11000 + 5000 − 6000 = 10000
+    assert.equal(porCobrar(txs, '2026-09-30'), 6000);   // antes del abono
 });
