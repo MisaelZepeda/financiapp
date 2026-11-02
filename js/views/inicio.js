@@ -9,6 +9,7 @@ import { estadoPago } from '../domain/tarjetas.js';
 import { tarjetaTlacoHTML } from '../components/salud.js';
 import { resumenPendiente } from '../components/resumen-mes.js';
 import { contar } from '../components/efectos.js';
+import { deudasTerceros } from '../domain/terceros.js';
 import { proyectarFinDeMes } from '../domain/proyeccion.js';
 import { pendientes, proximos } from '../domain/recurrentes.js';
 import { mesKey, sumarMeses } from '../domain/fechas.js';
@@ -172,8 +173,18 @@ function resumenListoHTML() {
         ${icon('chevron-right', 'chev')}</button>`;
 }
 
+// Si alguien ya debió pagarte una mensualidad, se recuerda aquí.
+function cobrosHTML() {
+    const vencidas = deudasTerceros(sel.cuentas(), sel.transacciones()).filter(d => !d.saldada && d.vencido > 0);
+    if (!vencidas.length) return '';
+    const texto = vencidas.length === 1
+        ? `${escapeHtml(vencidas[0].nombre)} ya debió pagarte <b class="privado">${money(vencidas[0].vencido)}</b>`
+        : `${vencidas.length} personas ya debieron pagarte <b class="privado">${money(vencidas.reduce((a, d) => a + d.vencido, 0))}</b>`;
+    return `<a class="card cobro-cta" href="#/te-deben"><span class="cobro-ico">${icon('share')}</span><span class="cobro-txt">${texto}<small>Toca para registrar el abono</small></span>${icon('chevron-right', 'chev')}</a>`;
+}
+
 export function render() {
-    return `${resumenListoHTML()}${tarjetaTlacoHTML()}${heroHTML()}
+    return `${resumenListoHTML()}${cobrosHTML()}${tarjetaTlacoHTML()}${heroHTML()}
         <div class="stack" style="margin-top:14px;">
             ${cuentasHTML()}
             ${mesHTML()}

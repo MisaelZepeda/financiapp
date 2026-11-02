@@ -14,6 +14,7 @@ import { mesKey, sumarMeses, hoyISO, sumarDias, diasEntre } from './fechas.js';
 import { resumenMes } from './analisis.js';
 import { estadoPago } from './tarjetas.js';
 import { proyectarFinDeMes } from './proyeccion.js';
+import { esDeTercero } from './terceros.js';
 
 const r0 = (n) => Math.round(n);
 const fmt = (n) => '$' + Number(Math.abs(n) || 0).toLocaleString('es-MX', { maximumFractionDigits: 0 });
@@ -124,7 +125,7 @@ export function evaluarSalud({ cuentas = [], saldos = {}, transacciones = [], ca
 
     // Sorprendido: gasto variable de hoy contra el promedio diario de los últimos 90 días.
     const h = hoyISO(hoy);
-    const variable = (t) => t.tipo === 'gasto' && !t.recurrenteId;
+    const variable = (t) => t.tipo === 'gasto' && !t.recurrenteId && !esDeTercero(t);
     const desde90 = sumarDias(h, -90);
     const previos = transacciones.filter(t => variable(t) && t.fecha >= desde90 && t.fecha < h);
     const promDiario = previos.reduce((a, t) => a + (Number(t.monto) || 0), 0) / 90;

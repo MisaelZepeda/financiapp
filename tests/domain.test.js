@@ -571,3 +571,43 @@ test('Siri: interpretar lo dictado', () => {
     assert.deepEqual(interpretarDictado('Uber 135'), { tipo: 'gasto', monto: 135, desc: 'Uber' });
     assert.equal(interpretarDictado('café'), null);
 });
+
+// ---------- Te deben (compras para alguien más) ----------
+import { deudasTerceros, cobrosDeCompra, totalTeDeben } from '../js/domain/terceros.js';
+
+test('te deben: mismas mensualidades y fechas que cobra el banco', () => {
+    const tdc = { id: 'tdc', tipo: 'credito', diaCorte: 18, diaPago: 5 };
+    const compra = { tipo: 'gasto', monto: 6000, msi: 6, fecha: '2026-09-10', cuentaId: 'tdc', categoriaId: 'otros', paraTercero: 'Juan' };
+    const cobros = cobrosDeCompra(compra, tdc);
+    assert.equal(cobros.length, 6);
+    assert.deepEqual(cobros[0], { fecha: '2026-10-05', monto: 1000 });
+    assert.equal(cobros[5].fecha, '2027-03-05');
+
+    const [d] = deudasTerceros([tdc], [compra], HOY);
+    assert.equal(d.nombre, 'Juan');
+    assert.equal(d.pendiente, 6000);
+    assert.equal(d.vencido, 0);
+    assert.deepEqual(d.proximo, { fecha: '2026-10-05', monto: 1000 });
+
+    // Pagó la primera; al 10 de noviembre ya debía la segunda.
+    const abono = { tipo: 'ingreso', monto: 1000, fecha: '2026-10-06', cuentaId: 'deb', abonoDe: 'juan' };
+    const [d2] = deudasTerceros([tdc], [compra, abono], new Date(2026, 10, 10, 12));
+    assert.equal(d2.abonado, 1000);
+    assert.equal(d2.vencido, 1000);
+    assert.deepEqual(d2.proximo, { fecha: '2026-11-05', monto: 1000 });
+    assert.equal(totalTeDeben([d2]), 5000);
+});
+
+test('te deben: no cuenta como gasto ni ingreso tuyo, pero sí en el pago de la tarjeta', async () => {
+    const { montoEstado } = await import('../js/domain/tarjetas.js');
+    const tdc = { id: 'tdc', tipo: 'credito', diaCorte: 18, diaPago: 5, saldoInicial: 0, fechaInicial: '2026-01-01' };
+    const txs = [
+        { tipo: 'gasto', monto: 600, msi: 3, fecha: '2026-09-10', cuentaId: 'tdc', categoriaId: 'otros', paraTercero: 'Ana' },
+        { tipo: 'ingreso', monto: 200, fecha: '2026-09-20', cuentaId: 'deb', abonoDe: 'Ana' },
+        { tipo: 'gasto', monto: 100, fecha: '2026-09-11', cuentaId: 'tdc', categoriaId: 'comida' },
+    ];
+    const r = resumenMes(txs, '2026-09');
+    assert.equal(r.gastos, 100);
+    assert.equal(r.ingresos, 0);
+    assert.equal(montoEstado(tdc, txs, '2026-09-18'), 300);   // 100 tuyo + 200 de la mensualidad de Ana
+});

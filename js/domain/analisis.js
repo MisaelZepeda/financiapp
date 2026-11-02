@@ -1,7 +1,9 @@
 // Cálculos de análisis. Los traspasos y pagos de tarjeta NO cuentan como
-// ingreso ni gasto: solo mueven dinero entre cuentas propias.
+// ingreso ni gasto: solo mueven dinero entre cuentas propias. Tampoco las
+// compras para alguien más ni lo que esa persona te devuelve (terceros.js).
 
 import { mesKey, ultimosMeses, sumarMeses } from './fechas.js';
+import { esDeTercero } from './terceros.js';
 
 const monto = (tx) => Number(tx.monto) || 0;
 const r2 = (n) => Math.round(n * 100) / 100;
@@ -16,7 +18,7 @@ export function resumenMes(transacciones, key) {
     let ingresos = 0, gastos = 0;
     const porCategoria = {};
     transacciones.forEach(tx => {
-        if (!tx.fecha?.startsWith(key)) return;
+        if (!tx.fecha?.startsWith(key) || esDeTercero(tx)) return;
         if (tx.tipo === 'ingreso') ingresos += monto(tx);
         else if (tx.tipo === 'gasto') {
             gastos += monto(tx);
@@ -50,7 +52,7 @@ export function comparativaCategorias(transacciones, hoy = new Date()) {
 }
 
 export function gastosMasGrandes(transacciones, key, n = 5) {
-    return transacciones.filter(tx => tx.tipo === 'gasto' && tx.fecha?.startsWith(key))
+    return transacciones.filter(tx => tx.tipo === 'gasto' && !esDeTercero(tx) && tx.fecha?.startsWith(key))
         .sort((a, b) => monto(b) - monto(a)).slice(0, n);
 }
 
@@ -59,7 +61,7 @@ export function gastosFrecuentes(transacciones, hoy = new Date(), meses = 3, n =
     const desde = sumarMeses(mesKey(hoy), -(meses - 1));
     const grupos = {};
     transacciones.forEach(tx => {
-        if (tx.tipo !== 'gasto' || !tx.fecha || tx.fecha.slice(0, 7) < desde) return;
+        if (tx.tipo !== 'gasto' || esDeTercero(tx) || !tx.fecha || tx.fecha.slice(0, 7) < desde) return;
         const k = (tx.desc || '').trim().toLowerCase();
         if (!k) return;
         const g = grupos[k] || (grupos[k] = { desc: tx.desc.trim(), veces: 0, total: 0, categoriaId: tx.categoriaId });
@@ -93,7 +95,7 @@ export function insightPrincipal(transacciones, hoy = new Date()) {
 export function porEtiqueta(transacciones, desde = '0000-00', hasta = '9999-99') {
     const grupos = {};
     transacciones.forEach(tx => {
-        if (tx.tipo !== 'gasto' || !tx.etiquetas?.length || !tx.fecha) return;
+        if (tx.tipo !== 'gasto' || esDeTercero(tx) || !tx.etiquetas?.length || !tx.fecha) return;
         const m = tx.fecha.slice(0, 7);
         if (m < desde || m > hasta) return;
         tx.etiquetas.forEach(e => {
@@ -138,7 +140,7 @@ export function comparativoAnual(transacciones, hoy = new Date()) {
 export function gastoPorDia(transacciones, key) {
     const dias = {};
     transacciones.forEach(tx => {
-        if (tx.tipo !== 'gasto' || !tx.fecha?.startsWith(key)) return;
+        if (tx.tipo !== 'gasto' || esDeTercero(tx) || !tx.fecha?.startsWith(key)) return;
         dias[tx.fecha] = r2((dias[tx.fecha] || 0) + monto(tx));
     });
     const valores = Object.values(dias).sort((a, b) => a - b);

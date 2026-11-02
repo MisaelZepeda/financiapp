@@ -10,6 +10,7 @@
 import { hoyISO, mesKey, sumarMeses, sumarDias, ultimoDiaMes, diasEntre, fechaEnMes } from './fechas.js';
 import { siguienteFecha } from './recurrentes.js';
 import { fechaPagoDe, montoEstado, abonadoDesde } from './tarjetas.js';
+import { esDeTercero } from './terceros.js';
 
 const r2 = (n) => Math.round(n * 100) / 100;
 const esLiquida = (c) => c && c.tipo !== 'credito';
@@ -19,7 +20,7 @@ const esLiquida = (c) => c && c.tipo !== 'credito';
 export function gastoDiarioVariable(cuentas, transacciones, hoy = new Date()) {
     const liquidas = new Set(cuentas.filter(esLiquida).map(c => c.id));
     const mes = mesKey(hoy);
-    const variable = (t) => t.tipo === 'gasto' && !t.recurrenteId && liquidas.has(t.cuentaId);
+    const variable = (t) => t.tipo === 'gasto' && !t.recurrenteId && !esDeTercero(t) && liquidas.has(t.cuentaId);
     const desde = `${sumarMeses(mes, -3)}-01`, hasta = `${mes}-01`;
     const previos = transacciones.filter(t => variable(t) && t.fecha >= desde && t.fecha < hasta);
     if (previos.length) {

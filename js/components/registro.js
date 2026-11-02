@@ -40,6 +40,7 @@ export function abrirRegistro(opts = {}) {
         dividir: partes.length > 1, partes,
         etiquetas: [...(tx?.etiquetas || [])], favorito: false,
         desdeAtajo: !!opts.desdeAtajo,
+        paraOtro: !!(tx?.paraTercero || opts.paraOtro), tercero: tx?.paraTercero || '',   // compra para alguien más (Te deben)
     };
     if (!r.categoriaId && r.desc) aplicarSugerencia();
     if (!r.cuentaId) r.cuentaId = cuentaSugerida(r.tipo, r.categoriaId);
@@ -210,6 +211,7 @@ function cuerpoHTML() {
         campos += `<div class="field"><span class="label">Cuenta</span>${chipsCuentas('regCuenta', r.cuentaId)}</div>`;
         if (esCred) campos += `<div class="field"><span class="label">Meses sin intereses</span><div class="chips">${MSI.map(m =>
             `<button type="button" class="chip chip-sm ${Number(r.msi || 0) === m ? 'activo' : ''}" data-action="regMsi" data-m="${m}">${m ? `${m} meses` : 'De contado'}</button>`).join('')}</div></div>`;
+        campos += terceroHTML();
     } else if (r.tipo === 'ingreso') {
         campos += `<div class="field"><span class="label">Cuenta</span>${chipsCuentas('regCuenta', r.cuentaId)}</div>`;
         const opciones = [['', 'Ingreso'], esCred ? ['cashback', 'Cashback'] : ['rendimiento', 'Rendimiento']];
@@ -294,15 +296,22 @@ async function guardar(otro) {
             const mayor = partes.reduce((a, p) => (p.monto > a.monto ? p : a), partes[0]);
             tx = { tipo: 'gasto', monto, fecha: r.fecha, desc, cuentaId: r.cuentaId, categoriaId: mayor.categoriaId, partes };
         } else {
-            if (!r.categoriaId) return toast('Elige una categoría', { tipo: 'error' });
-            tx = { tipo: 'gasto', monto, fecha: r.fecha, desc, cuentaId: r.cuentaId, categoriaId: r.categoriaId };
+            // Una compra para alguien más no necesita categoría (no cuenta como gasto tuyo).
+            if (!r.categoriaId && !r.paraOtro) return toast('Elige una categoría', { tipo: 'error' });
+            tx = { tipo: 'gasto', monto, fecha: r.fecha, desc, cuentaId: r.cuentaId, categoriaId: r.categoriaId || 'otros' };
         }
         if (sel.cuenta(r.cuentaId).tipo === 'credito' && r.msi > 1) tx.msi = Number(r.msi);
+        if (r.paraOtro) {
+            const nombre = r.tercero.trim();
+            if (!nombre) return toast('Escribe para quién es la compra', { tipo: 'error' });
+            tx.paraTercero = nombre.slice(0, 40);
+        }
     } else if (r.tipo === 'ingreso') {
         const cred = sel.cuenta(r.cuentaId).tipo === 'credito';
         const sub = r.subtipo === 'cashback' && cred ? 'cashback' : (r.subtipo === 'rendimiento' && !cred ? 'rendimiento' : null);
         tx = { tipo: 'ingreso', monto, fecha: r.fecha, desc: desc || (sub === 'cashback' ? 'Cashback' : sub === 'rendimiento' ? 'Rendimiento' : 'Ingreso'), cuentaId: r.cuentaId };
         if (sub) tx.subtipo = sub;
+        if (r.original?.abonoDe) tx.abonoDe = r.original.abonoDe;   // al editar un abono de Te deben, sigue siéndolo
     } else {
         const dest = sel.cuenta(r.cuentaDestinoId);
         if (!dest || dest.id === r.cuentaId) return toast('Elige la cuenta destino', { tipo: 'error' });
@@ -469,3 +478,21 @@ function listoDesdeSafari(texto) {
             <button class="btn btn-soft btn-block" data-action="cerrarHoja">Cerrar</button></div>`,
     });
 }
+
+// ---------- Compra para alguien más ----------
+function nombresTerceros() {
+    return [...new Set(sel.transacciones().map(t => t.paraTercero).filter(Boolean))].slice(0, 8);
+}
+
+function terceroHTML() {
+    const nombres = nombresTerceros().filter(n => n !== r.tercero);
+    return `<label class="check-fav"><input type="checkbox" data-change="regParaOtro" ${r.paraOtro ? 'checked' : ''}> Es una compra para alguien más</label>
+        ${r.paraOtro ? `<div class="field"><label for="reg-tercero">¿Para quién?</label>
+            <input id="reg-tercero" autocomplete="off" placeholder="Nombre" value="${escapeHtml(r.tercero)}" data-input="regTercero">
+            ${nombres.length ? `<div class="chips" style="margin-top:6px;">${nombres.map(n => `<button type="button" class="chip chip-sm chip-outline" data-action="regTerceroChip" data-n="${escapeHtml(n)}">${escapeHtml(n)}</button>`).join('')}</div>` : ''}
+            <span class="hint">No cuenta como gasto tuyo. En Más › Te deben verás lo que te debe y te recordamos cobrarle cada mensualidad.</span></div>` : ''}`;
+}
+
+on('regParaOtro', (el) => { r.paraOtro = el.checked; pintar(); }, 'change');
+on('regTercero', (el) => { r.tercero = el.value; }, 'input');
+on('regTerceroChip', (el) => { r.tercero = el.dataset.n; pintar(); });

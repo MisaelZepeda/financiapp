@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v25'; // v25: pagos fijos con fecha del registro
+const CACHE_NAME = 'morralla-cache-v26'; // v26: te deben
 
 const urlsToCache = [
     './',
@@ -45,6 +45,7 @@ const urlsToCache = [
     './js/domain/saldos.js',
     './js/domain/salud.js',
     './js/domain/tarjetas.js',
+    './js/domain/terceros.js',
     './js/firebase-init.js',
     './js/lib/apariencia.js',
     './js/lib/compartir.js',
@@ -64,6 +65,7 @@ const urlsToCache = [
     './js/views/movimientos.js',
     './js/views/planear.js',
     './js/views/retos.js',
+    './js/views/te-deben.js',
 ];
 
 // Ciclo de actualización:

@@ -13,6 +13,7 @@ import { hoyISO, mesKey, sumarMeses, sumarDias, aFecha } from './fechas.js';
 import { eventosMes } from './calendario.js';
 import { resumenMes } from './analisis.js';
 import { proyectarFinDeMes } from './proyeccion.js';
+import { esDeTercero, deudasTerceros } from './terceros.js';
 
 const DIAS = 14;
 const fmt = (n) => '$' + Number(Math.abs(n) || 0).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -83,7 +84,7 @@ export function calcularRecordatorios({ cuentas = [], saldos = {}, transacciones
     let domingo = sumarDias(h, (7 - dow) % 7);
     if (momento(domingo, 19) < ahora.getTime()) domingo = sumarDias(domingo, 7);
     const lunes = sumarDias(domingo, -6);
-    const semana = transacciones.filter(t => t.tipo === 'gasto' && t.fecha >= lunes && t.fecha <= domingo);
+    const semana = transacciones.filter(t => t.tipo === 'gasto' && !esDeTercero(t) && t.fecha >= lunes && t.fecha <= domingo);
     if (semana.length) {
         const total = semana.reduce((a, t) => a + (Number(t.monto) || 0), 0);
         const porCat = {};
@@ -92,6 +93,15 @@ export function calcularRecordatorios({ cuentas = [], saldos = {}, transacciones
         const nombreTop = categorias.find(c => c.id === top?.[0])?.nombre;
         agregar({ id: `sem:${domingo}`, at: momento(domingo, 19), title: 'Tu semana con Tlaco', body: `Esta semana gastaste ${fmt(total)}${nombreTop ? `; lo que más, ${nombreTop}` : ''}. ¿Le damos un vistazo?`, url: '#/analisis' });
     }
+
+    // Te deben: el día que vence cada mensualidad, recordarte cobrarla (si aún no la cubre).
+    deudasTerceros(cuentas, transacciones, ahora).filter(d => !d.saldada && d.proximo).forEach(d => {
+        const { fecha, monto } = d.proximo;
+        const cuando = fecha < h ? h : fecha;
+        if (cuando > hasta) return;
+        agregar({ id: `cobro:${d.nombre}:${fecha}`, at: cuando === h && fecha < h ? proximoMomento(ahora) : momento(cuando, 10),
+            title: `Cóbrale a ${d.nombre}`, body: `${fmt(monto)} de la mensualidad${fecha < h ? ' (ya pasó la fecha)' : ''}. Le faltan ${fmt(d.pendiente)} en total.`, url: '#/te-deben' });
+    });
 
     return avisos.sort((a, b) => a.at - b.at);
 }

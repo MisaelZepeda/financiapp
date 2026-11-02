@@ -39,8 +39,9 @@ function filtradas() {
 
 function listaHTML() {
     const txs = filtradas();
-    const gastos = txs.filter(t => t.tipo === 'gasto').reduce((a, t) => a + t.monto, 0);
-    const ingresos = txs.filter(t => t.tipo === 'ingreso').reduce((a, t) => a + t.monto, 0);
+    // Las compras para alguien más y sus abonos no suman a tus gastos e ingresos.
+    const gastos = txs.filter(t => t.tipo === 'gasto' && !t.paraTercero).reduce((a, t) => a + t.monto, 0);
+    const ingresos = txs.filter(t => t.tipo === 'ingreso' && !t.abonoDe).reduce((a, t) => a + t.monto, 0);
     const resumen = `<div class="mov-resumen"><span>${txs.length} movimiento${txs.length === 1 ? '' : 's'}</span>
         ${ingresos ? `<span>Ingresos <b class="num privado pos">+${money(ingresos)}</b></span>` : ''}
         ${gastos ? `<span>Gastos <b class="num privado">${money(gastos)}</b></span>` : ''}</div>`;

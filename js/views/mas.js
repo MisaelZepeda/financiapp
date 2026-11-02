@@ -10,6 +10,7 @@ export const titulo = () => ({ titulo: 'Más' });
 const GRUPOS = [
     ['Entender tu dinero', [
         ['#/analisis', 'bar-chart', 'Análisis', 'Gráficas, comparativos y en qué se te va'],
+        ['#/te-deben', 'share', 'Te deben', 'Compras que hiciste por alguien más'],
     ]],
     ['Planear', [
         ['#/planear/presupuestos', 'target', 'Presupuestos', 'Cuánto quieres gastar por categoría'],

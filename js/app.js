@@ -34,6 +34,7 @@ import * as cuentas from './views/cuentas.js';
 import * as cuenta from './views/cuenta.js';
 import * as ajustes from './views/ajustes.js';
 import * as mas from './views/mas.js';
+import * as teDeben from './views/te-deben.js';
 
 definirRuta('/inicio', inicio);
 definirRuta('/movimientos', movimientos);
@@ -44,6 +45,7 @@ definirRuta('/cuentas', cuentas);
 definirRuta('/cuenta/:id', cuenta);
 definirRuta('/ajustes', ajustes);
 definirRuta('/mas', mas);
+definirRuta('/te-deben', teDeben);
 definirRuta('/nuevo', {}); // Siri y Atajos: abre el registro prellenado
 
 // Barra de abajo: lo de todos los días. Lo demás vive en "Más".
@@ -51,7 +53,7 @@ const NAV = [
     ['#/inicio', 'home', 'Inicio', ['/inicio']],
     ['#/movimientos', 'list', 'Movimientos', ['/movimientos']],
     ['#/cuentas', 'landmark', 'Cuentas', ['/cuentas', '/cuenta/']],
-    ['#/mas', 'more-horizontal', 'Más', ['/mas', '/analisis', '/planear', '/ajustes']],
+    ['#/mas', 'more-horizontal', 'Más', ['/mas', '/analisis', '/planear', '/ajustes', '/te-deben']],
 ];
 
 // Barra lateral (computadora): todo a la vista.
@@ -60,6 +62,7 @@ const LATERAL = [
     ['#/movimientos', 'list', 'Movimientos', ['/movimientos']],
     ['#/cuentas', 'landmark', 'Cuentas', ['/cuentas', '/cuenta/']],
     ['#/analisis', 'bar-chart', 'Análisis', ['/analisis']],
+    ['#/te-deben', 'share', 'Te deben', ['/te-deben']],
     null,
     ['#/planear/presupuestos', 'target', 'Presupuestos', ['/planear/presupuestos', '/planear?', '/planear']],
     ['#/planear/calendario', 'calendar', 'Calendario de pagos', ['/planear/calendario']],

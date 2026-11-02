@@ -46,7 +46,7 @@ export function evaluarReto(reto, transacciones, hoy = new Date()) {
 
     const gastoDia = {};
     // El tope diario mide el gasto variable: los recurrentes (renta, suscripciones) no cuentan.
-    txs.filter(t => t.tipo === 'gasto' && (reto.tipo === 'sin-categoria' || !t.recurrenteId)).forEach(t => {
+    txs.filter(t => t.tipo === 'gasto' && !t.paraTercero && (reto.tipo === 'sin-categoria' || !t.recurrenteId)).forEach(t => {
         const m = reto.tipo === 'sin-categoria'
             ? partesDe(t).filter(p => p.categoriaId === reto.categoriaId).reduce((a, p) => a + p.monto, 0)
             : Number(t.monto) || 0;

@@ -71,16 +71,16 @@ export function describirTx(tx) {
         return {
             icono: tx.subtipo === 'cashback' ? 'gift' : (tx.subtipo === 'rendimiento' ? 'trending-up' : 'coin'), tono: 'tono-pos',
             titulo: tx.desc || SUBTIPO[tx.subtipo] || 'Ingreso',
-            sub: [SUBTIPO[tx.subtipo], origen?.nombre].filter(Boolean).join(' · ') || 'Ingreso',
+            sub: [tx.abonoDe ? `Abono de ${tx.abonoDe}` : SUBTIPO[tx.subtipo], origen?.nombre].filter(Boolean).join(' · ') || 'Ingreso',
             signo: '+', clase: 'pos',
         };
     }
     const cat = sel.categoria(tx.categoriaId);
     const dividido = Array.isArray(tx.partes) && tx.partes.length > 1;
     return {
-        icono: dividido ? 'list' : (cat.icono || 'tag'), tono: '',
+        icono: tx.paraTercero ? 'share' : dividido ? 'list' : (cat.icono || 'tag'), tono: '',
         titulo: tx.desc || cat.nombre,
-        sub: [dividido ? tx.partes.map(p => sel.categoria(p.categoriaId).nombre).join(' + ') : cat.nombre, origen?.nombre, tx.msi > 1 ? `${tx.msi} MSI` : ''].filter(Boolean).join(' · '),
+        sub: [tx.paraTercero ? `Para ${tx.paraTercero}` : dividido ? tx.partes.map(p => sel.categoria(p.categoriaId).nombre).join(' + ') : cat.nombre, origen?.nombre, tx.msi > 1 ? `${tx.msi} MSI` : ''].filter(Boolean).join(' · '),
         signo: '−', clase: '',
     };
 }
