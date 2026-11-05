@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v29'; // v29: abono de te deben directo a la tarjeta
+const CACHE_NAME = 'morralla-cache-v30'; // v30: solo borra sus propias cachés (convive con Tlacuilo)
 
 const urlsToCache = [
     './',
@@ -89,7 +89,7 @@ self.addEventListener('message', (event) => {
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys()
-            .then(nombres => Promise.all(nombres.filter(n => n !== CACHE_NAME).map(n => caches.delete(n))))
+            .then(nombres => Promise.all(nombres.filter(n => n.startsWith('morralla-') && n !== CACHE_NAME).map(n => caches.delete(n))))
             .then(() => self.clients.claim())
     );
 });
