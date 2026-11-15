@@ -1,7 +1,8 @@
-// Tlaco en la app: la tarjeta de Inicio y la hoja "Tu salud financiera".
+// Tlaco en la app: flota abajo a la derecha (al abrir la app dice cómo está)
+// y al tocarlo abre la hoja "Tu salud financiera".
 
 import { on } from '../core/eventos.js';
-import { sel } from '../core/store.js';
+import { sel, store, suscribir } from '../core/store.js';
 import { navegar } from '../core/router.js';
 import { abrirHoja, cerrarHoja, hojaAbierta } from './capas.js';
 import { tlacoSVG } from './tlaco.js';
@@ -23,17 +24,48 @@ export function saludActual() {
     });
 }
 
-export function tarjetaTlacoHTML() {
-    const s = saludActual();
-    return `<button class="tlaco-card" data-action="abrirSalud" aria-label="${TITULO_ESTADO[s.estado]}. Ver tu salud financiera">
-        ${tlacoSVG(s.estado, { tamano: 72 })}
-        <span class="tlaco-card-texto">
-            <span class="tlaco-card-estado estado-${s.estado}">${TITULO_ESTADO[s.estado]}</span>
-            <span class="tlaco-card-msg">${escapeHtml(s.mensaje)}</span>
-            <span class="tlaco-card-link">Ver tu salud financiera ›</span>
-        </span>
-    </button>`;
+// ---------- Tlaco flotante ----------
+// Aparece cuando hay datos. Solo la primera vez que se abre la app muestra
+// un globo con su estado; el globo se va solo a los pocos segundos.
+let globoMostrado = false;
+
+function quitarGlobo() {
+    const g = document.getElementById('tlaco-globo');
+    if (!g) return;
+    g.classList.add('saliendo');
+    setTimeout(() => g.remove(), 220);
 }
+
+function actualizarFlotante() {
+    if (!store.cargado) return;
+    const s = saludActual();
+    let el = document.getElementById('tlaco-flotante');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'tlaco-flotante';
+        el.className = 'tlaco-flotante';
+        el.innerHTML = '<button type="button" class="tf-boton" data-action="abrirSalud"></button>';
+        document.body.appendChild(el);
+    }
+    const boton = el.querySelector('.tf-boton');
+    if (boton.dataset.estado !== s.estado) {
+        boton.dataset.estado = s.estado;
+        boton.innerHTML = tlacoSVG(s.estado, { tamano: 46 });
+        boton.setAttribute('aria-label', `${TITULO_ESTADO[s.estado]}. Ver tu salud financiera`);
+    }
+    if (!globoMostrado) {
+        globoMostrado = true;
+        const g = document.createElement('button');
+        g.type = 'button';
+        g.id = 'tlaco-globo';
+        g.className = 'tlaco-globo';
+        g.dataset.action = 'abrirSalud';
+        g.innerHTML = `<span class="tlaco-card-estado estado-${s.estado}">${TITULO_ESTADO[s.estado]}</span><span class="tlaco-globo-msg">${escapeHtml(s.mensaje)}</span>`;
+        el.appendChild(g);
+        setTimeout(quitarGlobo, 9000);
+    }
+}
+suscribir(actualizarFlotante);
 
 const ICONO_NIVEL = { bien: icon('check'), regular: '!', mal: '!', sin: '–' };
 
@@ -66,6 +98,7 @@ function saludHTML(consejo) {
 let consejoMostrado = null;
 
 on('abrirSalud', () => {
+    quitarGlobo();
     consejoMostrado = consejoAlAzar(consejoMostrado);
     abrirHoja({ titulo: 'Tu salud financiera', html: `<div id="salud-body">${saludHTML(consejoMostrado)}</div>` });
 });

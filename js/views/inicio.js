@@ -6,7 +6,6 @@ import { barrasIngresosGastos, sparkline, donaCategorias, colorSerie, MAX_SERIES
 import { seriePatrimonio } from '../domain/saldos.js';
 import { resumenMes, serieMensual, variacion } from '../domain/analisis.js';
 import { estadoPago } from '../domain/tarjetas.js';
-import { tarjetaTlacoHTML } from '../components/salud.js';
 import { resumenPendiente } from '../components/resumen-mes.js';
 import { contar } from '../components/efectos.js';
 import { deudasTerceros } from '../domain/terceros.js';
@@ -182,7 +181,7 @@ function cobrosHTML() {
 }
 
 export function render() {
-    return `${resumenListoHTML()}${cobrosHTML()}${tarjetaTlacoHTML()}${heroHTML()}
+    return `${resumenListoHTML()}${cobrosHTML()}${heroHTML()}
         <div class="stack" style="margin-top:14px;">
             ${cuentasHTML()}
             ${mesHTML()}

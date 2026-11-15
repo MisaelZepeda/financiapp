@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v38'; // v38: Color para cada categoría
+const CACHE_NAME = 'morralla-cache-v39'; // v39: Tlaco flotante
 
 const urlsToCache = [
     './',
