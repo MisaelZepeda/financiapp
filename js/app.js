@@ -1,6 +1,6 @@
 // Arranque de Morralla: sesión, migración, datos, rutas y acciones globales.
 
-import { auth } from './firebase-init.js';
+import { auth, userRef } from './firebase-init.js';
 import { store, sel, setDatos, setUi, suscribir } from './core/store.js';
 import * as db from './core/db.js';
 import * as A from './core/actions.js';
@@ -334,9 +334,30 @@ iniciarEventos();
 if (localStorage.getItem('financiapp_privacidad')) { document.body.classList.add('privacidad'); store.ui.privacidad = true; }
 iniciarRouter();
 
+// Limpieza única: Tlacuilo vivía en el mismo dominio (misaelzepeda.github.io)
+// y ya no existe. Se quita su service worker, su caché, sus preferencias
+// locales y sus datos en Firebase (Usuarios/{uid}/agenda).
+async function limpiarTlacuilo(uid) {
+    const marca = 'financiapp_sin_tlacuilo';
+    if (localStorage.getItem(marca) === uid) return;
+    try {
+        if ('serviceWorker' in navigator) {
+            for (const r of await navigator.serviceWorker.getRegistrations()) {
+                if (r.scope.includes('/tlacuilo/')) await r.unregister();
+            }
+        }
+        if ('caches' in window) {
+            for (const k of await caches.keys()) if (k.startsWith('tlacuilo-')) await caches.delete(k);
+        }
+        Object.keys(localStorage).filter(k => k.startsWith('tlacuilo')).forEach(k => localStorage.removeItem(k));
+        await userRef(uid, 'agenda').remove();
+        localStorage.setItem(marca, uid);
+    } catch (e) { console.warn('Limpieza de Tlacuilo pendiente', e); }
+}
+
 auth.onAuthStateChanged((user) => {
     if (store.demo) return;
-    if (user) entrarUsuario(user);
+    if (user) { entrarUsuario(user); limpiarTlacuilo(user.uid); }
     else { document.getElementById('cargando').hidden = true; document.getElementById('app').hidden = true; mostrarAcceso(); }
 });
 

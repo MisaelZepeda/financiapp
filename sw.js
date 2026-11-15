@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v31'; // v31: API personal
+const CACHE_NAME = 'morralla-cache-v32'; // v32: Limpieza de Tlacuilo
 
 const urlsToCache = [
     './',
