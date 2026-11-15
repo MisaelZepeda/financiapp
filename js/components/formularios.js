@@ -200,7 +200,10 @@ on('frBorrar', async () => {
 });
 
 // ---------- Categoría ----------
-export function abrirFormCategoria(id = null) {
+// `alTerminar`: qué abrir al guardar o borrar (p. ej. volver a los límites).
+let alTerminarCategoria = null;
+export function abrirFormCategoria(id = null, { alTerminar = null } = {}) {
+    alTerminarCategoria = alTerminar;
     const c = id ? sel.categoria(id) : null;
     const actual = c?.icono || 'tag';
     abrirHoja({
@@ -225,10 +228,12 @@ on('fkIcono', (el) => {
 on('guardarCategoria', async (form) => {
     await A.guardarCategoria({ id: form.dataset.id || undefined, nombre: v(form, 'nombre'), icono: v(form, 'icono'), presupuesto: n(form, 'presupuesto') });
     cerrarHoja(); toast('Categoría guardada');
+    const sig = alTerminarCategoria; alTerminarCategoria = null; sig?.();
 }, 'submit');
 on('fkBorrar', async () => {
     const id = hojaAbierta()?.querySelector('form').dataset.id;
     const usos = sel.transacciones().filter(t => t.categoriaId === id).length;
     if (!(await confirmar({ titulo: 'Eliminar categoría', texto: usos ? `${usos} movimiento(s) la usan; seguirán mostrando su nombre.` : '', aceptar: 'Eliminar', peligro: true }))) return;
     await A.borrarCategoria(id); cerrarHoja(); toast('Categoría eliminada');
+    const sig = alTerminarCategoria; alTerminarCategoria = null; sig?.();
 });

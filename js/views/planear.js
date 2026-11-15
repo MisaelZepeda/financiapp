@@ -9,6 +9,7 @@ import { vacioHTML } from '../components/piezas.js';
 import { calendarioHTML } from './calendario.js';
 import { retosHTML, celebrarRetos } from './retos.js';
 import { abrirHoja, cerrarHoja, toast } from '../components/capas.js';
+import { abrirFormCategoria } from '../components/formularios.js';
 import { resumenMes } from '../domain/analisis.js';
 import { pendientes, FRECUENCIAS } from '../domain/recurrentes.js';
 import { mesKey, hoyISO, ultimoDiaMes, diasEntre, aFecha } from '../domain/fechas.js';
@@ -41,14 +42,14 @@ function presupuestosHTML() {
 
     const filas = con.map(c => {
         const g = porCategoria[c.id] || 0, p = g / c.presupuesto * 100;
-        return `<div class="fila fila-link" data-action="editarCategoria" data-id="${escapeHtml(c.id)}">
+        return `<a class="fila fila-link" href="#/movimientos?categoria=${encodeURIComponent(c.id)}&mes=${key}">
             <div class="fila-ico">${icon(c.icono || 'tag')}</div>
             <div class="fila-body">
                 <div class="comp-top"><span class="fila-titulo">${escapeHtml(c.nombre)}</span><span class="num ${p > 100 ? 'neg' : ''}" style="font-weight:600; font-size:13px;">${Math.round(p)}%</span></div>
                 <div class="barra sm" style="margin:6px 0 4px;"><i style="width:${Math.min(100, p)}%; background:${color(p)}"></i></div>
                 <div class="fila-sub"><span class="privado">${money(g)}</span> de <span class="privado">${money(c.presupuesto)}</span> · ${g > c.presupuesto ? `<span class="neg">excedido</span>` : `quedan <span class="privado">${money(c.presupuesto - g)}</span>`}</div>
             </div>
-        </div>`;
+        </a>`;
     }).join('');
 
     return `${resumen}
@@ -59,23 +60,37 @@ function presupuestosHTML() {
         </section>`;
 }
 
-on('editarPresupuestos', () => {
+function abrirLimites() {
     abrirHoja({
         titulo: 'Presupuestos mensuales',
         html: `<form data-submit="guardarPresupuestos">
-            <p class="hint" style="margin-bottom:14px;">Deja en blanco las categorías sin límite.</p>
+            <p class="hint" style="margin-bottom:14px;">Deja en blanco las categorías sin límite. Con ${icon('edit')} cambias el nombre y el ícono.</p>
             ${sel.categorias().map(c => `<div class="field-inline"><label for="pr-${escapeHtml(c.id)}">${icon(c.icono || 'tag')}${escapeHtml(c.nombre)}</label>
+                <button type="button" class="icon-btn" data-action="presDiseno" data-id="${escapeHtml(c.id)}" aria-label="Editar ${escapeHtml(c.nombre)}">${icon('edit')}</button>
                 <input id="pr-${escapeHtml(c.id)}" name="${escapeHtml(c.id)}" inputmode="decimal" placeholder="Sin límite" value="${c.presupuesto || ''}"></div>`).join('')}
-            <div class="hoja-foot"><button type="submit" class="btn btn-primary">Guardar</button></div>
+            <div class="hoja-foot"><button type="button" class="btn btn-soft" data-action="presNueva">${icon('plus')}Categoría</button><button type="submit" class="btn btn-primary">Guardar</button></div>
         </form>`,
     });
-});
-on('guardarPresupuestos', async (form) => {
+}
+const limitesDe = (form) => {
     const mapa = {};
     [...form.elements].forEach(el => { if (el.name) mapa[el.name] = parseFloat(el.value) || 0; });
-    await A.guardarPresupuestos(mapa);
+    return mapa;
+};
+on('editarPresupuestos', abrirLimites);
+on('guardarPresupuestos', async (form) => {
+    await A.guardarPresupuestos(limitesDe(form));
     cerrarHoja(); toast('Presupuestos guardados');
 }, 'submit');
+// Editar el diseño de una categoría (o crear una) sin perder los límites
+// que ya escribiste: se guardan primero y al terminar vuelves a esta lista.
+async function aCategoria(id) {
+    const form = document.querySelector('form[data-submit="guardarPresupuestos"]');
+    if (form) await A.guardarPresupuestos(limitesDe(form));
+    abrirFormCategoria(id, { alTerminar: abrirLimites });
+}
+on('presDiseno', (el) => aCategoria(el.dataset.id));
+on('presNueva', () => aCategoria(null));
 
 // ---------- Metas ----------
 function metasHTML() {

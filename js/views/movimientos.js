@@ -6,7 +6,7 @@ import { icon } from '../lib/icons.js';
 import { money, escapeHtml, nombreMesAnio } from '../lib/format.js';
 import { txAgrupadasHTML, vacioHTML } from '../components/piezas.js';
 import { mesKey, ultimosMeses } from '../domain/fechas.js';
-import { partesDe } from '../domain/analisis.js';
+import { partesDe, fraccionDelMes } from '../domain/analisis.js';
 
 const f = { tipo: 'todos', cuentaId: '', categoriaId: '', etiqueta: '', mes: '', q: '', limite: 80 };
 
@@ -28,7 +28,8 @@ function filtradas() {
         if (f.cuentaId && t.cuentaId !== f.cuentaId && t.cuentaDestinoId !== f.cuentaId) return false;
         if (f.categoriaId && (t.tipo !== 'gasto' || !partesDe(t).some(p => p.categoriaId === f.categoriaId))) return false;
         if (f.etiqueta && !t.etiquetas?.includes(f.etiqueta)) return false;
-        if (f.mes && !t.fecha?.startsWith(f.mes)) return false;
+        // Con un mes elegido, las compras a MSI de meses anteriores siguen apareciendo mientras corren sus mensualidades.
+        if (f.mes && !(t.tipo === 'gasto' ? fraccionDelMes(t, f.mes) > 0 : t.fecha?.startsWith(f.mes))) return false;
         if (q) {
             const texto = `${t.desc || ''} ${sel.categoria(t.categoriaId).nombre || ''} ${sel.cuenta(t.cuentaId)?.nombre || ''} ${t.monto} ${(t.etiquetas || []).map(e => '#' + e).join(' ')}`.toLowerCase();
             if (!texto.includes(q)) return false;
@@ -40,8 +41,10 @@ function filtradas() {
 function listaHTML() {
     const txs = filtradas();
     // Las compras para alguien más y sus abonos no suman a tus gastos e ingresos.
-    // Una compra a meses sin intereses suma solo su mensualidad.
-    const gastos = txs.filter(t => t.tipo === 'gasto' && !t.paraTercero).reduce((a, t) => a + t.monto / (Number(t.msi) > 1 ? Number(t.msi) : 1), 0);
+    // Una compra a meses sin intereses suma solo su mensualidad; con una
+    // categoría elegida, un gasto dividido suma solo la parte de esa categoría.
+    const montoGasto = (t) => f.categoriaId ? partesDe(t).filter(p => p.categoriaId === f.categoriaId).reduce((a, p) => a + p.monto, 0) : t.monto;
+    const gastos = txs.filter(t => t.tipo === 'gasto' && !t.paraTercero).reduce((a, t) => a + montoGasto(t) / (Number(t.msi) > 1 ? Number(t.msi) : 1), 0);
     const ingresos = txs.filter(t => t.tipo === 'ingreso' && !t.abonoDe).reduce((a, t) => a + t.monto, 0);
     const resumen = `<div class="mov-resumen"><span>${txs.length} movimiento${txs.length === 1 ? '' : 's'}</span>
         ${ingresos ? `<span>Ingresos <b class="num privado pos">+${money(ingresos)}</b></span>` : ''}

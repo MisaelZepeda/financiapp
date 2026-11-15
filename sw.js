@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v36'; // v36: Tu dinero en total resta solo las mensualidades
+const CACHE_NAME = 'morralla-cache-v37'; // v37: Presupuestos: ver movimientos y editar categorías
 
 const urlsToCache = [
     './',
