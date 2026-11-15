@@ -307,3 +307,4 @@ input.etiqueta-input { width: 130px; height: 30px; padding: 0 11px; border-radiu
 .det-fila b { font-weight: 600; text-align: right; }
 .hoja-foot .btn svg { width: 18px; height: 18px; margin-right: 6px; }
 .fila-mes { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 1px; }
+.hero-msi { display: block; margin-top: 2px; font-size: 11.5px; opacity: .8; }

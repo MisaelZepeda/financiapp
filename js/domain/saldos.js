@@ -69,21 +69,42 @@ export function porCobrar(transacciones, cuentas = [], hasta = null) {
     return { credito: redondear(enCredito), otros: redondear(otros), total: redondear(enCredito + otros) };
 }
 
+// Lo que falta por correr de tus compras a meses sin intereses: cada mes,
+// desde el de la compra, corre una mensualidad. La tarjeta debe el total,
+// pero tu dinero en total solo resta las mensualidades que ya corrieron.
+// Las compras para alguien más no cuentan (esa deuda va en Te deben).
+export function msiPorVenir(cuentas, transacciones, hasta = null) {
+    const credito = new Set(cuentas.filter(esCredito).map(c => c.id));
+    const mesHasta = mesKey(hasta || new Date());
+    const [yh, mh] = mesHasta.split('-').map(Number);
+    let total = 0;
+    transacciones.forEach(tx => {
+        const meses = Number(tx.msi) || 0;
+        if (tx.tipo !== 'gasto' || meses <= 1 || tx.paraTercero || !credito.has(tx.cuentaId) || !tx.fecha) return;
+        if (hasta && tx.fecha > hasta) return;
+        const [y, m] = tx.fecha.slice(0, 7).split('-').map(Number);
+        const corridas = Math.min(meses, Math.max(0, (yh - y) * 12 + (mh - m) + 1));
+        total += (Number(tx.monto) || 0) * (meses - corridas) / meses;
+    });
+    return redondear(total);
+}
+
 // `deudas` es lo que marcan tus tarjetas; `deudasPropias` le quita lo que pagan
 // otras personas (Te deben). `activos` es el dinero en tus cuentas y `teDeben`
 // lo que te deben por compras pagadas con débito o efectivo.
-export function patrimonio(cuentas, saldos, cobrar = { credito: 0, otros: 0 }) {
+// `msiFuturo` (msiPorVenir) se descuenta de `deudasPropias`.
+export function patrimonio(cuentas, saldos, cobrar = { credito: 0, otros: 0 }, msiFuturo = 0) {
     let activos = 0, deudas = 0, creditoLibre = 0;
     cuentas.forEach(c => {
         const s = saldos[c.id] || 0;
         if (esCredito(c)) { deudas += s; if (c.limite > 0) creditoLibre += Math.max(0, c.limite - s); }
         else activos += s;
     });
-    const deudasPropias = Math.max(0, deudas - (cobrar.credito || 0));
+    const deudasPropias = Math.max(0, deudas - (cobrar.credito || 0) - (msiFuturo || 0));
     const teDeben = (cobrar.otros || 0) + Math.max(0, (cobrar.credito || 0) - deudas);
     return {
         activos: redondear(activos), teDeben: redondear(teDeben),
-        deudas: redondear(deudas), deudasPropias: redondear(deudasPropias), creditoLibre: redondear(creditoLibre),
+        deudas: redondear(deudas), deudasPropias: redondear(deudasPropias), creditoLibre: redondear(creditoLibre), msiFuturo: redondear(msiFuturo || 0),
         neto: redondear(activos + teDeben - deudasPropias),
     };
 }
@@ -93,6 +114,6 @@ export function seriePatrimonio(cuentas, transacciones, n = 12, hoy = new Date()
     const actual = mesKey(hoy);
     return ultimosMeses(n, actual).map(key => {
         const corte = key === actual ? null : ultimoDiaMes(key);
-        return { mes: key, neto: patrimonio(cuentas, calcularSaldos(cuentas, transacciones, corte), porCobrar(transacciones, cuentas, corte)).neto };
+        return { mes: key, neto: patrimonio(cuentas, calcularSaldos(cuentas, transacciones, corte), porCobrar(transacciones, cuentas, corte), msiPorVenir(cuentas, transacciones, corte)).neto };
     });
 }
