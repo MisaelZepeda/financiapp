@@ -320,13 +320,37 @@ async function tick(env) {
   for (const app of Object.keys(APPS)) await tickApp(env, app);
 }
 
+// Anuncios (p. ej. "hay versión nueva"): lista aparte en el KV, `anuncios:<app>`, que la
+// sincronización de la app no toca. Cada anuncio se envía una sola vez por usuario durante
+// 2 días desde su hora; lo ya enviado se anota en `anunciados:<app>:<uid>`, que solo escribe
+// el cron (así una sincronización a destiempo no provoca duplicados). Se crean con anunciar.mjs.
+const VIGENCIA_ANUNCIO = 2 * DIA;
+
+async function enviarAnuncios(env, app, uid, u, now) {
+  const anuncios = ((await env.PUSH.get('anuncios:' + app, 'json')) || []).filter(a => a.at <= now && now - a.at < VIGENCIA_ANUNCIO);
+  if (!anuncios.length) return false;
+  const clave = `anunciados:${app}:${uid}`;
+  const hechos = (await env.PUSH.get(clave, 'json')) || {};
+  const nuevos = anuncios.filter(a => !hechos[a.id]);
+  if (!nuevos.length) return false;
+  let cambioSubs = false;
+  for (const a of nuevos) {
+    const r = await sendToUser(u, { title: texto(a.title, 120), body: texto(a.body, 300), tag: 'anuncio', data: { url: /^#\/[\w/?=&%-]*$/.test(a.url || '') ? a.url : APPS[app].inicio } }, env);
+    hechos[a.id] = now;
+    if (r.changed) cambioSubs = true;
+  }
+  for (const k of Object.keys(hechos)) if (hechos[k] < now - 30 * DIA) delete hechos[k];
+  await env.PUSH.put(clave, JSON.stringify(hechos));
+  return cambioSubs;
+}
+
 async function tickApp(env, app) {
   const now = Date.now();
   const users = (await env.PUSH.get(APPS[app].users, 'json')) || [];
   for (const uid of users) {
     const u = await getUser(env, uid, app);
     if (!Object.keys(u.subs || {}).length) continue;
-    let changed = false;
+    let changed = await enviarAnuncios(env, app, uid, u, now);
     for (const r of u.reminders || []) {
       if (r.at > now || now - r.at >= WINDOW_MS || u.sent[r.id]) continue;
       const res = await sendToUser(u, { title: r.title, body: r.body, tag: r.id.split(':').slice(0, 2).join('-'), data: { url: r.url } }, env);
