@@ -30,11 +30,11 @@ function personaHTML(d) {
         : '';
     const compras = d.compras.map(t => {
         const c = sel.cuenta(t.cuentaId);
-        return `<div class="fila fila-link" data-action="editarTx" data-id="${escapeHtml(t.id)}"><div class="fila-ico">${icon('share')}</div>
+        return `<div class="fila fila-link" data-action="verTx" data-id="${escapeHtml(t.id)}"><div class="fila-ico">${icon('share')}</div>
             <div class="fila-body"><div class="fila-titulo">${escapeHtml(t.desc || 'Compra')}</div><div class="fila-sub">${fechaCorta(t.fecha)} · ${escapeHtml(c?.nombre || 'Cuenta')}${t.msi > 1 ? ` · ${t.msi} MSI` : ''}</div></div>
             <div class="fila-der"><span class="num privado">${money(t.monto)}</span></div></div>`;
     }).join('');
-    const abonos = d.abonos.slice(0, 6).map(t => `<div class="fila fila-link" data-action="editarTx" data-id="${escapeHtml(t.id)}"><div class="fila-ico tono-pos">${icon('coin')}</div>
+    const abonos = d.abonos.slice(0, 6).map(t => `<div class="fila fila-link" data-action="verTx" data-id="${escapeHtml(t.id)}"><div class="fila-ico tono-pos">${icon('coin')}</div>
         <div class="fila-body"><div class="fila-titulo">Abono</div><div class="fila-sub">${fechaCorta(t.fecha)} · ${escapeHtml(sel.cuenta(t.cuentaId)?.nombre || 'Cuenta')}</div></div>
         <div class="fila-der"><span class="num privado pos">+${money(t.monto)}</span></div></div>`).join('');
     return `<section class="card persona ${d.saldada ? 'saldada' : ''}">

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v33'; // v33: MSI: una mensualidad por mes en tus gastos
+const CACHE_NAME = 'morralla-cache-v34'; // v34: Resumen del movimiento antes de editar
 
 const urlsToCache = [
     './',
@@ -13,6 +13,7 @@ const urlsToCache = [
     './css/views.css',
     './js/app.js',
     './js/components/capas.js',
+    './js/components/detalle-tx.js',
     './js/components/efectos.js',
     './js/components/formularios.js',
     './js/components/gestos.js',

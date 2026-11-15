@@ -57,7 +57,7 @@ function categoriasHTML() {
 function topHTML() {
     const grandes = gastosMasGrandes(sel.transacciones(), mesKey());
     const frecuentes = gastosFrecuentes(sel.transacciones());
-    const filaGrande = (t) => `<div class="fila fila-link" data-action="editarTx" data-id="${escapeHtml(t.id)}"><div class="fila-ico">${icon(sel.categoria(t.categoriaId).icono || 'tag')}</div>
+    const filaGrande = (t) => `<div class="fila fila-link" data-action="verTx" data-id="${escapeHtml(t.id)}"><div class="fila-ico">${icon(sel.categoria(t.categoriaId).icono || 'tag')}</div>
         <div class="fila-body"><div class="fila-titulo">${escapeHtml(t.desc || sel.categoria(t.categoriaId).nombre)}</div><div class="fila-sub">${fechaCorta(t.fecha)} · ${escapeHtml(sel.categoria(t.categoriaId).nombre)}</div></div>
         <div class="fila-der"><span class="num privado">${money(t.monto)}</span></div></div>`;
     const filaFrec = (g) => `<div class="fila"><div class="fila-ico">${icon(sel.categoria(g.categoriaId).icono || 'tag')}</div>

@@ -292,3 +292,17 @@ input.etiqueta-input { width: 130px; height: 30px; padding: 0 11px; border-radiu
 .card:not(.card-flush) .swipe { margin: 0 -10px; border-radius: var(--r-md); }
 .card:not(.card-flush) .swipe .fila-link { margin: 0; }
 :root[data-theme="light"] .card:not(.hero) { box-shadow: 0 0 0 1px var(--line); }
+
+/* Resumen de un movimiento */
+.det-cabeza { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 4px 0 18px; }
+.det-cabeza .fila-ico { width: 48px; height: 48px; }
+.det-monto { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
+.det-monto.pos { color: var(--pos); }
+.det-nota { font-size: 13px; color: var(--muted); }
+.det-sub { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 18px 0 6px; }
+.det-lista { background: var(--surface-2); border-radius: 16px; padding: 4px 14px; }
+.det-fila { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 0; font-size: 14.5px; }
+.det-fila + .det-fila { border-top: 1px solid var(--line); }
+.det-fila > span { color: var(--muted); }
+.det-fila b { font-weight: 600; text-align: right; }
+.hoja-foot .btn svg { width: 18px; height: 18px; margin-right: 6px; }

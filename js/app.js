@@ -22,6 +22,7 @@ import { mostrarAcceso, ocultarAcceso, mostrarMigracion, nombreRegistro } from '
 import { confirmarMigracion, selectorTema } from './views/ajustes.js';
 import './components/salud.js';
 import './components/gestos.js';
+import './components/detalle-tx.js';
 import { iniciarPush } from './lib/push.js';
 import { consejoAlAzar } from './domain/consejos.js';
 import { buscarPorNombre } from './domain/autocategoria.js';

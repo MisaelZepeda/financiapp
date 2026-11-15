@@ -60,7 +60,7 @@ export function render({ id }) {
 function msiHTML(c) {
     const { activas, terminadas, mensualidadTotal, pendienteTotal } = msiDeCuenta(c, sel.transacciones());
     if (!activas.length && !terminadas.length) return '';
-    const fila = (m) => `<div class="fila fila-link msi-fila" data-action="editarTx" data-id="${escapeHtml(m.tx.id)}">
+    const fila = (m) => `<div class="fila fila-link msi-fila" data-action="verTx" data-id="${escapeHtml(m.tx.id)}">
         <div class="fila-body">
             <div class="fila-titulo">${escapeHtml(m.tx.desc || 'Compra a meses')}</div>
             <div class="barra sm" style="margin:7px 0 5px;"><i style="width:${(m.facturadas / m.meses) * 100}%"></i></div>
