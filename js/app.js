@@ -20,7 +20,8 @@ import { pendientes } from './domain/recurrentes.js';
 import { hoyISO } from './domain/fechas.js';
 import { mostrarAcceso, ocultarAcceso, mostrarMigracion, nombreRegistro } from './views/acceso.js';
 import { confirmarMigracion, selectorTema } from './views/ajustes.js';
-import './components/salud.js';
+import { saludActual, tituloEstado } from './components/salud.js';
+import { tlacoSVG } from './components/tlaco.js';
 import './components/gestos.js';
 import './components/detalle-tx.js';
 import { iniciarPush } from './lib/push.js';
@@ -53,8 +54,8 @@ definirRuta('/nuevo', {}); // Siri y Atajos: abre el registro prellenado
 const NAV = [
     ['#/inicio', 'home', 'Inicio', ['/inicio']],
     ['#/movimientos', 'list', 'Movimientos', ['/movimientos']],
-    ['#/cuentas', 'landmark', 'Cuentas', ['/cuentas', '/cuenta/']],
-    ['#/mas', 'more-horizontal', 'Más', ['/mas', '/analisis', '/planear', '/ajustes', '/te-deben']],
+    null, // Tlaco
+    ['#/mas', 'more-horizontal', 'Más', ['/mas', '/analisis', '/planear', '/ajustes', '/te-deben', '/cuentas', '/cuenta/']],
 ];
 
 // Barra lateral (computadora): todo a la vista.
@@ -77,15 +78,20 @@ function activo(prefijos) { const p = rutaActual().path || ''; return prefijos.s
 // En la lateral, Planear sin pestaña cuenta como Presupuestos.
 function activoLateral(prefijos) { const p = rutaActual().path || ''; return prefijos[0] === '/planear/presupuestos' ? (p === '/planear' || p.startsWith('/planear/presupuestos') || p.startsWith('/planear?')) : activo(prefijos); }
 
+// Tlaco con la cara de su estado actual (sin datos todavía, tranquilo).
+const estadoTlaco = () => store.cargado ? saludActual().estado : 'tranquilo';
+const tlaco = (tamano) => tlacoSVG(estadoTlaco(), { tamano, animado: false });
+
 function pintarNav() {
     document.getElementById('sidebar').innerHTML = `
         <div class="brand"><img src="logo.svg" alt="">morralla</div>
         <button class="btn btn-primary side-add" data-action="nuevo">${icon('plus')}Nuevo movimiento</button>
         ${LATERAL.map(x => x ? `<a class="side-link ${activoLateral(x[3]) ? 'activo' : ''}" href="${x[0]}">${icon(x[1])}${x[2]}</a>` : '<div class="side-sep"></div><p class="side-label">Planear</p>').join('')}
-        <div class="side-bottom"><a class="side-link ${activo(['/ajustes']) ? 'activo' : ''}" href="#/ajustes">${icon('settings')}Ajustes</a></div>`;
-    const [a, b, c, d] = NAV;
+        <div class="side-bottom"><button class="side-link side-tlaco" data-action="abrirSalud">${tlaco(22)}Tlaco</button><a class="side-link ${activo(['/ajustes']) ? 'activo' : ''}" href="#/ajustes">${icon('settings')}Ajustes</a></div>`;
+    const [a, b, , d] = NAV;
     const tab = ([h, i, t, p]) => `<a class="tab ${activo(p) ? 'activo' : ''}" href="${h}">${icon(i)}<span>${t}</span></a>`;
-    document.getElementById('tabbar').innerHTML = `${tab(a)}${tab(b)}<button class="tab-add" data-action="nuevo" aria-label="Nuevo movimiento">${icon('plus')}</button>${tab(c)}${tab(d)}`;
+    const tabTlaco = `<button class="tab tab-tlaco" data-action="abrirSalud" aria-label="${tituloEstado(estadoTlaco())}. Ver tu salud financiera">${tlaco(28)}<span>Tlaco</span></button>`;
+    document.getElementById('tabbar').innerHTML = `${tab(a)}${tab(b)}<button class="tab-add" data-action="nuevo" aria-label="Nuevo movimiento">${icon('plus')}</button>${tabTlaco}${tab(d)}`;
 }
 
 function pintarTop(vista, params) {

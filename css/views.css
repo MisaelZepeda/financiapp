@@ -442,11 +442,12 @@
 .api-ej code { font-size: 12px; white-space: pre; color: var(--text-2); }
 .api-doc .pasos code { font-size: 12.5px; }
 
-/* Tlaco flotante (abajo a la derecha, encima de la barra de pestañas) */
-.tlaco-flotante { position: fixed; z-index: 90; right: 12px; bottom: calc(var(--tabbar) + 10px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: none; }
-@media (min-width: 1024px) { .tlaco-flotante { right: 24px; bottom: 24px; } }
-.tf-boton { order: 2; pointer-events: auto; padding: 0; background: none; border: 0; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18)); }
-.tf-boton:active { transform: scale(0.94); }
-.tlaco-globo { order: 1; pointer-events: auto; position: relative; max-width: min(280px, calc(100vw - 32px)); display: flex; flex-direction: column; gap: 3px; text-align: left; padding: 10px 14px; border-radius: 16px 16px 4px 16px; background: var(--surface); color: var(--text); box-shadow: var(--shadow-pop); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); animation: pop var(--t) var(--ease); }
+/* Tlaco en la barra de abajo y su globo al abrir la app */
+.tab-tlaco { background: none; border: 0; }
+.tab-tlaco .tlaco { margin: -6px 0 -3px; }
+.side-tlaco { width: 100%; background: none; border: 0; text-align: left; }
+.side-tlaco .tlaco { margin: -4px 0; }
+.tlaco-globo { position: fixed; z-index: 90; right: 12px; bottom: calc(var(--tabbar) + 10px + env(safe-area-inset-bottom)); max-width: min(280px, calc(100vw - 32px)); display: flex; flex-direction: column; gap: 3px; text-align: left; padding: 10px 14px; border-radius: 16px 16px 4px 16px; background: var(--surface); color: var(--text); box-shadow: var(--shadow-pop); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); animation: pop var(--t) var(--ease); }
+@media (min-width: 1024px) { .tlaco-globo { right: auto; left: calc(var(--sidebar, 248px) + 16px); bottom: 24px; border-radius: 16px 16px 16px 4px; } }
 .tlaco-globo.saliendo { opacity: 0; transform: translateY(6px); transition: opacity 200ms, transform 200ms; }
 .tlaco-globo-msg { font-size: 14px; line-height: 1.35; }

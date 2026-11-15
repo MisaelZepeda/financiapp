@@ -1,5 +1,5 @@
-// Tlaco en la app: flota abajo a la derecha (al abrir la app dice cómo está)
-// y al tocarlo abre la hoja "Tu salud financiera".
+// Tlaco en la app: su botón en la barra de abajo, el globo al abrir la app
+// y la hoja "Tu salud financiera".
 
 import { on } from '../core/eventos.js';
 import { sel, store, suscribir } from '../core/store.js';
@@ -24,9 +24,9 @@ export function saludActual() {
     });
 }
 
-// ---------- Tlaco flotante ----------
-// Aparece cuando hay datos. Solo la primera vez que se abre la app muestra
-// un globo con su estado; el globo se va solo a los pocos segundos.
+// ---------- Globo de Tlaco ----------
+// Tlaco vive en la barra de abajo (en computadora, en la lateral). Solo la
+// primera vez que se abre la app sale un globo con su estado, que se va solo.
 let globoMostrado = false;
 
 function quitarGlobo() {
@@ -36,36 +36,21 @@ function quitarGlobo() {
     setTimeout(() => g.remove(), 220);
 }
 
-function actualizarFlotante() {
-    if (!store.cargado) return;
+export const tituloEstado = (estado) => TITULO_ESTADO[estado] || 'Tlaco';
+
+suscribir(() => {
+    if (globoMostrado || !store.cargado) return;
+    globoMostrado = true;
     const s = saludActual();
-    let el = document.getElementById('tlaco-flotante');
-    if (!el) {
-        el = document.createElement('div');
-        el.id = 'tlaco-flotante';
-        el.className = 'tlaco-flotante';
-        el.innerHTML = '<button type="button" class="tf-boton" data-action="abrirSalud"></button>';
-        document.body.appendChild(el);
-    }
-    const boton = el.querySelector('.tf-boton');
-    if (boton.dataset.estado !== s.estado) {
-        boton.dataset.estado = s.estado;
-        boton.innerHTML = tlacoSVG(s.estado, { tamano: 46 });
-        boton.setAttribute('aria-label', `${TITULO_ESTADO[s.estado]}. Ver tu salud financiera`);
-    }
-    if (!globoMostrado) {
-        globoMostrado = true;
-        const g = document.createElement('button');
-        g.type = 'button';
-        g.id = 'tlaco-globo';
-        g.className = 'tlaco-globo';
-        g.dataset.action = 'abrirSalud';
-        g.innerHTML = `<span class="tlaco-card-estado estado-${s.estado}">${TITULO_ESTADO[s.estado]}</span><span class="tlaco-globo-msg">${escapeHtml(s.mensaje)}</span>`;
-        el.appendChild(g);
-        setTimeout(quitarGlobo, 9000);
-    }
-}
-suscribir(actualizarFlotante);
+    const g = document.createElement('button');
+    g.type = 'button';
+    g.id = 'tlaco-globo';
+    g.className = 'tlaco-globo';
+    g.dataset.action = 'abrirSalud';
+    g.innerHTML = `<span class="tlaco-card-estado estado-${s.estado}">${TITULO_ESTADO[s.estado]}</span><span class="tlaco-globo-msg">${escapeHtml(s.mensaje)}</span>`;
+    document.body.appendChild(g);
+    setTimeout(quitarGlobo, 9000);
+});
 
 const ICONO_NIVEL = { bien: icon('check'), regular: '!', mal: '!', sin: '–' };
 

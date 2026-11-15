@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v39'; // v39: Tlaco flotante
+const CACHE_NAME = 'morralla-cache-v40'; // v40: Tlaco en la barra de abajo
 
 const urlsToCache = [
     './',
