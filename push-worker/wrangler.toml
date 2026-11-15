@@ -14,6 +14,9 @@ id = "62d5b2ffb894420bb6f0de7f9c7e47e6"
 
 [vars]
 FIREBASE_PROJECT_ID = "misuperappfinanciera"
+# Públicos (los mismos de la app): para que la API lea y escriba como el usuario.
+FIREBASE_API_KEY = "AIzaSyD86xvnjFFHkdMhvHPOkYUn8_PdHgNOEK0"
+FIREBASE_DB_URL = "https://misuperappfinanciera-default-rtdb.firebaseio.com"
 VAPID_PUBLIC_KEY = "BEyOfsTwVEGJX9HFN42oCFByjm3GwJdh9wl1W4_wwHNAdYhbo14qLKuV8JhqoND4-Ozu5TCsxbpod7T51_hkcHg"
 VAPID_SUBJECT = "https://misaelzepeda.github.io/financiapp/"
 ALLOWED_ORIGINS = "https://misaelzepeda.github.io,http://localhost:5500,http://localhost:5510"

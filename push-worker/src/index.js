@@ -26,6 +26,7 @@ import { enc, b64u, encryptPayload, vapidAuthorization } from './webpush.js';
 import { interpretarDictado } from '../../js/domain/recordatorios.js';
 import { sugerirCategoria } from '../../js/domain/autocategoria.js';
 import { interpretarPendiente, describirCuando } from './tlacuilo-dictado.js';
+import { manejarApi } from './api.js';
 
 const WINDOW_MS = 60 * 60 * 1000;           // un aviso atrasado se envía hasta 1 h después
 const MAX_REMINDERS = 300;
@@ -199,6 +200,11 @@ async function handle(req, env) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: H });
   if (req.method === 'GET' && url.pathname === '/') return json({ ok: true, service: 'morralla-push', vapidPublicKey: env.VAPID_PUBLIC_KEY }, 200, H);
 
+  // API personal de Morralla (con llave mrl_…): ver api.js.
+  if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
+    return manejarApi(req, env, url, { getUser: (uid) => getUser(env, uid, 'morralla'), putUser: (uid, u) => putUser(env, uid, u, 'morralla') });
+  }
+
   let body = {};
   if (req.method === 'POST') { try { body = await req.json(); } catch (_) { body = {}; } }
 
@@ -261,6 +267,36 @@ async function handle(req, env) {
     u.siri = null;
     await putUser(env, uid, u, app);
     return json({ ok: true }, 200, H);
+  }
+
+  // API personal: crear (o reemplazar) la llave. La app manda el refresh token de su sesión;
+  // se comprueba que sea de este mismo usuario antes de guardarlo.
+  if (url.pathname === '/api-llave' && req.method === 'POST' && app === 'morralla') {
+    const refresh = texto(body.refresh, 2000);
+    const r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${env.FIREBASE_API_KEY}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(refresh)}` });
+    const datos = await r.json().catch(() => ({}));
+    if (!r.ok || datos.user_id !== uid) return json({ error: 'No se pudo validar tu sesión' }, 400, H);
+    const u = await getUser(env, uid, 'morralla');
+    if (u.api?.hash) await env.PUSH.delete('ka:' + u.api.hash);
+    const llave = 'mrl_' + b64u.enc(crypto.getRandomValues(new Uint8Array(24)));
+    const hash = await sha256(llave);
+    await env.PUSH.put('ka:' + hash, uid);
+    u.api = { hash, refresh: datos.refresh_token || refresh, tz: Number.isFinite(+body.tz) ? +body.tz : 360, creada: Date.now() };
+    await putUser(env, uid, u, 'morralla');
+    return json({ ok: true, llave }, 200, H);
+  }
+
+  if (url.pathname === '/api-llave/revocar' && req.method === 'POST' && app === 'morralla') {
+    const u = await getUser(env, uid, 'morralla');
+    if (u.api?.hash) await env.PUSH.delete('ka:' + u.api.hash);
+    u.api = null;
+    await putUser(env, uid, u, 'morralla');
+    return json({ ok: true }, 200, H);
+  }
+
+  if (url.pathname === '/api-llave/estado' && req.method === 'POST' && app === 'morralla') {
+    const u = await getUser(env, uid, 'morralla');
+    return json({ ok: true, activa: !!u.api?.hash, creada: u.api?.creada || null }, 200, H);
   }
 
   if (url.pathname === '/siri/estado' && req.method === 'POST') {

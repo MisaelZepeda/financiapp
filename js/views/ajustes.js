@@ -74,6 +74,12 @@ export function render() {
         </section>
 
         <section class="card">
+            <h2 class="card-title" style="margin-bottom:6px;">API personal</h2>
+            <p class="card-desc" style="margin:0 0 12px;">Consulta y registra movimientos desde tus propios scripts o atajos, con una llave por HTTPS. Lee y escribe solo tus datos, con los mismos permisos que esta app.</p>
+            ${apiHTML()}
+        </section>
+
+        <section class="card">
             <h2 class="card-title" style="margin-bottom:6px;">Tus datos</h2>
             <p class="card-desc" style="margin:0 0 14px;">Descarga una copia o restaura una anterior (acepta respaldos de la versión anterior de la app).</p>
             <div class="botones-col">
@@ -229,6 +235,58 @@ on('ajSiri', () => {
         </div>`,
     });
 });
+// ---------- API personal ----------
+function apiHTML() {
+    if (store.demo) return '<p class="hint">Disponible al iniciar sesión con tu cuenta.</p>';
+    const doc = `<button class="btn btn-soft" data-action="ajApiDoc">${icon('file-text')}Cómo usarla</button>`;
+    if (!Push.apiActiva()) return `<div class="botones-fila"><button class="btn btn-primary" data-action="ajApiCrear">${icon('sparkle')}Crear llave</button>${doc}</div>`;
+    return `<p class="aviso-estado pos">${icon('check-circle')}Llave activa</p>
+        <div class="botones-fila"><button class="btn btn-soft" data-action="ajApiCrear">${icon('repeat')}Nueva llave</button>${doc}
+        <button class="btn btn-ghost" data-action="ajApiRevocar">Revocar</button></div>`;
+}
+
+function apiDocHTML(llave) {
+    const url = Push.API_URL;
+    const bloque = (t) => `<pre class="api-ej"><code>${escapeHtml(t)}</code></pre>`;
+    const auth = `-H "Authorization: Bearer ${llave || 'mrl_TU_LLAVE'}"`;
+    return `<div class="siri api-doc">
+        ${llave ? `<p class="hint" style="margin-top:0;"><b>Tu llave</b> (solo se muestra ahora; guárdala en un lugar seguro):</p>
+            <div class="copiar"><code>${escapeHtml(llave)}</code><button class="btn btn-soft btn-sm" data-action="ajCopiar" data-t="${escapeHtml(llave)}">${icon('copy')}Copiar</button></div>` : ''}
+        <h3>Dirección</h3>
+        <div class="copiar"><code>${escapeHtml(url)}</code><button class="btn btn-soft btn-sm" data-action="ajCopiar" data-t="${escapeHtml(url)}">${icon('copy')}Copiar</button></div>
+        <p class="hint">Manda la llave en el encabezado <code>Authorization: Bearer mrl_…</code>. Respuestas en JSON.</p>
+        <h3>Leer</h3>
+        <ul class="pasos">
+            <li><b>GET /movimientos?mes=2026-11</b> · fecha, tipo, monto, cuenta, categoría, descripción, etiquetas, MSI y para quién.</li>
+            <li><b>GET /cuentas</b> · saldo de débito; deuda, disponible, corte y próximo pago de crédito.</li>
+            <li><b>GET /presupuestos?mes=2026-11</b> · tope, gastado y restante por categoría.</li>
+            <li><b>GET /te-deben</b> · quién te debe, cuánto y su próxima mensualidad.</li>
+        </ul>
+        ${bloque(`curl "${url}/cuentas" ${auth}`)}
+        <h3>Escribir</h3>
+        <ul class="pasos">
+            <li><b>POST /movimientos</b> · <code>tipo</code> (gasto, ingreso, transferencia), <code>monto</code>, <code>cuenta</code> (id o nombre), <code>fecha</code> (AAAA-MM-DD; si no, hoy), <code>categoria</code> (gastos; si no, se sugiere con la descripción), <code>descripcion</code>, <code>etiquetas</code>, <code>msi</code> (crédito), <code>paraQuien</code> (Te deben), <code>subtipo</code> (cashback o rendimiento) y <code>cuentaDestino</code> (transferencias).</li>
+            <li><b>PATCH /movimientos/{id}</b> · manda solo lo que quieras corregir.</li>
+            <li><b>DELETE /movimientos/{id}</b> · borra un movimiento.</li>
+        </ul>
+        ${bloque(`curl -X POST "${url}/movimientos" ${auth} \\\n  -H "Content-Type: application/json" \\\n  -d '{"tipo":"gasto","monto":250,"cuenta":"Nómina","descripcion":"Oxxo"}'`)}
+        <p class="hint">Si cambias tu contraseña, la llave deja de funcionar: crea una nueva aquí. Si alguien más la ve, revócala.</p>
+    </div>`;
+}
+
+on('ajApiDoc', () => abrirHoja({ titulo: 'API personal', html: apiDocHTML() }));
+on('ajApiCrear', async (el) => {
+    if (Push.apiActiva() && !(await confirmar({ titulo: 'Nueva llave', texto: 'La llave anterior deja de funcionar.', aceptar: 'Crear' }))) return;
+    el.disabled = true;
+    try { const llave = await Push.crearLlaveApi(); abrirHoja({ titulo: 'Tu llave de la API', html: apiDocHTML(llave) }); }
+    catch (e) { toast(e.message, { tipo: 'error' }); }
+    el.disabled = false;
+});
+on('ajApiRevocar', async () => {
+    if (!(await confirmar({ titulo: 'Revocar llave', texto: 'Tus scripts y atajos que la usen dejarán de funcionar.', aceptar: 'Revocar', peligro: true }))) return;
+    try { await Push.revocarLlaveApi(); toast('Llave revocada'); } catch (e) { toast(e.message, { tipo: 'error' }); }
+});
+
 on('ajCopiar', async (el) => {
     try { await navigator.clipboard.writeText(el.dataset.t); toast('Copiado'); }
     catch { toast('No se pudo copiar; mantén presionada la dirección para copiarla', { tipo: 'error' }); }

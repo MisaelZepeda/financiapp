@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v30'; // v30: solo borra sus propias cachés (convive con Tlacuilo)
+const CACHE_NAME = 'morralla-cache-v31'; // v31: API personal
 
 const urlsToCache = [
     './',

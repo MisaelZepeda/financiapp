@@ -136,6 +136,25 @@ export async function revocarSiri() {
     await guardarAjustes({ siriActiva: false });
 }
 
+// ---------- API personal ----------
+// La llave le da al Worker un permiso de TU sesión (refresh token) para leer y escribir
+// en tu Morralla con las mismas reglas que la app. Revocarla lo borra del Worker.
+export const API_URL = `${WORKER_URL}/api`;
+export const apiActiva = () => !!sel.ajustes().apiActiva;
+
+export async function crearLlaveApi() {
+    const refresh = auth.currentUser?.refreshToken;
+    if (!refresh) throw new Error('Inicia sesión para crear la llave');
+    const { llave } = await llamar('/api-llave', { refresh, tz: new Date().getTimezoneOffset() });
+    await guardarAjustes({ apiActiva: true });
+    return llave;
+}
+
+export async function revocarLlaveApi() {
+    await llamar('/api-llave/revocar');
+    await guardarAjustes({ apiActiva: false });
+}
+
 // Guarda en Firebase lo que se dictó a Siri mientras la app estaba cerrada.
 let tomando = false;
 export async function tomarPendientes() {
