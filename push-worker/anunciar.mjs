@@ -2,7 +2,6 @@
 // El cron del Worker lo envía en el siguiente minuto (una sola vez por usuario).
 //
 //   npm run anunciar -- morralla "Morralla se actualizó" "Ya puedes …" "#/ajustes"
-//   npm run anunciar -- tlacuilo "Tlacuilo se actualizó" "Ya puedes …"
 //
 // Requiere sesión de wrangler (npx wrangler login). Guarda en el KV `anuncios:<app>`.
 
@@ -12,8 +11,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const [app, title, body, url] = process.argv.slice(2);
-if (!['morralla', 'tlacuilo'].includes(app) || !title || !body) {
-  console.error('Uso: npm run anunciar -- <morralla|tlacuilo> "Título" "Texto" ["#/ruta"]');
+if (app !== 'morralla' || !title || !body) {
+  console.error('Uso: npm run anunciar -- morralla "Título" "Texto" ["#/ruta"]');
   process.exit(1);
 }
 if (url && !/^#\/[\w/?=&%-]*$/.test(url)) { console.error('La ruta debe ser como "#/ajustes"'); process.exit(1); }

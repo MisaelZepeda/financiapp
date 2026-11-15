@@ -1,6 +1,5 @@
-/* Morralla y Tlacuilo — avisos en el iPhone y Siri (Cloudflare Worker, plan gratuito).
- * Adaptado del servidor de notificaciones de Latidia. Atiende a las dos apps con
- * datos separados: cada petición indica ?app=tlacuilo (si no, es Morralla).
+/* Morralla — avisos en el iPhone, Siri y API personal (Cloudflare Worker, plan gratuito).
+ * Adaptado del servidor de notificaciones de Latidia.
  *
  * - La app manda (con su sesión de Firebase) los avisos de los próximos 14 días y la
  *   suscripción Web Push de cada dispositivo. Un cron cada minuto envía los que tocan.
@@ -15,8 +14,6 @@
  *                  config: { tz, cuentaSiri, categorias: [{id,nombre}], historial: [{desc,categoriaId}] },
  *                  siri: { hash }, pendientes: [...] }
  *   k:<sha256> → uid   (clave de Siri)
- *   Tlacuilo usa las mismas formas con otros prefijos: t:<uid>, kt:<sha256>, users:tlacuilo;
- *   su cola `pendientes` guarda pendientes dictados ({ titulo, fecha, hora }).
  *
  * Variables: FIREBASE_PROJECT_ID, VAPID_PUBLIC_KEY, VAPID_SUBJECT, ALLOWED_ORIGINS
  * Secretos:  VAPID_PRIVATE_JWK
@@ -25,7 +22,6 @@
 import { enc, b64u, encryptPayload, vapidAuthorization } from './webpush.js';
 import { interpretarDictado } from '../../js/domain/recordatorios.js';
 import { sugerirCategoria } from '../../js/domain/autocategoria.js';
-import { interpretarPendiente, describirCuando } from './tlacuilo-dictado.js';
 import { manejarApi } from './api.js';
 
 const WINDOW_MS = 60 * 60 * 1000;           // un aviso atrasado se envía hasta 1 h después
@@ -121,7 +117,6 @@ async function sendToUser(user, message, env) {
 // Prefijos de cada app en el KV.
 const APPS = {
   morralla: { u: 'u:', k: 'k:', users: 'users', nombre: 'Morralla', inicio: '#/inicio' },
-  tlacuilo: { u: 't:', k: 'kt:', users: 'users:tlacuilo', nombre: 'Tlacuilo', inicio: '#/hoy' },
 };
 const nuevoUsuario = () => ({ subs: {}, reminders: [], sent: {}, config: {}, siri: null, pendientes: [] });
 const getUser = async (env, uid, app = 'morralla') => ({ ...nuevoUsuario(), ...((await env.PUSH.get(APPS[app].u + uid, 'json')) || {}) });
@@ -145,9 +140,8 @@ const cleanConfig = c => ({
   historial: (Array.isArray(c.historial) ? c.historial : []).slice(0, 300).map(x => ({ tipo: 'gasto', desc: texto(x.desc, 80), categoriaId: texto(x.categoriaId, 60) })),
 });
 
-// Fecha y hora locales del usuario a partir de su desfase (minutos, como getTimezoneOffset).
+// Fecha local del usuario a partir de su desfase (minutos, como getTimezoneOffset).
 const fechaLocal = (tz) => new Date(Date.now() - (tz || 0) * 60000).toISOString().slice(0, 10);
-const horaLocal = (tz) => new Date(Date.now() - (tz || 0) * 60000).toISOString().slice(11, 16);
 const fmt = (n) => '$' + Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
 // ---------------------------------------------------------------- Siri
@@ -177,22 +171,6 @@ async function registrarDictado(req, env, body, H) {
   return json({ ok: true, mensaje }, 200, H);
 }
 
-// Tlacuilo: "Oye Siri, pendiente" → { titulo, fecha, hora } en la cola; la app lo guarda al abrirse.
-async function registrarPendiente(req, env, body, H) {
-  const m = (req.headers.get('Authorization') || '').match(/^Bearer (.+)$/);
-  const uid = m ? await env.PUSH.get('kt:' + await sha256(m[1].trim())) : null;
-  if (!uid) return json({ ok: false, mensaje: 'La clave de Siri no es válida. Genera una nueva en Tlacuilo, en Ajustes.' }, 401, H);
-  const u = await getUser(env, uid, 'tlacuilo');
-  if ((u.pendientes || []).length >= MAX_PENDIENTES) return json({ ok: false, mensaje: 'Tienes muchos pendientes por guardar. Abre Tlacuilo.' }, 429, H);
-  const tz = u.config?.tz, hoy = fechaLocal(tz);
-  const p = interpretarPendiente(texto(body.texto, 300), hoy, horaLocal(tz));
-  if (!p) return json({ ok: false, mensaje: 'No te entendí. Prueba con algo como "llamar al dentista mañana a las 5".' }, 400, H);
-  u.pendientes = [...(u.pendientes || []), { id: crypto.randomUUID(), ...p, creadoEn: Date.now() }];
-  await putUser(env, uid, u, 'tlacuilo');
-  const cuando = describirCuando(p.fecha, p.hora, hoy);
-  return json({ ok: true, mensaje: `Listo, anoté: ${p.titulo}${cuando ? `, ${cuando}` : ''}.` }, 200, H);
-}
-
 // ---------------------------------------------------------------- HTTP
 async function handle(req, env) {
   const url = new URL(req.url);
@@ -210,9 +188,8 @@ async function handle(req, env) {
 
   // El Atajo de Siri se autentica con su clave personal, no con la sesión de Firebase.
   if (url.pathname === '/movimiento' && req.method === 'POST') return registrarDictado(req, env, body, H);
-  if (url.pathname === '/pendiente' && req.method === 'POST') return registrarPendiente(req, env, body, H);
 
-  const app = url.searchParams.get('app') === 'tlacuilo' ? 'tlacuilo' : 'morralla';
+  const app = 'morralla';
   const P = APPS[app];
   const uid = await authUid(req, env);
   if (!uid) return json({ error: 'no autorizado' }, 401, H);
@@ -243,7 +220,7 @@ async function handle(req, env) {
 
   if (url.pathname === '/test' && req.method === 'POST') {
     const u = await getUser(env, uid, app);
-    const saludo = app === 'tlacuilo' ? { title: 'Teco te saluda', body: 'Los avisos de Tlacuilo funcionan aunque la app esté cerrada.' } : { title: 'Tlaco te saluda', body: 'Los avisos de Morralla funcionan aunque la app esté cerrada.' };
+    const saludo = { title: 'Tlaco te saluda', body: 'Los avisos de Morralla funcionan aunque la app esté cerrada.' };
     const r = await sendToUser(u, { ...saludo, tag: 'prueba', data: { url: P.inicio } }, env);
     if (r.changed) await putUser(env, uid, u, app);
     return json({ ok: true, delivered: r.delivered, devices: Object.keys(u.subs).length }, 200, H);
