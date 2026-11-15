@@ -6,7 +6,8 @@ import * as A from '../core/actions.js';
 import { abrirHoja, cerrarHoja, hojaAbierta, toast, confirmar } from './capas.js';
 import { icon } from '../lib/icons.js';
 import { escapeHtml, money } from '../lib/format.js';
-import { ICONOS_CATEGORIA } from '../domain/categorias.js';
+import { ICONOS_CATEGORIA, COLORES_CATEGORIA } from '../domain/categorias.js';
+import { colorCategoria } from './piezas.js';
 import { FRECUENCIAS } from '../domain/recurrentes.js';
 import { navegar } from '../core/router.js';
 import { confeti, monedaAlcancia } from './efectos.js';
@@ -211,7 +212,9 @@ export function abrirFormCategoria(id = null, { alTerminar = null } = {}) {
         html: `<form data-submit="guardarCategoria" data-id="${escapeHtml(id || '')}">
             <input type="hidden" name="icono" value="${actual}">
             <div class="field"><label for="fk-nombre">Nombre</label><input id="fk-nombre" name="nombre" required placeholder="Ej. Mascotas" value="${escapeHtml(c?.nombre || '')}"></div>
-            <div class="field"><span class="label">Ícono</span><div class="chips" id="fk-iconos">${ICONOS_CATEGORIA.map(i => `<button type="button" class="chip ${i === actual ? 'activo' : ''}" data-action="fkIcono" data-i="${i}" aria-label="${i}">${icon(i)}</button>`).join('')}</div></div>
+            <input type="hidden" name="color" value="${escapeHtml(c?.color || '')}">
+            <div class="field"><span class="label">Color</span><div class="colores" id="fk-colores">${COLORES_CATEGORIA.map(k => `<button type="button" class="color-op ${k.hex === c?.color ? 'activo' : ''}" style="--cat:${k.hex}" data-action="fkColor" data-c="${k.hex}" aria-label="${k.nombre}"></button>`).join('')}</div></div>
+            <div class="field"><span class="label">Ícono</span><div class="chips" id="fk-iconos" style="--cat:${c ? colorCategoria(c.id) : 'var(--accent)'}">${ICONOS_CATEGORIA.map(i => `<button type="button" class="chip ${i === actual ? 'activo' : ''}" data-action="fkIcono" data-i="${i}" aria-label="${i}">${icon(i)}</button>`).join('')}</div></div>
             <div class="field"><label for="fk-pres">Presupuesto mensual (opcional)</label><input id="fk-pres" name="presupuesto" inputmode="decimal" placeholder="Sin límite" value="${c?.presupuesto || ''}"></div>
             <div class="hoja-foot">
                 ${c ? '<button type="button" class="btn btn-danger-soft" data-action="fkBorrar" style="flex:0 0 auto;">' + icon('trash') + '</button>' : ''}
@@ -220,13 +223,19 @@ export function abrirFormCategoria(id = null, { alTerminar = null } = {}) {
         </form>`,
     });
 }
+on('fkColor', (el) => {
+    const hoja = hojaAbierta();
+    hoja.querySelector('[name="color"]').value = el.dataset.c;
+    hoja.querySelectorAll('#fk-colores .color-op').forEach(b => b.classList.toggle('activo', b === el));
+    hoja.querySelector('#fk-iconos').style.setProperty('--cat', el.dataset.c);
+});
 on('fkIcono', (el) => {
     const hoja = hojaAbierta();
     hoja.querySelector('[name="icono"]').value = el.dataset.i;
     hoja.querySelectorAll('#fk-iconos .chip').forEach(b => b.classList.toggle('activo', b === el));
 });
 on('guardarCategoria', async (form) => {
-    await A.guardarCategoria({ id: form.dataset.id || undefined, nombre: v(form, 'nombre'), icono: v(form, 'icono'), presupuesto: n(form, 'presupuesto') });
+    await A.guardarCategoria({ id: form.dataset.id || undefined, nombre: v(form, 'nombre'), icono: v(form, 'icono'), color: v(form, 'color') || null, presupuesto: n(form, 'presupuesto') });
     cerrarHoja(); toast('Categoría guardada');
     const sig = alTerminarCategoria; alTerminarCategoria = null; sig?.();
 }, 'submit');

@@ -5,7 +5,7 @@ import { on } from '../core/eventos.js';
 import * as A from '../core/actions.js';
 import { icon } from '../lib/icons.js';
 import { money, escapeHtml, fechaLarga, cuandoRelativo, nombreMesAnio } from '../lib/format.js';
-import { vacioHTML } from '../components/piezas.js';
+import { vacioHTML, colorCategoria, icoCat } from '../components/piezas.js';
 import { calendarioHTML } from './calendario.js';
 import { retosHTML, celebrarRetos } from './retos.js';
 import { abrirHoja, cerrarHoja, toast } from '../components/capas.js';
@@ -43,10 +43,10 @@ function presupuestosHTML() {
     const filas = con.map(c => {
         const g = porCategoria[c.id] || 0, p = g / c.presupuesto * 100;
         return `<a class="fila fila-link" href="#/movimientos?categoria=${encodeURIComponent(c.id)}&mes=${key}">
-            <div class="fila-ico">${icon(c.icono || 'tag')}</div>
+            <div ${icoCat(c.id)}>${icon(c.icono || 'tag')}</div>
             <div class="fila-body">
                 <div class="comp-top"><span class="fila-titulo">${escapeHtml(c.nombre)}</span><span class="num ${p > 100 ? 'neg' : ''}" style="font-weight:600; font-size:13px;">${Math.round(p)}%</span></div>
-                <div class="barra sm" style="margin:6px 0 4px;"><i style="width:${Math.min(100, p)}%; background:${color(p)}"></i></div>
+                <div class="barra sm" style="margin:6px 0 4px;"><i style="width:${Math.min(100, p)}%; background:${p > 85 ? color(p) : colorCategoria(c.id)}"></i></div>
                 <div class="fila-sub"><span class="privado">${money(g)}</span> de <span class="privado">${money(c.presupuesto)}</span> · ${g > c.presupuesto ? `<span class="neg">excedido</span>` : `quedan <span class="privado">${money(c.presupuesto - g)}</span>`}</div>
             </div>
         </a>`;
@@ -65,7 +65,7 @@ function abrirLimites() {
         titulo: 'Presupuestos mensuales',
         html: `<form data-submit="guardarPresupuestos">
             <p class="hint" style="margin-bottom:14px;">Deja en blanco las categorías sin límite. Con ${icon('edit')} cambias el nombre y el ícono.</p>
-            ${sel.categorias().map(c => `<div class="field-inline"><label for="pr-${escapeHtml(c.id)}">${icon(c.icono || 'tag')}${escapeHtml(c.nombre)}</label>
+            ${sel.categorias().map(c => `<div class="field-inline"><label for="pr-${escapeHtml(c.id)}"><span class="cat-punto" style="--cat:${colorCategoria(c.id)}">${icon(c.icono || 'tag')}</span>${escapeHtml(c.nombre)}</label>
                 <button type="button" class="icon-btn" data-action="presDiseno" data-id="${escapeHtml(c.id)}" aria-label="Editar ${escapeHtml(c.nombre)}">${icon('edit')}</button>
                 <input id="pr-${escapeHtml(c.id)}" name="${escapeHtml(c.id)}" inputmode="decimal" placeholder="Sin límite" value="${c.presupuesto || ''}"></div>`).join('')}
             <div class="hoja-foot"><button type="button" class="btn btn-soft" data-action="presNueva">${icon('plus')}Categoría</button><button type="submit" class="btn btn-primary">Guardar</button></div>
@@ -127,7 +127,7 @@ function recurrentesHTML() {
         const cat = r.tipo === 'gasto' ? sel.categoria(r.categoriaId) : null;
         const esPend = pend.includes(r);
         return `<div class="fila ${pausado ? 'pausado' : ''}">
-            <div class="fila-ico ${r.tipo === 'ingreso' ? 'tono-pos' : ''}">${icon(cat?.icono || 'coin')}</div>
+            <div ${cat ? icoCat(r.categoriaId) : `class="fila-ico ${r.tipo === 'ingreso' ? 'tono-pos' : ''}"`}>${icon(cat?.icono || 'coin')}</div>
             <div class="fila-body fila-link" data-action="editarRecurrente" data-id="${escapeHtml(r.id)}">
                 <div class="fila-titulo">${escapeHtml(r.desc)}${pausado ? ' <span class="badge">Pausado</span>' : ''}</div>
                 <div class="fila-sub">${FRECUENCIAS[r.frecuencia] || ''} · ${escapeHtml(sel.cuenta(r.cuentaId)?.nombre || 'Sin cuenta')} · ${pausado ? 'en pausa' : esPend ? '<span class="accent-ink">pendiente</span>' : `próximo ${cuandoRelativo(r.proximaFecha)}`}</div>

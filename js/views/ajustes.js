@@ -5,7 +5,7 @@ import { on } from '../core/eventos.js';
 import * as A from '../core/actions.js';
 import { icon } from '../lib/icons.js';
 import { escapeHtml, money } from '../lib/format.js';
-import { avatarHTML } from '../components/piezas.js';
+import { avatarHTML, icoCat } from '../components/piezas.js';
 import { toast, confirmar, abrirHoja, cerrarHoja } from '../components/capas.js';
 import { exportarRespaldo } from '../lib/exportar.js';
 import { migrarV1 } from '../domain/migracion.js';
@@ -50,7 +50,7 @@ export function render() {
         <section class="card">
             <div class="card-head"><h2 class="card-title">Categorías</h2><button class="link" data-action="nuevaCategoria">${icon('plus')}Nueva</button></div>
             <div class="lista">${sel.categorias().map(c => `<div class="fila fila-link" data-action="editarCategoria" data-id="${escapeHtml(c.id)}">
-                <div class="fila-ico">${icon(c.icono || 'tag')}</div>
+                <div ${icoCat(c.id)}>${icon(c.icono || 'tag')}</div>
                 <div class="fila-body"><div class="fila-titulo">${escapeHtml(c.nombre)}</div><div class="fila-sub">${c.presupuesto ? `Presupuesto <span class="privado">${money(c.presupuesto)}</span>` : 'Sin presupuesto'}</div></div>
                 ${icon('chevron-right', 'chev')}</div>`).join('')}</div>
         </section>

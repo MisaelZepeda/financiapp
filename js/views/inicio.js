@@ -1,7 +1,7 @@
 import { sel } from '../core/store.js';
 import { icon } from '../lib/icons.js';
 import { money, moneyPartes, pct, escapeHtml, nombreMes, nombreMesAnio, cuandoRelativo, fechaCorta } from '../lib/format.js';
-import { cuentaFilaHTML, vacioHTML, monogramaHTML } from '../components/piezas.js';
+import { cuentaFilaHTML, vacioHTML, monogramaHTML, colorCategoria, icoCat } from '../components/piezas.js';
 import { barrasIngresosGastos, sparkline, donaCategorias, colorSerie, MAX_SERIES } from '../components/graficas.js';
 import { seriePatrimonio } from '../domain/saldos.js';
 import { resumenMes, serieMensual, variacion } from '../domain/analisis.js';
@@ -104,7 +104,7 @@ function proximosHTML() {
 function filaRec(rec, pendiente) {
     const cat = rec.tipo === 'gasto' ? sel.categoria(rec.categoriaId) : null;
     return `<div class="fila">
-        <div class="fila-ico ${rec.tipo === 'ingreso' ? 'tono-pos' : ''}">${icon(cat?.icono || 'coin')}</div>
+        <div ${cat ? icoCat(rec.categoriaId) : `class="fila-ico ${rec.tipo === 'ingreso' ? 'tono-pos' : ''}"`}>${icon(cat?.icono || 'coin')}</div>
         <div class="fila-body"><div class="fila-titulo">${escapeHtml(rec.desc)}</div><div class="fila-sub">${pendiente ? `Pendiente desde ${cuandoRelativo(rec.proximaFecha).replace('hace ', '')}` : `Programado ${cuandoRelativo(rec.proximaFecha)}`} · ${escapeHtml(sel.cuenta(rec.cuentaId)?.nombre || 'Sin cuenta')}</div></div>
         <div class="fila-der"><span class="num privado ${rec.tipo === 'ingreso' ? 'pos' : ''}">${rec.tipo === 'ingreso' ? '+' : ''}${money(rec.monto)}</span>
             <button class="btn ${pendiente ? 'btn-primary' : 'btn-soft'} btn-sm" data-action="generarRecurrente" data-id="${escapeHtml(rec.id)}" style="margin-top:4px;">${pendiente ? 'Registrar' : 'Registrar ya'}</button></div>
@@ -114,10 +114,8 @@ function filaRec(rec, pendiente) {
 // Categorías del mes; si hay más que colores, las menores se agrupan en "Otras".
 export function datosCategoriasMes(key = mesKey()) {
     const { porCategoria, gastos } = resumenMes(sel.transacciones(), key);
-    let filas = Object.entries(porCategoria).map(([id, monto]) => ({ id, monto, nombre: sel.categoria(id).nombre, icono: sel.categoria(id).icono, color: colorSerie(sel.indiceCategoria(id)) }))
+    let filas = Object.entries(porCategoria).map(([id, monto]) => ({ id, monto, nombre: sel.categoria(id).nombre, icono: sel.categoria(id).icono, color: colorCategoria(id) }))
         .sort((a, b) => b.monto - a.monto);
-    // Color por categoría estable; si su índice pasa del máximo, gris neutro.
-    filas.forEach(f => { if (sel.indiceCategoria(f.id) >= MAX_SERIES) f.color = 'var(--line-strong)'; });
     if (filas.length > MAX_SERIES) {
         const resto = filas.slice(MAX_SERIES - 1);
         filas = [...filas.slice(0, MAX_SERIES - 1), { id: '_otras', nombre: 'Otras', icono: 'box', monto: resto.reduce((a, f) => a + f.monto, 0), color: 'var(--line-strong)' }];

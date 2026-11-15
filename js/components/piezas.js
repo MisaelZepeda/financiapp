@@ -78,7 +78,8 @@ export function describirTx(tx) {
     const cat = sel.categoria(tx.categoriaId);
     const dividido = Array.isArray(tx.partes) && tx.partes.length > 1;
     return {
-        icono: tx.paraTercero ? 'share' : dividido ? 'list' : (cat.icono || 'tag'), tono: '',
+        icono: tx.paraTercero ? 'share' : dividido ? 'list' : (cat.icono || 'tag'), tono: tx.paraTercero || dividido ? '' : 'ico-cat',
+        estilo: tx.paraTercero || dividido ? '' : `style="--cat:${colorCategoria(tx.categoriaId)}"`,
         titulo: tx.desc || cat.nombre,
         sub: [tx.paraTercero ? `Para ${tx.paraTercero}` : dividido ? tx.partes.map(p => sel.categoria(p.categoriaId).nombre).join(' + ') : cat.nombre, origen?.nombre, tx.msi > 1 ? `${tx.msi} MSI` : ''].filter(Boolean).join(' · '),
         signo: '−', clase: '',
@@ -93,10 +94,18 @@ function montoFilaHTML(tx, d) {
     return `<span class="num privado ${d.clase}">${d.signo}${money(mensualidad)}<span class="fila-mes">/mes</span></span><small class="privado">de ${money(Math.abs(tx.monto))}</small>`;
 }
 
+// Color de una categoría: el que eligió el usuario o uno de la serie por su orden.
+export function colorCategoria(id) {
+    const c = sel.categoria(id);
+    return /^#[0-9a-f]{6}$/i.test(c.color || '') ? c.color : `var(--series-${(sel.indiceCategoria(id) % 8) + 1})`;
+}
+// Atributos para el ícono de una categoría con su color.
+export const icoCat = (id) => `class="fila-ico ico-cat" style="--cat:${colorCategoria(id)}"`;
+
 export function txFilaHTML(tx) {
     const d = describirTx(tx);
     return `<div class="swipe">${accionesSwipeHTML(escapeHtml(tx.id))}<div class="fila fila-link swipe-fila" data-action="verTx" data-id="${escapeHtml(tx.id)}" role="button" tabindex="0">
-        <div class="fila-ico ${d.tono}">${icon(d.icono)}</div>
+        <div class="fila-ico ${d.tono}" ${d.estilo || ''}>${icon(d.icono)}</div>
         <div class="fila-body"><div class="fila-titulo">${escapeHtml(d.titulo)}</div><div class="fila-sub">${escapeHtml(d.sub)}${tx.etiquetas?.length ? ` ${tx.etiquetas.map(e => `<span class="tag">#${escapeHtml(e)}</span>`).join(' ')}` : ''}</div></div>
         <div class="fila-der">${montoFilaHTML(tx, d)}</div>
     </div></div>`;

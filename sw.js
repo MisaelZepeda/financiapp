@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v37'; // v37: Presupuestos: ver movimientos y editar categorías
+const CACHE_NAME = 'morralla-cache-v38'; // v38: Color para cada categoría
 
 const urlsToCache = [
     './',

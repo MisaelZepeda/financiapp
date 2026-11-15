@@ -308,3 +308,11 @@ input.etiqueta-input { width: 130px; height: 30px; padding: 0 11px; border-radiu
 .hoja-foot .btn svg { width: 18px; height: 18px; margin-right: 6px; }
 .fila-mes { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 1px; }
 .hero-msi { display: block; margin-top: 2px; font-size: 11.5px; opacity: .8; }
+
+/* Color de cada categoría */
+.ico-cat { background: color-mix(in srgb, var(--cat) 16%, transparent); color: var(--cat); }
+.cat-punto { display: inline-flex; color: var(--cat); }
+.colores { display: flex; flex-wrap: wrap; gap: 10px; }
+.color-op { width: 34px; height: 34px; border-radius: 50%; background: var(--cat); border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.color-op.activo { box-shadow: 0 0 0 2px var(--cat); }
+#fk-iconos .chip.activo { background: var(--cat); color: #fff; }

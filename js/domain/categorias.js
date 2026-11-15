@@ -18,6 +18,14 @@ const ICONOS_CONOCIDOS = {
     viajes: 'plane', regalos: 'gift', suscripciones: 'repeat', educacion: 'file-text', escuela: 'file-text',
 };
 
+// Colores para elegir; se ven bien en tema claro y oscuro.
+export const COLORES_CATEGORIA = [
+    { hex: '#3b82f6', nombre: 'Azul' }, { hex: '#06b6d4', nombre: 'Cian' }, { hex: '#22c55e', nombre: 'Verde' },
+    { hex: '#84cc16', nombre: 'Lima' }, { hex: '#f59e0b', nombre: 'Ámbar' }, { hex: '#f97316', nombre: 'Naranja' },
+    { hex: '#ef4444', nombre: 'Rojo' }, { hex: '#ec4899', nombre: 'Rosa' }, { hex: '#a855f7', nombre: 'Morado' },
+    { hex: '#6366f1', nombre: 'Índigo' }, { hex: '#a16207', nombre: 'Café' }, { hex: '#64748b', nombre: 'Gris' },
+];
+
 export const ICONOS_CATEGORIA = ['utensils', 'zap', 'car', 'home', 'film', 'medical', 'repeat', 'box', 'paw', 'shirt', 'dumbbell', 'plane', 'gift', 'heart', 'tag', 'coin', 'file-text', 'shield', 'target', 'credit-card'];
 
 // Id estable a partir del nombre: 'Comida rápida' → 'comida-rapida'.

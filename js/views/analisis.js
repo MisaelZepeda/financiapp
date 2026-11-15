@@ -6,7 +6,7 @@ import { sel } from '../core/store.js';
 import { on } from '../core/eventos.js';
 import { icon } from '../lib/icons.js';
 import { money, pct, escapeHtml, nombreMes, nombreMesAnio, fechaCorta } from '../lib/format.js';
-import { vacioHTML, txFilaHTML } from '../components/piezas.js';
+import { vacioHTML, txFilaHTML, icoCat } from '../components/piezas.js';
 import { lineaPatrimonio, barrasIngresosGastos, lineasAnual } from '../components/graficas.js';
 import { seriePatrimonio } from '../domain/saldos.js';
 import { serieMensual, comparativaCategorias, gastosMasGrandes, gastosFrecuentes, tasaAhorro, insightPrincipal, porEtiqueta, comparativoAnual, gastoPorDia, nivelCalor } from '../domain/analisis.js';
@@ -44,7 +44,7 @@ function categoriasHTML() {
         const badge = v == null ? '<span class="badge">Nuevo</span>' : Math.abs(v) < 5 ? '<span class="badge">Igual</span>'
             : `<span class="badge ${v > 0 ? 'badge-neg' : 'badge-pos'}">${v > 0 ? '↑' : '↓'} ${pct(Math.abs(v))}</span>`;
         return `<a class="fila fila-link comp-cat" href="#/movimientos?categoria=${encodeURIComponent(f.categoriaId)}&mes=${mesKey()}">
-            <div class="fila-ico">${icon(cat.icono || 'tag')}</div>
+            <div ${icoCat(f.categoriaId)}>${icon(cat.icono || 'tag')}</div>
             <div class="fila-body">
                 <div class="comp-top"><span class="fila-titulo">${escapeHtml(cat.nombre)}</span>${badge}</div>
                 <div class="comp-barras"><div class="barra sm"><i style="width:${f.mes / max * 100}%"></i></div><div class="barra sm prom"><i style="width:${f.promedio / max * 100}%"></i></div></div>
@@ -57,10 +57,10 @@ function categoriasHTML() {
 function topHTML() {
     const grandes = gastosMasGrandes(sel.transacciones(), mesKey());
     const frecuentes = gastosFrecuentes(sel.transacciones());
-    const filaGrande = (t) => `<div class="fila fila-link" data-action="verTx" data-id="${escapeHtml(t.id)}"><div class="fila-ico">${icon(sel.categoria(t.categoriaId).icono || 'tag')}</div>
+    const filaGrande = (t) => `<div class="fila fila-link" data-action="verTx" data-id="${escapeHtml(t.id)}"><div ${icoCat(t.categoriaId)}>${icon(sel.categoria(t.categoriaId).icono || 'tag')}</div>
         <div class="fila-body"><div class="fila-titulo">${escapeHtml(t.desc || sel.categoria(t.categoriaId).nombre)}</div><div class="fila-sub">${fechaCorta(t.fecha)} · ${escapeHtml(sel.categoria(t.categoriaId).nombre)}</div></div>
         <div class="fila-der"><span class="num privado">${money(t.monto)}</span></div></div>`;
-    const filaFrec = (g) => `<div class="fila"><div class="fila-ico">${icon(sel.categoria(g.categoriaId).icono || 'tag')}</div>
+    const filaFrec = (g) => `<div class="fila"><div ${icoCat(g.categoriaId)}>${icon(sel.categoria(g.categoriaId).icono || 'tag')}</div>
         <div class="fila-body"><div class="fila-titulo">${escapeHtml(g.desc)}</div><div class="fila-sub">${g.veces} veces en 3 meses</div></div>
         <div class="fila-der"><span class="num privado">${money(g.total)}</span><small>total</small></div></div>`;
     return `<div class="grid-2">

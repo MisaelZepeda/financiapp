@@ -25,7 +25,7 @@ function detalleHTML(tx) {
     const nombreCta = (c) => c ? escapeHtml(c.nombre) + (c.digitos ? ` ·${escapeHtml(c.digitos)}` : '') : 'Cuenta borrada';
 
     return `<div class="det-cabeza">
-            <div class="fila-ico ${d.tono}">${icon(d.icono)}</div>
+            <div class="fila-ico ${d.tono}" ${d.estilo || ''}>${icon(d.icono)}</div>
             <div class="det-monto num privado ${d.clase}">${d.signo}${money(Math.abs(tx.monto))}</div>
             ${msi ? `<div class="det-nota">${money(msi.mensualidad)} al mes durante ${msi.meses} meses</div>` : ''}
         </div>
