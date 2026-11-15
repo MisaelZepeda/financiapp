@@ -14,17 +14,31 @@ export function partesDe(tx) {
     return [{ categoriaId: tx.categoriaId || 'otros', monto: monto(tx) }];
 }
 
+// Parte de un gasto que cuenta en el mes `key`. Una compra a meses sin
+// intereses se reparte: cada mes, desde el de la compra, cuenta una
+// mensualidad (la deuda completa sigue sumando en la tarjeta).
+export function fraccionDelMes(tx, key) {
+    const mes = tx.fecha?.slice(0, 7);
+    if (!mes) return 0;
+    const meses = tx.tipo === 'gasto' ? Number(tx.msi) || 0 : 0;
+    if (meses <= 1) return mes === key ? 1 : 0;
+    return key >= mes && key <= sumarMeses(mes, meses - 1) ? 1 / meses : 0;
+}
+
 export function resumenMes(transacciones, key) {
     let ingresos = 0, gastos = 0;
     const porCategoria = {};
     transacciones.forEach(tx => {
-        if (!tx.fecha?.startsWith(key) || esDeTercero(tx)) return;
-        if (tx.tipo === 'ingreso') ingresos += monto(tx);
+        if (esDeTercero(tx)) return;
+        if (tx.tipo === 'ingreso') { if (tx.fecha?.startsWith(key)) ingresos += monto(tx); }
         else if (tx.tipo === 'gasto') {
-            gastos += monto(tx);
-            partesDe(tx).forEach(p => { porCategoria[p.categoriaId] = (porCategoria[p.categoriaId] || 0) + p.monto; });
+            const f = fraccionDelMes(tx, key);
+            if (!f) return;
+            gastos += monto(tx) * f;
+            partesDe(tx).forEach(p => { porCategoria[p.categoriaId] = (porCategoria[p.categoriaId] || 0) + p.monto * f; });
         }
     });
+    Object.keys(porCategoria).forEach(k => { porCategoria[k] = r2(porCategoria[k]); });
     return { mes: key, ingresos: r2(ingresos), gastos: r2(gastos), balance: r2(ingresos - gastos), porCategoria };
 }
 

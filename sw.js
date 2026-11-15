@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v32'; // v32: Limpieza de Tlacuilo
+const CACHE_NAME = 'morralla-cache-v33'; // v33: MSI: una mensualidad por mes en tus gastos
 
 const urlsToCache = [
     './',
