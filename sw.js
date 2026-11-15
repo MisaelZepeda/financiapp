@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v34'; // v34: Resumen del movimiento antes de editar
+const CACHE_NAME = 'morralla-cache-v35'; // v35: Las compras a meses muestran su mensualidad
 
 const urlsToCache = [
     './',

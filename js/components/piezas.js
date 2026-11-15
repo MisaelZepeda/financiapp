@@ -85,12 +85,20 @@ export function describirTx(tx) {
     };
 }
 
+// Una compra a meses sin intereses muestra su mensualidad y, abajo, el total.
+function montoFilaHTML(tx, d) {
+    const meses = tx.tipo === 'gasto' ? Number(tx.msi) || 0 : 0;
+    if (meses <= 1) return `<span class="num privado ${d.clase}">${d.signo}${money(Math.abs(tx.monto))}</span>`;
+    const mensualidad = Math.round(Math.abs(tx.monto) / meses * 100) / 100;
+    return `<span class="num privado ${d.clase}">${d.signo}${money(mensualidad)}<span class="fila-mes">/mes</span></span><small class="privado">de ${money(Math.abs(tx.monto))}</small>`;
+}
+
 export function txFilaHTML(tx) {
     const d = describirTx(tx);
     return `<div class="swipe">${accionesSwipeHTML(escapeHtml(tx.id))}<div class="fila fila-link swipe-fila" data-action="verTx" data-id="${escapeHtml(tx.id)}" role="button" tabindex="0">
         <div class="fila-ico ${d.tono}">${icon(d.icono)}</div>
         <div class="fila-body"><div class="fila-titulo">${escapeHtml(d.titulo)}</div><div class="fila-sub">${escapeHtml(d.sub)}${tx.etiquetas?.length ? ` ${tx.etiquetas.map(e => `<span class="tag">#${escapeHtml(e)}</span>`).join(' ')}` : ''}</div></div>
-        <div class="fila-der"><span class="num privado ${d.clase}">${d.signo}${money(Math.abs(tx.monto))}</span></div>
+        <div class="fila-der">${montoFilaHTML(tx, d)}</div>
     </div></div>`;
 }
 
@@ -99,7 +107,7 @@ export function txAgrupadasHTML(txs) {
     let html = '', dia = null, grupo = [];
     const cerrar = () => {
         if (!grupo.length) return;
-        const neto = grupo.reduce((a, t) => a + (t.tipo === 'ingreso' ? t.monto : t.tipo === 'gasto' ? -t.monto : 0), 0);
+        const neto = grupo.reduce((a, t) => a + (t.tipo === 'ingreso' ? t.monto : t.tipo === 'gasto' ? -t.monto / (Number(t.msi) > 1 ? Number(t.msi) : 1) : 0), 0);
         html += `<div class="grupo-fecha"><span>${etiquetaDia(dia)}</span><span class="num privado">${neto ? (neto > 0 ? '+' : '') + money(neto) : ''}</span></div>`;
         html += grupo.map(txFilaHTML).join('');
     };
