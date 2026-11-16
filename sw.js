@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v40'; // v40: Tlaco en la barra de abajo
+const CACHE_NAME = 'morralla-cache-v41'; // v41: Tlaco solo en el resumen del mes
 
 const urlsToCache = [
     './',
@@ -21,7 +21,6 @@ const urlsToCache = [
     './js/components/piezas.js',
     './js/components/registro.js',
     './js/components/resumen-mes.js',
-    './js/components/salud.js',
     './js/components/tlaco.js',
     './js/core/actions.js',
     './js/core/db.js',
