@@ -1,6 +1,8 @@
 import { sel } from '../core/store.js';
 import { icon } from '../lib/icons.js';
 import { money, moneyPartes, pct, escapeHtml, nombreMes, nombreMesAnio, cuandoRelativo, fechaCorta } from '../lib/format.js';
+import { porRevisarHTML } from '../components/por-revisar.js';
+import { gastarHoyHTML } from '../components/gastar-hoy.js';
 import { cuentaFilaHTML, vacioHTML, monogramaHTML, colorCategoria, icoCat } from '../components/piezas.js';
 import { barrasIngresosGastos, sparkline, donaCategorias, colorSerie, MAX_SERIES } from '../components/graficas.js';
 import { seriePatrimonio } from '../domain/saldos.js';
@@ -181,7 +183,7 @@ function cobrosHTML() {
 }
 
 export function render() {
-    return `${resumenListoHTML()}${cobrosHTML()}${heroHTML()}
+    return `${porRevisarHTML()}${resumenListoHTML()}${cobrosHTML()}${gastarHoyHTML()}${heroHTML()}
         <div class="stack" style="margin-top:14px;">
             ${cuentasHTML()}
             ${mesHTML()}

@@ -6,6 +6,9 @@
  * - Siri: el Atajo manda lo dictado ("250 oxxo") con una clave personal. El Worker lo
  *   interpreta, sugiere la categoría y lo deja en una cola; la app lo guarda en Firebase
  *   al abrirse. Así el Worker no necesita credenciales de administrador de Firebase.
+ * - Apple Pay: la automatización de Atajos "Al pagar con la Cartera" manda monto, comercio
+ *   y tarjeta con la misma clave. Va a la misma cola marcado `revisar`: la app lo deja en
+ *   "Por revisar" para que confirmes cuenta y categoría.
  * - Web Push estándar: cifrado aes128gcm (RFC 8291) + VAPID (RFC 8292) con WebCrypto.
  *
  * Almacenamiento (KV "PUSH"):
@@ -22,6 +25,7 @@
 import { enc, b64u, encryptPayload, vapidAuthorization } from './webpush.js';
 import { interpretarDictado } from '../../js/domain/recordatorios.js';
 import { sugerirCategoria } from '../../js/domain/autocategoria.js';
+import { interpretarMonto } from '../../js/domain/applepay.js';
 import { manejarApi } from './api.js';
 
 const WINDOW_MS = 60 * 60 * 1000;           // un aviso atrasado se envía hasta 1 h después
@@ -151,6 +155,20 @@ async function registrarDictado(req, env, body, H) {
   if (!uid) return json({ ok: false, mensaje: 'La clave de Siri no es válida. Genera una nueva en Morralla, en Ajustes.' }, 401, H);
   const u = await getUser(env, uid, 'morralla');
   if ((u.pendientes || []).length >= MAX_PENDIENTES) return json({ ok: false, mensaje: 'Tienes muchos movimientos pendientes. Abre Morralla para guardarlos.' }, 429, H);
+
+  // Apple Pay: llega con comercio y/o tarjeta; el monto viene como texto ("$1,234.50").
+  if (body.origen === 'applepay' || body.comercio != null || body.tarjeta != null) {
+    const monto = interpretarMonto(body.monto);
+    if (!monto) return json({ ok: false, mensaje: 'No entendí el monto del pago.' }, 400, H);
+    const comercio = texto(body.comercio, 80).trim();
+    const cfg = u.config || {};
+    const ids = (cfg.categorias || []).map(c => c.id);
+    const categoriaId = sugerirCategoria(comercio, cfg.historial || [], ids.length ? ids : null)?.categoriaId || null;
+    const mov = { id: crypto.randomUUID(), tipo: 'gasto', monto, desc: comercio, comercio, tarjeta: texto(body.tarjeta, 60).trim(), categoriaId, fecha: fechaLocal(cfg.tz), creadoEn: Date.now(), revisar: true, origen: 'applepay' };
+    u.pendientes = [...(u.pendientes || []), mov];
+    await putUser(env, uid, u);
+    return json({ ok: true, mensaje: `Anoté ${fmt(monto)}${comercio ? ` en ${comercio}` : ''}. Revísalo en Morralla.` }, 200, H);
+  }
 
   const d = body.monto ? { tipo: body.tipo === 'ingreso' ? 'ingreso' : 'gasto', monto: Math.round(+body.monto * 100) / 100, desc: texto(body.desc, 80) } : interpretarDictado(texto(body.texto, 200));
   if (!d || !(d.monto > 0) || d.monto > 10000000) return json({ ok: false, mensaje: 'No entendí el monto. Prueba con algo como "250 Oxxo".' }, 400, H);

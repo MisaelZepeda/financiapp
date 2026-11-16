@@ -163,8 +163,39 @@ function siriHTML() {
             <select id="aj-cuenta-siri" data-change="ajCuentaSiri">${cuentas.map(c => `<option value="${escapeHtml(c.id)}" ${c.id === Push.cuentaSiri() ? 'selected' : ''}>${escapeHtml(c.nombre)}</option>`).join('')}</select>
             <span class="hint">La categoría se elige sola con la descripción; puedes cambiarla después en Movimientos.</span></div>
         <div class="botones-fila"><button class="btn btn-soft" data-action="ajSiriActivar">${icon('repeat')}Nueva clave e instrucciones</button>
-        <button class="btn btn-ghost" data-action="ajSiriOff">Desactivar</button></div>`;
+        <button class="btn btn-ghost" data-action="ajSiriOff">Desactivar</button></div>
+        <div class="applepay-aj">
+            <p><b>${icon('credit-card')}Apple Pay</b> Cada vez que pagues con la Cartera del iPhone, el pago llega a Morralla para que lo revises con un toque.</p>
+            <button class="btn btn-soft btn-sm" data-action="ajApplePay">Configurar Apple Pay</button>
+        </div>`;
 }
+
+// Apple Pay: automatización de Atajos "Transacción" que manda el pago al Worker
+// con la misma clave de Siri; en la app llega a "Por revisar".
+on('ajApplePay', () => {
+    const url = `${Push.WORKER_URL}/movimiento`;
+    const paso = (n, t) => `<li><b>${n}.</b> ${t}</li>`;
+    const copiar = (t) => `<div class="copiar"><code>${escapeHtml(t)}</code><button class="btn btn-soft btn-sm" data-action="ajCopiar" data-t="${escapeHtml(t)}">${icon('copy')}Copiar</button></div>`;
+    abrirHoja({
+        titulo: 'Registrar pagos con Apple Pay',
+        html: `<div class="siri">
+            <p class="hint" style="margin-top:0;">Usa <b>la misma clave de tu atajo de Siri</b>: abre tu atajo <b>Gasto</b>, toca la acción <b>Obtener contenido de URL</b> y copia el valor de <b>Authorization</b>. Si ya no la tienes, genera una nueva arriba y ponla en los dos atajos.</p>
+            <h3>Arma la automatización</h3>
+            <ol class="pasos">
+                ${paso(1, 'Abre <b>Atajos</b> › pestaña <b>Automatización</b> › <b>+</b> › <b>Transacción</b>.')}
+                ${paso(2, 'Elige tus tarjetas (o todas) y deja marcado <b>Ejecutar inmediatamente</b>. Toca <b>Siguiente</b> › <b>Nueva automatización en blanco</b>.')}
+                ${paso(3, 'Agrega <b>Obtener contenido de URL</b> y pega esta dirección:')}
+            </ol>
+            ${copiar(url)}
+            <ol class="pasos" start="4">
+                ${paso(4, 'Toca <b>Mostrar más</b>: Método <b>POST</b>. En <b>Encabezados</b> agrega <b>Authorization</b> con tu clave (empieza con "Bearer").')}
+                ${paso(5, 'En <b>Cuerpo de la solicitud</b> elige <b>JSON</b> y agrega estos campos de texto:<br>• <b>monto</b> → variable <b>Cantidad</b> de la transacción<br>• <b>comercio</b> → variable <b>Comercio</b><br>• <b>tarjeta</b> → variable <b>Tarjeta o pase</b><br>• <b>origen</b> → escribe <b>applepay</b>')}
+                ${paso(6, 'Listo. Paga algo con Apple Pay y abre Morralla: aparecerá en Inicio como <b>Por revisar</b>.')}
+            </ol>
+            <p class="hint">La primera vez elige la cuenta de cada tarjeta; Morralla la recuerda para las siguientes. La categoría se sugiere con el comercio.</p>
+        </div>`,
+    });
+});
 
 on('ajCuentaSiri', async (el) => { await A.guardarAjustes({ cuentaSiri: el.value }); toast('Cuenta para Siri actualizada'); }, 'change');
 on('ajSiriOff', async () => {

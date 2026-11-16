@@ -8,6 +8,7 @@ import { generarOcurrencia, primeraFecha } from '../domain/recurrentes.js';
 import { slugCategoria, iconoSugerido } from '../domain/categorias.js';
 import { hoyISO, mesKey } from '../domain/fechas.js';
 import { ultimoCorte } from '../domain/tarjetas.js';
+import { normalizarNombre } from '../domain/applepay.js';
 
 const datos = () => store.datos;
 
@@ -24,6 +25,27 @@ export async function borrarTransaccion(id) {
     const previo = datos().transacciones[id];
     await actualizar({ [`transacciones/${id}`]: null });
     return () => actualizar({ [`transacciones/${id}`]: { ...previo, id: undefined } });
+}
+
+// ---------- Por revisar (pagos con Apple Pay) ----------
+export function agregarPorRevisar(items) {
+    const updates = {};
+    items.forEach(p => { updates[`porRevisar/${p.id || nuevoId()}`] = { ...p, id: undefined }; });
+    return actualizar(updates);
+}
+
+// Guarda el movimiento, quita el pendiente y recuerda la cuenta de esa tarjeta.
+export function aceptarPorRevisar(id, tx) {
+    const p = datos().porRevisar[id];
+    const txId = nuevoId();
+    const updates = { [`porRevisar/${id}`]: null, [`transacciones/${txId}`]: { ...tx, id: undefined, creadoEn: Date.now(), origen: 'applepay' } };
+    const clave = p?.tarjeta ? normalizarNombre(p.tarjeta) : '';
+    if (clave && tx.cuentaId) updates[`ajustes/tarjetasWallet/${clave.replace(/[.#$/[\]]/g, ' ')}`] = tx.cuentaId;
+    return actualizar(updates).then(() => txId);
+}
+
+export function descartarPorRevisar(id) {
+    return actualizar({ [`porRevisar/${id}`]: null });
 }
 
 // ---------- Cuentas ----------

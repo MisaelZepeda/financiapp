@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v41'; // v41: Tlaco solo en el resumen del mes
+const CACHE_NAME = 'morralla-cache-v42'; // v42: Apple Pay por revisar y Puedes gastar hoy
 
 const urlsToCache = [
     './',
@@ -16,9 +16,11 @@ const urlsToCache = [
     './js/components/detalle-tx.js',
     './js/components/efectos.js',
     './js/components/formularios.js',
+    './js/components/gastar-hoy.js',
     './js/components/gestos.js',
     './js/components/graficas.js',
     './js/components/piezas.js',
+    './js/components/por-revisar.js',
     './js/components/registro.js',
     './js/components/resumen-mes.js',
     './js/components/tlaco.js',
@@ -28,6 +30,7 @@ const urlsToCache = [
     './js/core/router.js',
     './js/core/store.js',
     './js/domain/analisis.js',
+    './js/domain/applepay.js',
     './js/domain/autocategoria.js',
     './js/domain/calculadora.js',
     './js/domain/calendario.js',
@@ -39,6 +42,7 @@ const urlsToCache = [
     './js/domain/msi.js',
     './js/domain/notificaciones.js',
     './js/domain/proyeccion.js',
+    './js/domain/puedes-gastar.js',
     './js/domain/recordatorios.js',
     './js/domain/recurrentes.js',
     './js/domain/retos.js',

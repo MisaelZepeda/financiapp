@@ -35,7 +35,8 @@ export function abrirRegistro(opts = {}) {
         cuentaDestinoId: tx?.cuentaDestinoId || opts.cuentaDestinoId || null,
         subtipo: tx?.subtipo || opts.subtipo || null,
         msi: tx?.msi || 0,
-        fecha: tx?.fecha || hoyISO(),
+        fecha: tx?.fecha || opts.fecha || hoyISO(),
+        alGuardar: opts.alGuardar || null,   // en lugar de guardar directo (p. ej. Por revisar)
         desc: tx?.desc || opts.desc || '',
         dividir: partes.length > 1, partes,
         etiquetas: [...(tx?.etiquetas || [])], favorito: false,
@@ -331,6 +332,7 @@ async function guardar(otro) {
     const texto = `${TITULOS[r.tipo]} ${r.id ? 'actualizado' : 'registrado'} · ${money(monto)}`;
     try {
         const grande = !original && tx.tipo === 'ingreso' && !tx.subtipo && esIngresoGrande(monto, sel.transacciones());
+        if (r.alGuardar) { await r.alGuardar(tx); cerrarHoja(); return; }
         const id = await guardarTransaccion(tx);
         toast(grande ? `¡Llegó el dinero! ${texto}` : texto, { deshacer: () => original ? guardarTransaccion({ ...original }) : borrarTransaccion(id) });
         if (grande) confeti(); else if (!original) monedaAlcancia();

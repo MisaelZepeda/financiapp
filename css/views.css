@@ -436,3 +436,29 @@
 .api-ej code { font-size: 12px; white-space: pre; color: var(--text-2); }
 .api-doc .pasos code { font-size: 12.5px; }
 
+
+/* Puedes gastar hoy */
+.gastar-hoy { width: 100%; display: flex; flex-direction: column; gap: 4px; text-align: left; margin-bottom: 14px; color: var(--text); }
+.gh-top { display: flex; justify-content: space-between; align-items: center; }
+.gh-top .chev { width: 18px; height: 18px; color: var(--muted); }
+.gh-cifra { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
+.gh-cifra.warn { color: var(--warn); }
+.gh-sub { font-size: 13px; color: var(--muted); }
+.gh-barra { margin-top: 8px; }
+
+/* Por revisar (Apple Pay) */
+.revisar-cta { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; margin-bottom: 14px; color: var(--text); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 45%, transparent); }
+.revisar-ico { width: 40px; height: 40px; border-radius: 13px; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); flex-shrink: 0; }
+.revisar-txt { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.revisar-txt small { font-size: 12.5px; color: var(--muted); }
+.revisar-lista { display: flex; flex-direction: column; gap: 10px; }
+.revisar-fila { background: var(--surface-2); border-radius: 16px; padding: 4px 12px 12px; }
+.revisar-fila .fila { padding-left: 0; padding-right: 0; }
+.revisar-fila .fila-sub { white-space: normal; }
+.revisar-btns { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.revisar-btns .btn svg { width: 16px; height: 16px; margin-right: 4px; }
+
+.applepay-aj { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.applepay-aj p { font-size: 13.5px; color: var(--muted); margin: 0 0 10px; }
+.applepay-aj p b { display: flex; align-items: center; gap: 6px; color: var(--text); margin-bottom: 2px; }
+.applepay-aj p b svg { width: 16px; height: 16px; }

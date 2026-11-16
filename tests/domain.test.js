@@ -37,7 +37,7 @@ test('saldos: gasto, ingreso, pago de tarjeta y cashback', () => {
     assert.equal(s.deb, 1000 + 500 - 200 - 1000);
     assert.equal(s.tdc, 3000 - 1000 - 50);
     const p = patrimonio(cuentas, s);
-    assert.deepEqual(p, { activos: 300, teDeben: 0, deudas: 1950, deudasPropias: 1950, creditoLibre: 8050, neto: -1650 });
+    assert.deepEqual(p, { activos: 300, teDeben: 0, deudas: 1950, deudasPropias: 1950, creditoLibre: 8050, msiFuturo: 0, neto: -1650 });
     assert.equal(calcularSaldos(cuentas, txs, '2026-09-02').deb, 1300);
 });
 

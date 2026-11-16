@@ -5,7 +5,8 @@
 
 import { auth } from '../firebase-init.js';
 import { store, sel, suscribir } from '../core/store.js';
-import { guardarTransaccion, guardarAjustes } from '../core/actions.js';
+import { guardarTransaccion, guardarAjustes, agregarPorRevisar } from '../core/actions.js';
+import { sugerirCuentaWallet } from '../domain/applepay.js';
 import { calcularRecordatorios } from '../domain/recordatorios.js';
 import { hoyISO } from '../domain/fechas.js';
 
@@ -163,7 +164,17 @@ export async function tomarPendientes() {
     try {
         const { pendientes = [] } = await llamar('/pendientes/tomar');
         const respaldo = cuentaSiri();
-        for (const p of pendientes) {
+        const revisar = pendientes.filter(p => p.revisar);
+        if (revisar.length) {
+            const cuentas = sel.cuentas(), cats = sel.categorias();
+            await agregarPorRevisar(revisar.map(p => ({
+                id: p.id, monto: Number(p.monto), comercio: String(p.comercio || '').slice(0, 80), tarjeta: String(p.tarjeta || '').slice(0, 60),
+                fecha: /^\d{4}-\d{2}-\d{2}$/.test(p.fecha) ? p.fecha : hoyISO(), creadoEn: p.creadoEn || Date.now(),
+                categoriaId: cats.some(c => c.id === p.categoriaId) ? p.categoriaId : null,
+                cuentaId: sugerirCuentaWallet(p.tarjeta, cuentas, sel.ajustes().tarjetasWallet || {}) || null,
+            })).filter(p => p.monto > 0));
+        }
+        for (const p of pendientes.filter(x => !x.revisar)) {
             const tx = { tipo: p.tipo === 'ingreso' ? 'ingreso' : 'gasto', monto: Number(p.monto), fecha: /^\d{4}-\d{2}-\d{2}$/.test(p.fecha) ? p.fecha : hoyISO(), desc: String(p.desc || '').slice(0, 80), cuentaId: sel.cuenta(p.cuentaId) ? p.cuentaId : respaldo, creadoEn: p.creadoEn || Date.now(), origen: 'siri' };
             if (tx.tipo === 'gasto') tx.categoriaId = sel.categorias().some(c => c.id === p.categoriaId) ? p.categoriaId : 'otros';
             if (tx.monto > 0 && tx.cuentaId) await guardarTransaccion(tx);

@@ -17,14 +17,14 @@ export const store = {
 };
 
 function vacio() {
-    return { meta: null, perfil: {}, ajustes: {}, cuentas: {}, categorias: {}, transacciones: {}, metas: {}, recurrentes: {}, plantillas: {}, retos: {}, notifDescartadas: {} };
+    return { meta: null, perfil: {}, ajustes: {}, cuentas: {}, categorias: {}, transacciones: {}, metas: {}, recurrentes: {}, plantillas: {}, retos: {}, notifDescartadas: {}, porRevisar: {} };
 }
 
 // Asegura objetos y que cada elemento tenga su id (la clave de Firebase).
 function normalizar(d = {}) {
     const out = vacio();
     Object.keys(out).forEach(k => { if (d[k] != null) out[k] = d[k]; });
-    ['cuentas', 'categorias', 'transacciones', 'metas', 'recurrentes', 'plantillas', 'retos'].forEach(k => {
+    ['cuentas', 'categorias', 'transacciones', 'metas', 'recurrentes', 'plantillas', 'retos', 'porRevisar'].forEach(k => {
         const col = {};
         Object.entries(out[k] || {}).forEach(([id, v]) => { if (v) col[id] = { ...v, id }; });
         out[k] = col;
@@ -64,6 +64,7 @@ export const sel = {
     transacciones: () => memorizar('txs', () => Object.values(store.datos.transacciones)
         .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || (b.creadoEn || 0) - (a.creadoEn || 0) || String(b.id).localeCompare(String(a.id)))),
     transaccion: (id) => store.datos.transacciones[id] || null,
+    porRevisar: () => store.datos.porRevisar || {},
     categorias: () => memorizar('cats', () => Object.values(store.datos.categorias).sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99) || a.nombre.localeCompare(b.nombre))),
     categoria: (id) => store.datos.categorias[id] || { id, nombre: id ? id.charAt(0).toUpperCase() + id.slice(1) : 'Sin categoría', icono: 'tag', orden: 99 },
     // Índice fijo de color por categoría (sigue a la categoría, no a su ranking).
