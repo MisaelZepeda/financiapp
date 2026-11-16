@@ -316,3 +316,12 @@ input.etiqueta-input { width: 130px; height: 30px; padding: 0 11px; border-radiu
 .color-op { width: 34px; height: 34px; border-radius: 50%; background: var(--cat); border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--line); }
 .color-op.activo { box-shadow: 0 0 0 2px var(--cat); }
 #fk-iconos .chip.activo { background: var(--cat); color: #fff; }
+
+/* Registro: opciones plegadas */
+.reg-opciones { width: 100%; display: flex; align-items: center; gap: 10px; padding: 12px 14px; margin: 2px 0 12px; border-radius: 14px; background: var(--surface-2); color: var(--text-2); text-align: left; font-size: 13.5px; }
+.reg-opciones-txt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reg-opciones-link { display: inline-flex; align-items: center; gap: 2px; color: var(--accent-ink); font-weight: 600; white-space: nowrap; }
+.reg-opciones-link .chev { width: 16px; height: 16px; transform: rotate(90deg); transition: transform var(--t); }
+.reg-opciones.abierto .chev { transform: rotate(-90deg); }
+.reg-mas { animation: fadeIn var(--t) var(--ease); }
+.chip-reciente { color: var(--text-2); }

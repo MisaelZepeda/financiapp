@@ -1,7 +1,7 @@
 import { sel } from '../core/store.js';
 import { icon } from '../lib/icons.js';
 import { money, moneyPartes, pct, escapeHtml, nombreMes, nombreMesAnio, cuandoRelativo, fechaCorta } from '../lib/format.js';
-import { porRevisarHTML } from '../components/por-revisar.js';
+import { pendienteRevisar } from '../components/por-revisar.js';
 import { cuentaFilaHTML, vacioHTML, monogramaHTML, colorCategoria, icoCat } from '../components/piezas.js';
 import { barrasIngresosGastos, sparkline, donaCategorias, colorSerie, MAX_SERIES } from '../components/graficas.js';
 import { seriePatrimonio } from '../domain/saldos.js';
@@ -162,27 +162,29 @@ function finMesHTML() {
 }
 
 // Se ofrece el resumen del mes que terminó hasta que lo veas.
-function resumenListoHTML() {
-    const key = resumenPendiente();
-    if (!key) return '';
-    return `<button class="card resumen-cta" data-action="anResumen" data-mes="${key}" data-pendiente>
-        <span class="resumen-cta-ico">${icon('sparkle')}</span>
-        <span class="resumen-cta-txt"><b>Tu ${nombreMes(key).toLowerCase()} en resumen ya está listo</b><small>Tlaco te cuenta cómo te fue</small></span>
-        ${icon('chevron-right', 'chev')}</button>`;
-}
-
-// Si alguien ya debió pagarte una mensualidad, se recuerda aquí.
-function cobrosHTML() {
+// Pendientes de Inicio en una sola fila: pagos por revisar, el resumen del mes
+// listo y quien ya debió pagarte. Así "Tu dinero en total" queda siempre arriba.
+function pendientesHTML() {
+    const items = [];
+    const rev = pendienteRevisar();
+    if (rev) items.push({ attrs: 'data-action="abrirPorRevisar"', icono: 'credit-card', tono: 'warn', titulo: `${rev.n} por revisar`, sub: `<span class="privado">${money(rev.total)}</span> · Apple Pay` });
     const vencidas = deudasTerceros(sel.cuentas(), sel.transacciones()).filter(d => !d.saldada && d.vencido > 0);
-    if (!vencidas.length) return '';
-    const texto = vencidas.length === 1
-        ? `${escapeHtml(vencidas[0].nombre)} ya debió pagarte <b class="privado">${money(vencidas[0].vencido)}</b>`
-        : `${vencidas.length} personas ya debieron pagarte <b class="privado">${money(vencidas.reduce((a, d) => a + d.vencido, 0))}</b>`;
-    return `<a class="card cobro-cta" href="#/te-deben"><span class="cobro-ico">${icon('share')}</span><span class="cobro-txt">${texto}<small>Toca para registrar el abono</small></span>${icon('chevron-right', 'chev')}</a>`;
+    if (vencidas.length) items.push({
+        attrs: 'data-action="irA" data-href="#/te-deben"', icono: 'share', tono: 'warn',
+        titulo: vencidas.length === 1 ? `${escapeHtml(vencidas[0].nombre)} ya debió pagarte` : `${vencidas.length} te deben`,
+        sub: `<span class="privado">${money(vencidas.reduce((a, d) => a + d.vencido, 0))}</span> · registrar abono`,
+    });
+    const key = resumenPendiente();
+    if (key) items.push({ attrs: `data-action="anResumen" data-mes="${key}" data-pendiente`, icono: 'sparkle', tono: 'accent', titulo: `Tu ${nombreMes(key).toLowerCase()} en resumen`, sub: 'Ya está listo' });
+    if (!items.length) return '';
+    return `<div class="pendientes ${items.length === 1 ? 'uno' : ''}">${items.map(it => `<button class="pendiente" ${it.attrs}>
+        <span class="pendiente-ico tono-${it.tono}">${icon(it.icono)}</span>
+        <span class="pendiente-txt"><b>${it.titulo}</b><small>${it.sub}</small></span>
+    </button>`).join('')}</div>`;
 }
 
 export function render() {
-    return `${porRevisarHTML()}${resumenListoHTML()}${cobrosHTML()}${heroHTML()}
+    return `${pendientesHTML()}${heroHTML()}
         <div class="stack" style="margin-top:14px;">
             ${cuentasHTML()}
             ${mesHTML()}

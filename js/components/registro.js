@@ -42,6 +42,9 @@ export function abrirRegistro(opts = {}) {
         etiquetas: [...(tx?.etiquetas || [])], favorito: false,
         desdeAtajo: !!opts.desdeAtajo,
         paraOtro: !!(tx?.paraTercero || opts.paraOtro), tercero: tx?.paraTercero || '',   // compra para alguien más (Te deben)
+        verTodasCats: false,
+        cuentaManual: !!(tx || opts.cuentaId),
+        masOpciones: !!(opts.masOpciones || (tx && (tx.msi > 1 || tx.etiquetas?.length || tx.paraTercero || tx.subtipo === 'cashback' || tx.subtipo === 'rendimiento'))),
     };
     if (!r.categoriaId && r.desc) aplicarSugerencia();
     if (!r.cuentaId) r.cuentaId = cuentaSugerida(r.tipo, r.categoriaId);
@@ -141,14 +144,6 @@ function aplicarSugerencia() {
     return antes !== r.categoriaId;
 }
 
-function categoriasHTML() {
-    return `<span class="label">Categoría${r.catSugerida && r.categoriaId ? ' <span class="badge badge-accent">sugerida</span>' : ''}</span>
-        <div class="chips">${categoriasOrdenadas().map(c =>
-            `<button type="button" class="chip ${c.id === r.categoriaId ? 'activo' : ''}" data-action="regCat" data-id="${escapeHtml(c.id)}">${icon(c.icono || 'tag')}${escapeHtml(c.nombre)}</button>`).join('')}</div>
-        <button type="button" class="link" data-action="regDividir" style="margin-top:8px;">${icon(r.dividir ? 'x' : 'list')}${r.dividir ? 'No dividir' : 'Dividir en varias categorías'}</button>
-        ${r.dividir ? `<div id="reg-partes">${partesHTML()}</div>` : ''}`;
-}
-
 function sumaPartes() { return Math.round(r.partes.reduce((a, p) => a + (parseFloat(p.montoTxt) || 0), 0) * 100) / 100; }
 
 function partesHTML() {
@@ -185,14 +180,6 @@ function etiquetasHTML() {
         ${sugeridas.length ? `<div class="chips" style="margin-top:6px;">${sugeridas.map(e => `<button type="button" class="chip chip-sm chip-outline" data-action="regAgregarEtiqueta" data-e="${escapeHtml(e)}">#${escapeHtml(e)}</button>`).join('')}</div>` : ''}`;
 }
 
-function favoritosHTML() {
-    if (r.id) return '';
-    const favs = sel.plantillas().filter(f => f.tipo === r.tipo);
-    if (!favs.length) return '';
-    return `<div class="chips chips-scroll favs" style="margin:0 -18px 12px; padding:0 18px;">${favs.map(f =>
-        `<button type="button" class="chip chip-outline" data-action="regFavorito" data-id="${escapeHtml(f.id)}">${icon('star')}${escapeHtml(f.desc || sel.categoria(f.categoriaId)?.nombre || 'Favorito')}${f.monto ? ` <span class="muted num">${money(f.monto)}</span>` : ''}</button>`).join('')}</div>`;
-}
-
 const repintarSeccion = (id, html) => { const el = hojaAbierta()?.querySelector(`#${id}`); if (el) el.innerHTML = html; };
 
 // ---------- Render ----------
@@ -202,54 +189,74 @@ function chipsCuentas(accion, seleccionada, filtro = () => true) {
     return `<div class="chips">${cuentas.map(c => `<button type="button" class="chip ${c.id === seleccionada ? 'activo' : ''}" data-action="${accion}" data-id="${escapeHtml(c.id)}">${escapeHtml(c.nombre)}</button>`).join('')}</div>`;
 }
 
+// Lo esencial a la vista (monto, descripción, categoría); cuenta, fecha y lo
+// demás en "Más opciones", con un renglón que resume lo elegido.
+const CATS_VISIBLES = 7;
+
+function categoriasHTML() {
+    const todas = categoriasOrdenadas();
+    let visibles = r.verTodasCats ? todas : todas.slice(0, CATS_VISIBLES);
+    // La elegida siempre se ve, aunque sea de las menos usadas.
+    if (r.categoriaId && !visibles.some(c => c.id === r.categoriaId)) visibles = [...visibles.slice(0, CATS_VISIBLES - 1), sel.categoria(r.categoriaId)];
+    const ocultas = todas.length - visibles.length;
+    return `<span class="label">Categoría${r.catSugerida && r.categoriaId ? ' <span class="badge badge-accent">sugerida</span>' : ''}</span>
+        <div class="chips">${visibles.map(c =>
+            `<button type="button" class="chip ${c.id === r.categoriaId ? 'activo' : ''}" data-action="regCat" data-id="${escapeHtml(c.id)}">${icon(c.icono || 'tag')}${escapeHtml(c.nombre)}</button>`).join('')}
+            ${ocultas > 0 ? `<button type="button" class="chip chip-outline" data-action="regVerCats">+${ocultas} más</button>` : ''}</div>
+        ${r.dividir ? `<button type="button" class="link" data-action="regDividir" style="margin-top:8px;">${icon('x')}No dividir</button><div id="reg-partes">${partesHTML()}</div>` : ''}`;
+}
+
+// Favoritos y lo que más registras, para llenar con un toque.
+function rapidosHTML() {
+    if (r.id) return '';
+    const favs = sel.plantillas().filter(f => f.tipo === r.tipo).slice(0, 4);
+    const vistas = new Set(favs.map(f => (f.desc || '').trim().toLowerCase()));
+    const recientes = [];
+    for (const t of sel.transacciones()) {
+        if (recientes.length >= 8 - favs.length) break;
+        if (t.tipo !== r.tipo || !t.desc || t.paraTercero) continue;
+        const k = t.desc.trim().toLowerCase();
+        if (vistas.has(k)) continue;
+        vistas.add(k); recientes.push(t);
+    }
+    if (!favs.length && !recientes.length) return '';
+    return `<div class="chips chips-scroll favs" style="margin:0 -18px 12px; padding:0 18px;">
+        ${favs.map(f => `<button type="button" class="chip chip-outline" data-action="regFavorito" data-id="${escapeHtml(f.id)}">${icon('star')}${escapeHtml(f.desc || sel.categoria(f.categoriaId)?.nombre || 'Favorito')}${f.monto ? ` <span class="muted num">${money(f.monto)}</span>` : ''}</button>`).join('')}
+        ${recientes.map(t => `<button type="button" class="chip chip-outline chip-reciente" data-action="regSug" data-id="${escapeHtml(t.id)}">${escapeHtml(t.desc)}</button>`).join('')}
+    </div>`;
+}
+
+function opcionesResumen() {
+    const hoy = hoyISO(), ayer = sumarDias(hoy, -1);
+    const partes = [];
+    if (r.tipo !== 'transferencia') partes.push(sel.cuenta(r.cuentaId)?.nombre || 'Elige cuenta');
+    partes.push(r.fecha === hoy ? 'Hoy' : r.fecha === ayer ? 'Ayer' : fechaCorta(r.fecha));
+    if (r.msi) partes.push(`${r.msi} MSI`);
+    if (r.subtipo && r.tipo === 'ingreso') partes.push(r.subtipo === 'cashback' ? 'Cashback' : 'Rendimiento');
+    if (r.paraOtro) partes.push(r.tercero ? `Para ${r.tercero}` : 'Para alguien más');
+    if (r.etiquetas.length) partes.push(r.etiquetas.map(e => '#' + e).join(' '));
+    if (r.dividir) partes.push('Dividido');
+    return partes.map(escapeHtml).join(' · ');
+}
+
 function cuerpoHTML() {
     const cuenta = sel.cuenta(r.cuentaId);
     const esCred = cuenta?.tipo === 'credito';
-    let campos = '';
-
-    if (r.tipo === 'gasto') {
-        campos += `<div class="field" id="reg-cats">${categoriasHTML()}</div>`;
-        campos += `<div class="field"><span class="label">Cuenta</span>${chipsCuentas('regCuenta', r.cuentaId)}</div>`;
-        if (esCred) campos += `<div class="field"><span class="label">Meses sin intereses</span><div class="chips">${MSI.map(m =>
-            `<button type="button" class="chip chip-sm ${Number(r.msi || 0) === m ? 'activo' : ''}" data-action="regMsi" data-m="${m}">${m ? `${m} meses` : 'De contado'}</button>`).join('')}</div></div>`;
-        campos += terceroHTML();
-    } else if (r.tipo === 'ingreso') {
-        campos += `<div class="field"><span class="label">Cuenta</span>${chipsCuentas('regCuenta', r.cuentaId)}</div>`;
-        const opciones = [['', 'Ingreso'], esCred ? ['cashback', 'Cashback'] : ['rendimiento', 'Rendimiento']];
-        campos += `<div class="field"><span class="label">Tipo de ingreso</span><div class="chips">${opciones.map(([v, t]) =>
-            `<button type="button" class="chip chip-sm ${(r.subtipo || '') === v ? 'activo' : ''}" data-action="regSub" data-v="${v}">${t}</button>`).join('')}</div>
-            ${esCred ? '<span class="hint">En tarjetas de crédito, el ingreso resta de la deuda.</span>' : ''}</div>`;
-    } else {
-        campos += `<div class="field"><span class="label">Desde</span>${chipsCuentas('regCuenta', r.cuentaId)}</div>`;
-        campos += `<div class="field"><span class="label">Hacia</span>${chipsCuentas('regDestino', r.cuentaDestinoId, c => c.id !== r.cuentaId)}</div>`;
-        const dest = sel.cuenta(r.cuentaDestinoId);
-        if (dest?.tipo === 'credito') campos += `<p class="hint" style="margin:-6px 0 12px;">Se registrará como pago de tarjeta.</p>`;
-    }
-
-    const sugs = sugerenciasDesc();
     const hoy = hoyISO(), ayer = sumarDias(hoy, -1);
     const fechaOtra = r.fecha !== hoy && r.fecha !== ayer;
 
-    return `
-        <div class="seg" style="margin-bottom:10px;">
-            ${['gasto', 'ingreso', 'transferencia'].map(t => `<button type="button" class="${r.tipo === t ? 'activo' : ''}" data-action="regTipo" data-t="${t}" ${r.id ? 'disabled' : ''}>${TITULOS[t]}</button>`).join('')}
-        </div>
-        ${favoritosHTML()}
-        <div class="monto-display">${montoHTML()}</div>
-        <input id="reg-monto" class="monto-input-desktop" inputmode="decimal" autocomplete="off" placeholder="$0.00" value="${escapeHtml(r.montoTxt)}" data-input="regMontoInput" aria-label="Monto (acepta + − ×)">
-        <p class="calc-preview num">${tieneOperacion(r.montoTxt) ? `= ${money(evaluar(r.montoTxt) || 0)}` : ''}</p>
-        <div class="teclado" style="margin-bottom:16px;">
-            ${['1', '2', '3', 'del', '4', '5', '6', '×', '7', '8', '9', '−', '.', '0', '=', '+'].map(k => k === 'del'
-                ? `<button type="button" class="tecla-op" data-action="regTecla" data-k="del" aria-label="Borrar último dígito">${icon('backspace')}</button>`
-                : `<button type="button" class="${['+', '−', '×', '='].includes(k) ? 'tecla-op' : ''}" data-action="regTecla" data-k="${k}" aria-label="${{ '+': 'Sumar', '−': 'Restar', '×': 'Multiplicar', '=': 'Resultado' }[k] || k}">${k}</button>`).join('')}
-        </div>
-        ${campos}
-        <div class="field">
-            <span class="label">Descripción</span>
-            <input id="reg-desc" autocomplete="off" placeholder="${r.tipo === 'gasto' ? '¿En qué gastaste? (opcional)' : 'Opcional'}" value="${escapeHtml(r.desc)}" data-input="regDesc">
-            <div id="reg-sugs" class="chips">${sugsHTML(sugs)}</div>
-        </div>
-        <div class="field">
+    // Esencial: en transferencias, desde y hacia.
+    let esencial = '';
+    if (r.tipo === 'gasto') esencial = `<div class="field" id="reg-cats">${categoriasHTML()}</div>`;
+    else if (r.tipo === 'transferencia') {
+        esencial = `<div class="field"><span class="label">Desde</span>${chipsCuentas('regCuenta', r.cuentaId)}</div>
+            <div class="field"><span class="label">Hacia</span>${chipsCuentas('regDestino', r.cuentaDestinoId, c => c.id !== r.cuentaId)}</div>`;
+        if (sel.cuenta(r.cuentaDestinoId)?.tipo === 'credito') esencial += `<p class="hint" style="margin:-6px 0 12px;">Se registrará como pago de tarjeta.</p>`;
+    }
+
+    let opciones = '';
+    if (r.tipo !== 'transferencia') opciones += `<div class="field"><span class="label">Cuenta</span>${chipsCuentas('regCuenta', r.cuentaId)}</div>`;
+    opciones += `<div class="field">
             <span class="label">Fecha</span>
             <div class="chips">
                 <button type="button" class="chip chip-sm ${r.fecha === hoy ? 'activo' : ''}" data-action="regFecha" data-f="${hoy}">Hoy</button>
@@ -258,14 +265,51 @@ function cuerpoHTML() {
                     <input type="date" value="${r.fecha}" max="${hoy}" data-change="regFechaInput" data-action="regFechaPicker" style="position:absolute; inset:0; opacity:0; cursor:pointer; height:auto;" aria-label="Elegir fecha">
                 </label>
             </div>
+        </div>`;
+    if (r.tipo === 'gasto' && esCred) opciones += `<div class="field"><span class="label">Meses sin intereses</span><div class="chips">${MSI.map(m =>
+        `<button type="button" class="chip chip-sm ${Number(r.msi || 0) === m ? 'activo' : ''}" data-action="regMsi" data-m="${m}">${m ? `${m} meses` : 'De contado'}</button>`).join('')}</div></div>`;
+    if (r.tipo === 'ingreso') {
+        const subs = [['', 'Ingreso'], esCred ? ['cashback', 'Cashback'] : ['rendimiento', 'Rendimiento']];
+        opciones += `<div class="field"><span class="label">Tipo de ingreso</span><div class="chips">${subs.map(([v, t]) =>
+            `<button type="button" class="chip chip-sm ${(r.subtipo || '') === v ? 'activo' : ''}" data-action="regSub" data-v="${v}">${t}</button>`).join('')}</div>
+            ${esCred ? '<span class="hint">En tarjetas de crédito, el ingreso resta de la deuda.</span>' : ''}</div>`;
+    }
+    if (r.tipo === 'gasto' && !r.dividir) opciones += `<button type="button" class="link" data-action="regDividir" style="margin:-4px 0 12px;">${icon('list')}Dividir en varias categorías</button>`;
+    if (r.tipo === 'gasto') opciones += terceroHTML();
+    opciones += `<div class="field"><span class="label">Etiquetas</span><div id="reg-etiquetas">${etiquetasHTML()}</div></div>`;
+    if (!r.id) opciones += `<label class="check-fav"><input type="checkbox" data-change="regFavCheck" ${r.favorito ? 'checked' : ''}> Guardar también como favorito</label>`;
+
+    return `
+        <div class="seg" style="margin-bottom:10px;">
+            ${['gasto', 'ingreso', 'transferencia'].map(t => `<button type="button" class="${r.tipo === t ? 'activo' : ''}" data-action="regTipo" data-t="${t}" ${r.id ? 'disabled' : ''}>${TITULOS[t]}</button>`).join('')}
         </div>
-        <div class="field"><span class="label">Etiquetas (opcional)</span><div id="reg-etiquetas">${etiquetasHTML()}</div></div>
-        ${r.id ? '' : `<label class="check-fav"><input type="checkbox" data-change="regFavCheck" ${r.favorito ? 'checked' : ''}> Guardar también como favorito</label>`}
+        ${rapidosHTML()}
+        <div class="monto-display">${montoHTML()}</div>
+        <input id="reg-monto" class="monto-input-desktop" inputmode="decimal" autocomplete="off" placeholder="$0.00" value="${escapeHtml(r.montoTxt)}" data-input="regMontoInput" aria-label="Monto (acepta + − ×)">
+        <p class="calc-preview num">${tieneOperacion(r.montoTxt) ? `= ${money(evaluar(r.montoTxt) || 0)}` : ''}</p>
+        <div class="teclado" style="margin-bottom:16px;">
+            ${['1', '2', '3', 'del', '4', '5', '6', '×', '7', '8', '9', '−', '.', '0', '=', '+'].map(k => k === 'del'
+                ? `<button type="button" class="tecla-op" data-action="regTecla" data-k="del" aria-label="Borrar último dígito">${icon('backspace')}</button>`
+                : `<button type="button" class="${['+', '−', '×', '='].includes(k) ? 'tecla-op' : ''}" data-action="regTecla" data-k="${k}" aria-label="${{ '+': 'Sumar', '−': 'Restar', '×': 'Multiplicar', '=': 'Resultado' }[k] || k}">${k}</button>`).join('')}
+        </div>
+        <div class="field">
+            <input id="reg-desc" autocomplete="off" placeholder="${r.tipo === 'gasto' ? '¿En qué gastaste?' : 'Descripción (opcional)'}" value="${escapeHtml(r.desc)}" data-input="regDesc" aria-label="Descripción">
+            <div id="reg-sugs" class="chips">${sugsHTML(sugerenciasDesc())}</div>
+        </div>
+        ${esencial}
+        <button type="button" class="reg-opciones ${r.masOpciones ? 'abierto' : ''}" data-action="regOpciones" aria-expanded="${r.masOpciones}">
+            <span class="reg-opciones-txt">${opcionesResumen()}</span>
+            <span class="reg-opciones-link">${r.masOpciones ? 'Menos' : 'Más opciones'}${icon('chevron-right', 'chev')}</span>
+        </button>
+        ${r.masOpciones ? `<div class="reg-mas">${opciones}</div>` : ''}
         <div class="hoja-foot">
             ${r.id ? `<button type="button" class="btn btn-danger-soft" data-action="regBorrar" style="flex:0 0 auto;">${icon('trash')}</button>` : `<button type="button" class="btn btn-soft" data-action="regGuardar" data-otro="1">Guardar y otro</button>`}
             <button type="button" class="btn btn-primary" data-action="regGuardar">Guardar</button>
         </div>`;
 }
+
+on('regOpciones', () => { r.masOpciones = !r.masOpciones; pintar(); });
+on('regVerCats', () => { r.verTodasCats = true; repintarSeccion('reg-cats', categoriasHTML()); });
 
 function sugsHTML(sugs) {
     return sugs.map(t => {
@@ -367,9 +411,10 @@ on('regTipo', (el) => {
     pintar();
 });
 on('regTecla', (el) => tecla(el.dataset.k));
-on('regCat', (el) => { r.categoriaId = el.dataset.id; r.catManual = true; r.catSugerida = false; if (!r.id) r.cuentaId = cuentaSugerida('gasto', r.categoriaId) || r.cuentaId; pintar(); });
+on('regCat', (el) => { r.categoriaId = el.dataset.id; r.catManual = true; r.catSugerida = false; if (!r.id && !r.cuentaManual) r.cuentaId = cuentaSugerida('gasto', r.categoriaId) || r.cuentaId; pintar(); });
 on('regCuenta', (el) => {
     r.cuentaId = el.dataset.id;
+    r.cuentaManual = true;
     if (r.tipo === 'transferencia' && r.cuentaDestinoId === r.cuentaId) r.cuentaDestinoId = destinoSugerido();
     if (sel.cuenta(r.cuentaId)?.tipo !== 'credito') r.msi = 0;
     pintar();
@@ -383,7 +428,7 @@ on('regFechaInput', (el) => { if (el.value) { r.fecha = el.value; pintar(); } },
 on('regSug', (el) => {
     const t = sel.transaccion(el.dataset.id); if (!t) return;
     r.desc = t.desc;
-    if (t.categoriaId) r.categoriaId = t.categoriaId;
+    if (t.categoriaId) { r.categoriaId = t.categoriaId; r.catManual = true; r.catSugerida = false; }
     if (sel.cuenta(t.cuentaId)) r.cuentaId = t.cuentaId;
     if (!r.montoTxt) r.montoTxt = String(t.monto);
     pintar();
@@ -392,7 +437,13 @@ on('regDesc', (el) => {
     r.desc = el.value;
     const cont = hojaAbierta()?.querySelector('#reg-sugs');
     if (cont) cont.innerHTML = sugsHTML(sugerenciasDesc());
-    if (aplicarSugerencia() || r.catSugerida) repintarSeccion('reg-cats', categoriasHTML());
+    if (aplicarSugerencia() || r.catSugerida) {
+        // La cuenta sigue a la categoría sugerida mientras no elijas otra.
+        if (!r.id && !r.cuentaManual && r.categoriaId) r.cuentaId = cuentaSugerida('gasto', r.categoriaId) || r.cuentaId;
+        repintarSeccion('reg-cats', categoriasHTML());
+        const txt = hojaAbierta()?.querySelector('.reg-opciones-txt');
+        if (txt) txt.innerHTML = opcionesResumen();
+    }
 }, 'input');
 on('regMontoInput', (el) => {
     // En escritorio se teclea la expresión directo; se normaliza tecla por tecla
@@ -428,7 +479,7 @@ on('regDividir', () => {
         const total = Math.round(montoNum() * 100) / 100;
         r.partes = [{ categoriaId: primera, montoTxt: total ? String(total) : '' }, { categoriaId: segunda, montoTxt: '' }];
     }
-    repintarSeccion('reg-cats', categoriasHTML());
+    pintar();
 });
 on('regParteCat', (el) => { r.partes[Number(el.dataset.i)].categoriaId = el.value; }, 'change');
 on('regParteMonto', (el) => {

@@ -211,6 +211,7 @@ const id = (el) => el.dataset.id;
 on('nuevo', () => abrirRegistro());
 on('editarTx', (el) => abrirRegistro({ id: id(el) }));
 on('cerrarHoja', () => cerrarHoja());
+on('irA', (el) => { location.hash = el.dataset.href; });
 on('nuevaCuenta', () => abrirFormCuenta());
 on('editarCuenta', (el) => abrirFormCuenta(id(el)));
 on('gastoCuenta', (el) => abrirRegistro({ tipo: 'gasto', cuentaId: id(el) }));

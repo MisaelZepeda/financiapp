@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v43'; // v43: Sin Puedes gastar hoy
+const CACHE_NAME = 'morralla-cache-v44'; // v44: Inicio más limpio y registro rápido
 
 const urlsToCache = [
     './',

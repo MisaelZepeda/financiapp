@@ -23,14 +23,9 @@ const cuentaDe = (p) => (p.cuentaId && sel.cuenta(p.cuentaId) ? p.cuentaId : nul
 
 const txDe = (p, cambios = {}) => ({ tipo: 'gasto', monto: Number(p.monto), fecha: p.fecha, desc: (p.comercio || '').slice(0, 80), cuentaId: cuentaDe(p), categoriaId: categoriaDe(p), ...cambios });
 
-export function porRevisarHTML() {
+export function pendienteRevisar() {
     const lista = porRevisar();
-    if (!lista.length) return '';
-    const total = lista.reduce((a, p) => a + (Number(p.monto) || 0), 0);
-    return `<button class="card revisar-cta" data-action="abrirPorRevisar">
-        <span class="revisar-ico">${icon('credit-card')}</span>
-        <span class="revisar-txt"><b>${lista.length} pago${lista.length === 1 ? '' : 's'} con Apple Pay por revisar</b><small><span class="privado">${money(total)}</span> · confirma cuenta y categoría</small></span>
-        ${icon('chevron-right', 'chev')}</button>`;
+    return lista.length ? { n: lista.length, total: lista.reduce((a, p) => a + (Number(p.monto) || 0), 0) } : null;
 }
 
 function filaHTML(p) {

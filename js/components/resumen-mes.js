@@ -121,7 +121,11 @@ function cerrar() {
     clearTimeout(estado.timer);
     estado.el.remove();
     document.removeEventListener('keydown', teclas);
-    document.querySelectorAll('.resumen-cta[data-pendiente]').forEach(b => b.remove());   // ya se vio
+    // Ya se vio: se quita de los pendientes de Inicio (y la fila, si quedó vacía).
+    document.querySelectorAll('[data-action="anResumen"][data-pendiente]').forEach(b => {
+        const fila = b.closest('.pendientes'); b.remove();
+        if (fila && !fila.children.length) fila.remove(); else if (fila?.children.length === 1) fila.classList.add('uno');
+    });
     estado = null;
 }
 
