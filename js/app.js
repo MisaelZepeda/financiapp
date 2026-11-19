@@ -84,7 +84,7 @@ function pintarNav() {
         <div class="side-bottom"><a class="side-link ${activo(['/ajustes']) ? 'activo' : ''}" href="#/ajustes">${icon('settings')}Ajustes</a></div>`;
     const [a, b, c, d] = NAV;
     const tab = ([h, i, t, p]) => `<a class="tab ${activo(p) ? 'activo' : ''}" href="${h}">${icon(i)}<span>${t}</span></a>`;
-    document.getElementById('tabbar').innerHTML = `<div class="tb-fondo" aria-hidden="true"></div><svg class="tb-joroba" aria-hidden="true"><path/></svg><svg class="tb-borde" aria-hidden="true"><path/></svg>${tab(a)}${tab(b)}<button class="tab-add" data-action="nuevo" aria-label="Nuevo movimiento">${icon('plus')}</button>${tab(c)}${tab(d)}`;
+    document.getElementById('tabbar').innerHTML = `<svg class="tb-forma" aria-hidden="true"><path class="tb-relleno"/><path class="tb-linea"/></svg><span class="tb-burbuja" aria-hidden="true"></span>${tab(a)}${tab(b)}<button class="tab-add" data-action="nuevo" aria-label="Nuevo movimiento">${icon('plus')}</button>${tab(c)}${tab(d)}`;
     dibujarBarra();
 }
 
@@ -416,26 +416,39 @@ if ('serviceWorker' in navigator && !['localhost', '127.0.0.1'].includes(locatio
     }, { passive: true });
 }
 
-// Cristal: la barra es una cápsula que se levanta en una curva sobre la
-// pestaña activa. El cristal (con desenfoque) es la cápsula; la curva se
-// rellena con el mismo color y el borde de neón recorre toda la silueta.
-// Sin clip-path, que Safari en iPhone no aplica bien.
-const BARRA = { alto: 16, mitad: 30, radio: 22 };
+// Cristal: la pestaña activa sale de la barra como un círculo que flota sobre
+// ella; la barra se hunde suavemente debajo (una sola silueta dibujada en SVG,
+// sin clip-path, para que Safari en iPhone la muestre igual).
+const BARRA = { alto: 22, mitad: 34, hondo: 18, radio: 20, burbuja: 44 };
+let posBurbuja = null;
 function dibujarBarra() {
     const barra = document.getElementById('tabbar');
     if (!barra || !barra.offsetWidth) return;
     const W = barra.offsetWidth, H = barra.offsetHeight;
-    const y0 = BARRA.alto, w = BARRA.mitad, r = BARRA.radio;
+    const { alto: y0, mitad: w, hondo: h, radio: r, burbuja: B } = BARRA;
     const act = barra.querySelector('.tab.activo');
-    let cx = null;
-    if (act) cx = Math.max(r + w, Math.min(W - r - w, act.offsetLeft + act.offsetWidth / 2));
-    const curva = cx == null ? '' : `L${cx - w} ${y0} C${cx - w * 0.55} ${y0} ${cx - w * 0.42} 1.5 ${cx} 1.5 C${cx + w * 0.42} 1.5 ${cx + w * 0.55} ${y0} ${cx + w} ${y0} `;
-    const silueta = `M${r} ${y0} ${curva}L${W - r} ${y0} A${r} ${r} 0 0 1 ${W} ${y0 + r} L${W} ${H - r} A${r} ${r} 0 0 1 ${W - r} ${H} L${r} ${H} A${r} ${r} 0 0 1 0 ${H - r} L0 ${y0 + r} A${r} ${r} 0 0 1 ${r} ${y0} Z`;
-    // Relleno de la curva: baja un poco dentro de la cápsula para que no se vea la unión.
-    const joroba = cx == null ? '' : `M${cx - w} ${y0 + 3} L${cx - w} ${y0} C${cx - w * 0.55} ${y0} ${cx - w * 0.42} 1.5 ${cx} 1.5 C${cx + w * 0.42} 1.5 ${cx + w * 0.55} ${y0} ${cx + w} ${y0} L${cx + w} ${y0 + 3} Z`;
-    for (const [sel, d] of [['.tb-borde', silueta], ['.tb-joroba', joroba]]) {
-        const svg = barra.querySelector(sel);
-        if (svg) { svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.querySelector('path').setAttribute('d', d); }
+    const cx = act ? Math.max(r + w, Math.min(W - r - w, act.offsetLeft + act.offsetWidth / 2)) : null;
+    const hueco = cx == null ? '' : `L${cx - w} ${y0} C${cx - w * 0.55} ${y0} ${cx - B / 2 - 2} ${y0 + h} ${cx} ${y0 + h} C${cx + B / 2 + 2} ${y0 + h} ${cx + w * 0.55} ${y0} ${cx + w} ${y0} `;
+    const d = `M${r} ${y0} ${hueco}L${W - r} ${y0} A${r} ${r} 0 0 1 ${W} ${y0 + r} L${W} ${H - r} A${r} ${r} 0 0 1 ${W - r} ${H} L${r} ${H} A${r} ${r} 0 0 1 0 ${H - r} L0 ${y0 + r} A${r} ${r} 0 0 1 ${r} ${y0} Z`;
+    const svg = barra.querySelector('.tb-forma');
+    if (svg) { svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.querySelectorAll('path').forEach(p => p.setAttribute('d', d)); }
+    const burbuja = barra.querySelector('.tb-burbuja');
+    if (burbuja) {
+        burbuja.hidden = cx == null;
+        if (cx != null) {
+            burbuja.innerHTML = act.querySelector('.icon')?.outerHTML || '';
+            const destino = `translate(${cx - B / 2}px, ${y0 + h - B - 4}px)`;
+            // La barra se vuelve a pintar al navegar: el círculo arranca donde estaba y se desliza.
+            if (!burbuja.dataset.listo && posBurbuja && posBurbuja !== destino) {
+                burbuja.style.transition = 'none';
+                burbuja.style.transform = posBurbuja;
+                burbuja.offsetWidth;
+                burbuja.style.transition = '';
+            }
+            burbuja.dataset.listo = '1';
+            burbuja.style.transform = destino;
+            posBurbuja = destino;
+        }
     }
 }
 // Se redibuja cuando la barra cambia de tamaño (también al mostrarse la app).

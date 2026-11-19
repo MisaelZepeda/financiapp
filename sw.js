@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v48'; // v48: Barra de neón compatible con iPhone
+const CACHE_NAME = 'morralla-cache-v49'; // v49: Barra con circulito flotante
 
 const urlsToCache = [
     './',
