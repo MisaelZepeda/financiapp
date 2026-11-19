@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v46'; // v46: Barra con curva de neón
+const CACHE_NAME = 'morralla-cache-v47'; // v47: Barra con silueta de neón integrada
 
 const urlsToCache = [
     './',

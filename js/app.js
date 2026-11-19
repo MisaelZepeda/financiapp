@@ -83,10 +83,9 @@ function pintarNav() {
         ${LATERAL.map(x => x ? `<a class="side-link ${activoLateral(x[3]) ? 'activo' : ''}" href="${x[0]}">${icon(x[1])}${x[2]}</a>` : '<div class="side-sep"></div><p class="side-label">Planear</p>').join('')}
         <div class="side-bottom"><a class="side-link ${activo(['/ajustes']) ? 'activo' : ''}" href="#/ajustes">${icon('settings')}Ajustes</a></div>`;
     const [a, b, c, d] = NAV;
-    // La pestaña activa lleva la curva de neón del estilo cristal.
-    const NEON = '<svg class="neon" viewBox="0 0 66 24" preserveAspectRatio="none" aria-hidden="true"><path class="neon-relleno" d="M-2 21 C13 21 17 2 33 2 C49 2 53 21 68 21 L68 25 L-2 25 Z"/><path class="neon-linea" d="M-2 21 C13 21 17 2 33 2 C49 2 53 21 68 21"/></svg>';
-    const tab = ([h, i, t, p]) => `<a class="tab ${activo(p) ? 'activo' : ''}" href="${h}">${activo(p) ? NEON : ''}${icon(i)}<span>${t}</span></a>`;
-    document.getElementById('tabbar').innerHTML = `${tab(a)}${tab(b)}<button class="tab-add" data-action="nuevo" aria-label="Nuevo movimiento">${icon('plus')}</button>${tab(c)}${tab(d)}`;
+    const tab = ([h, i, t, p]) => `<a class="tab ${activo(p) ? 'activo' : ''}" href="${h}">${icon(i)}<span>${t}</span></a>`;
+    document.getElementById('tabbar').innerHTML = `<div class="tb-fondo" aria-hidden="true"></div><svg class="tb-borde" aria-hidden="true"><path/></svg>${tab(a)}${tab(b)}<button class="tab-add" data-action="nuevo" aria-label="Nuevo movimiento">${icon('plus')}</button>${tab(c)}${tab(d)}`;
+    dibujarBarra();
 }
 
 function pintarTop(vista, params) {
@@ -416,3 +415,35 @@ if ('serviceWorker' in navigator && !['localhost', '127.0.0.1'].includes(locatio
         });
     }, { passive: true });
 }
+
+// Cristal: la silueta de la barra es una sola forma (cápsula que se levanta en
+// una curva sobre la pestaña activa). El fondo de cristal se recorta con ella
+// y el borde de neón la sigue, así la curva es parte de la barra.
+const BARRA = { alto: 16, mitad: 40, radio: 24 };
+function siluetaBarra(W, H, cx) {
+    const { alto: y0, mitad: w, radio: r } = BARRA;
+    const top = cx == null ? `L${W - r} ${y0}`
+        : `L${cx - w} ${y0} C${cx - w * 0.55} ${y0} ${cx - w * 0.42} 1.5 ${cx} 1.5 C${cx + w * 0.42} 1.5 ${cx + w * 0.55} ${y0} ${cx + w} ${y0} L${W - r} ${y0}`;
+    return `M${r} ${y0} ${top} A${r} ${r} 0 0 1 ${W} ${y0 + r} L${W} ${H - r} A${r} ${r} 0 0 1 ${W - r} ${H} L${r} ${H} A${r} ${r} 0 0 1 0 ${H - r} L0 ${y0 + r} A${r} ${r} 0 0 1 ${r} ${y0} Z`;
+}
+function dibujarBarra() {
+    const barra = document.getElementById('tabbar');
+    if (!barra || !barra.offsetWidth) return;
+    const W = barra.offsetWidth, H = barra.offsetHeight;
+    const act = barra.querySelector('.tab.activo');
+    let cx = null;
+    if (act) {
+        const min = BARRA.radio + BARRA.mitad, max = W - min;
+        cx = Math.max(min, Math.min(max, act.offsetLeft + act.offsetWidth / 2));
+    }
+    const d = siluetaBarra(W, H, cx);
+    const fondo = barra.querySelector('.tb-fondo');
+    if (fondo) fondo.style.clipPath = fondo.style.webkitClipPath = `path('${d}')`;
+    const borde = barra.querySelector('.tb-borde');
+    if (borde) { borde.setAttribute('viewBox', `0 0 ${W} ${H}`); borde.querySelector('path').setAttribute('d', d); }
+}
+// Se redibuja cuando la barra cambia de tamaño (también al mostrarse la app).
+if ('ResizeObserver' in window) {
+    const barra = document.getElementById('tabbar');
+    if (barra) new ResizeObserver(() => dibujarBarra()).observe(barra);
+} else window.addEventListener('resize', dibujarBarra);

@@ -73,26 +73,29 @@ body::before {
 /* ---------- Barra de pestañas flotante en cápsula ---------- */
 .tabbar {
     left: 12px; right: 12px; bottom: calc(8px + env(safe-area-inset-bottom));
-    height: 66px; padding: 0 6px; border-radius: 999px;
-    background: var(--glass-fuerte);
-    backdrop-filter: blur(26px) saturate(1.9); -webkit-backdrop-filter: blur(26px) saturate(1.9);
-    border: 1px solid var(--glass-borde);
-    box-shadow: var(--glass-brillo), 0 12px 34px rgba(40, 24, 110, 0.18);
+    height: calc(66px + 16px); padding: 16px 16px 0; border-radius: 0;
+    background: none; border: 0; box-shadow: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
     transition: transform var(--t) var(--ease);
 }
+/* Fondo de cristal recortado con la silueta (cápsula + curva de la pestaña activa). */
+.tb-fondo {
+    position: absolute; inset: 0; z-index: -1;
+    background: var(--glass-fuerte);
+    backdrop-filter: blur(26px) saturate(1.9); -webkit-backdrop-filter: blur(26px) saturate(1.9);
+    transition: clip-path 320ms var(--ease);
+}
+/* Borde de neón que sigue la misma silueta. */
+.tb-borde { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; overflow: visible; pointer-events: none; }
+.tb-borde path {
+    fill: none; stroke: var(--accent-ink); stroke-width: 1.6; vector-effect: non-scaling-stroke;
+    filter: drop-shadow(0 0 3px var(--accent)) drop-shadow(0 0 9px color-mix(in srgb, var(--accent) 70%, transparent));
+    transition: d 320ms var(--ease);
+}
 .tab { position: relative; align-self: stretch; justify-content: center; transition: color var(--t) var(--ease); }
-/* Pestaña activa: el borde de la barra sube en una curva de neón alrededor
-   del ícono, como en el video de referencia (el SVG lo pone app.js). */
-.tabbar { overflow: visible; border: 1.5px solid color-mix(in srgb, var(--accent-ink) 55%, transparent);
-    box-shadow: var(--glass-brillo), 0 12px 34px rgba(40, 24, 110, 0.18), 0 0 14px -3px var(--accent); }
 .tab.activo { color: var(--text); }
-.tab.activo .icon { color: var(--accent-ink); transform: translateY(-7px); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 70%, transparent)); transition: transform var(--t) var(--ease); }
-.tab.activo span { transform: translateY(-3px); }
-.neon { position: absolute; left: 50%; top: -19.5px; width: 66px; height: 24px; margin-left: -33px; overflow: visible; pointer-events: none; animation: neon-entra 300ms var(--ease); }
-.neon-relleno { fill: var(--glass-fuerte); }
-.neon-linea { fill: none; stroke: var(--accent-ink); stroke-width: 2.4; stroke-linecap: round; filter: drop-shadow(0 0 4px var(--accent)) drop-shadow(0 0 12px var(--accent)); }
-@keyframes neon-entra { from { opacity: 0; transform: translateY(8px) scaleX(0.6); } to { opacity: 1; transform: none; } }
-.tabbar.compacta .tab.activo .icon { transform: translateY(-4px); }
+.tab.activo .icon { color: var(--accent-ink); transform: translateY(-9px); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 70%, transparent)); transition: transform var(--t) var(--ease); }
+.tab.activo span { transform: translateY(-4px); }
 .tab-add {
     border-radius: 999px;
     background: radial-gradient(90% 70% at 30% 20%, rgba(255, 255, 255, 0.45), transparent 60%), var(--accent);
@@ -101,7 +104,7 @@ body::before {
 /* Al bajar, la barra se compacta (solo íconos), como en iOS 26. */
 .tabbar.compacta { transform: translateY(6px) scale(0.94); }
 .tabbar.compacta .tab span { display: none; }
-.vista { padding-bottom: calc(var(--tabbar) + 56px + env(safe-area-inset-bottom)); }
+.vista { padding-bottom: calc(var(--tabbar) + 70px + env(safe-area-inset-bottom)); }
 @media (min-width: 1024px) { .vista { padding-bottom: 64px; } }
 
 /* ---------- Barra lateral (computadora) ---------- */
@@ -144,6 +147,6 @@ input, select, textarea { background: var(--surface-2); }
 
 /* Quien prefiere menos transparencia (Ajustes de accesibilidad del iPhone). */
 @media (prefers-reduced-transparency: reduce) {
-    .card, .pendiente, .modal, .hoja, .tabbar, .top .icon-btn { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .card, .pendiente, .modal, .hoja, .tb-fondo, .top .icon-btn { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
     body::before { display: none; }
 }
