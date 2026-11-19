@@ -83,7 +83,9 @@ function pintarNav() {
         ${LATERAL.map(x => x ? `<a class="side-link ${activoLateral(x[3]) ? 'activo' : ''}" href="${x[0]}">${icon(x[1])}${x[2]}</a>` : '<div class="side-sep"></div><p class="side-label">Planear</p>').join('')}
         <div class="side-bottom"><a class="side-link ${activo(['/ajustes']) ? 'activo' : ''}" href="#/ajustes">${icon('settings')}Ajustes</a></div>`;
     const [a, b, c, d] = NAV;
-    const tab = ([h, i, t, p]) => `<a class="tab ${activo(p) ? 'activo' : ''}" href="${h}">${icon(i)}<span>${t}</span></a>`;
+    // La pestaña activa lleva la curva de neón del estilo cristal.
+    const NEON = '<svg class="neon" viewBox="0 0 66 24" preserveAspectRatio="none" aria-hidden="true"><path class="neon-relleno" d="M-2 21 C13 21 17 2 33 2 C49 2 53 21 68 21 L68 25 L-2 25 Z"/><path class="neon-linea" d="M-2 21 C13 21 17 2 33 2 C49 2 53 21 68 21"/></svg>';
+    const tab = ([h, i, t, p]) => `<a class="tab ${activo(p) ? 'activo' : ''}" href="${h}">${activo(p) ? NEON : ''}${icon(i)}<span>${t}</span></a>`;
     document.getElementById('tabbar').innerHTML = `${tab(a)}${tab(b)}<button class="tab-add" data-action="nuevo" aria-label="Nuevo movimiento">${icon('plus')}</button>${tab(c)}${tab(d)}`;
 }
 

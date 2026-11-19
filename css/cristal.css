@@ -81,21 +81,18 @@ body::before {
     transition: transform var(--t) var(--ease);
 }
 .tab { position: relative; align-self: stretch; justify-content: center; transition: color var(--t) var(--ease); }
-/* Pestaña activa: un haz de luz que baja desde el borde, como en el video de referencia. */
+/* Pestaña activa: el borde de la barra sube en una curva de neón alrededor
+   del ícono, como en el video de referencia (el SVG lo pone app.js). */
+.tabbar { overflow: visible; border: 1.5px solid color-mix(in srgb, var(--accent-ink) 55%, transparent);
+    box-shadow: var(--glass-brillo), 0 12px 34px rgba(40, 24, 110, 0.18), 0 0 14px -3px var(--accent); }
 .tab.activo { color: var(--text); }
-.tab.activo .icon { color: var(--accent-ink); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 55%, transparent)); }
-.tab.activo::before {
-    content: ''; position: absolute; top: -1px; left: 50%; width: 30px; height: 3px; margin-left: -15px; border-radius: 0 0 3px 3px;
-    background: var(--accent-ink); box-shadow: 0 0 10px var(--accent), 0 0 18px color-mix(in srgb, var(--accent) 60%, transparent);
-    animation: haz-entra 260ms var(--ease);
-}
-.tab.activo::after {
-    content: ''; position: absolute; top: 1px; left: 50%; width: 64px; height: 70%; margin-left: -32px; pointer-events: none;
-    background: linear-gradient(to bottom, color-mix(in srgb, var(--accent) 34%, transparent), transparent);
-    clip-path: polygon(34% 0, 66% 0, 100% 100%, 0 100%);
-    animation: haz-entra 260ms var(--ease);
-}
-@keyframes haz-entra { from { opacity: 0; transform: scaleX(0.4); } to { opacity: 1; transform: none; } }
+.tab.activo .icon { color: var(--accent-ink); transform: translateY(-7px); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 70%, transparent)); transition: transform var(--t) var(--ease); }
+.tab.activo span { transform: translateY(-3px); }
+.neon { position: absolute; left: 50%; top: -19.5px; width: 66px; height: 24px; margin-left: -33px; overflow: visible; pointer-events: none; animation: neon-entra 300ms var(--ease); }
+.neon-relleno { fill: var(--glass-fuerte); }
+.neon-linea { fill: none; stroke: var(--accent-ink); stroke-width: 2.4; stroke-linecap: round; filter: drop-shadow(0 0 4px var(--accent)) drop-shadow(0 0 12px var(--accent)); }
+@keyframes neon-entra { from { opacity: 0; transform: translateY(8px) scaleX(0.6); } to { opacity: 1; transform: none; } }
+.tabbar.compacta .tab.activo .icon { transform: translateY(-4px); }
 .tab-add {
     border-radius: 999px;
     background: radial-gradient(90% 70% at 30% 20%, rgba(255, 255, 255, 0.45), transparent 60%), var(--accent);
