@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v49'; // v49: Barra con circulito flotante
+const CACHE_NAME = 'morralla-cache-v50'; // v50: Hojas de cristal centradas
 
 const urlsToCache = [
     './',
