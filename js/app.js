@@ -84,7 +84,7 @@ function pintarNav() {
         <div class="side-bottom"><a class="side-link ${activo(['/ajustes']) ? 'activo' : ''}" href="#/ajustes">${icon('settings')}Ajustes</a></div>`;
     const [a, b, c, d] = NAV;
     const tab = ([h, i, t, p]) => `<a class="tab ${activo(p) ? 'activo' : ''}" href="${h}">${icon(i)}<span>${t}</span></a>`;
-    document.getElementById('tabbar').innerHTML = `<div class="tb-fondo" aria-hidden="true"></div><svg class="tb-borde" aria-hidden="true"><path/></svg>${tab(a)}${tab(b)}<button class="tab-add" data-action="nuevo" aria-label="Nuevo movimiento">${icon('plus')}</button>${tab(c)}${tab(d)}`;
+    document.getElementById('tabbar').innerHTML = `<div class="tb-fondo" aria-hidden="true"></div><svg class="tb-joroba" aria-hidden="true"><path/></svg><svg class="tb-borde" aria-hidden="true"><path/></svg>${tab(a)}${tab(b)}<button class="tab-add" data-action="nuevo" aria-label="Nuevo movimiento">${icon('plus')}</button>${tab(c)}${tab(d)}`;
     dibujarBarra();
 }
 
@@ -416,31 +416,27 @@ if ('serviceWorker' in navigator && !['localhost', '127.0.0.1'].includes(locatio
     }, { passive: true });
 }
 
-// Cristal: la silueta de la barra es una sola forma (cápsula que se levanta en
-// una curva sobre la pestaña activa). El fondo de cristal se recorta con ella
-// y el borde de neón la sigue, así la curva es parte de la barra.
-const BARRA = { alto: 16, mitad: 40, radio: 24 };
-function siluetaBarra(W, H, cx) {
-    const { alto: y0, mitad: w, radio: r } = BARRA;
-    const top = cx == null ? `L${W - r} ${y0}`
-        : `L${cx - w} ${y0} C${cx - w * 0.55} ${y0} ${cx - w * 0.42} 1.5 ${cx} 1.5 C${cx + w * 0.42} 1.5 ${cx + w * 0.55} ${y0} ${cx + w} ${y0} L${W - r} ${y0}`;
-    return `M${r} ${y0} ${top} A${r} ${r} 0 0 1 ${W} ${y0 + r} L${W} ${H - r} A${r} ${r} 0 0 1 ${W - r} ${H} L${r} ${H} A${r} ${r} 0 0 1 0 ${H - r} L0 ${y0 + r} A${r} ${r} 0 0 1 ${r} ${y0} Z`;
-}
+// Cristal: la barra es una cápsula que se levanta en una curva sobre la
+// pestaña activa. El cristal (con desenfoque) es la cápsula; la curva se
+// rellena con el mismo color y el borde de neón recorre toda la silueta.
+// Sin clip-path, que Safari en iPhone no aplica bien.
+const BARRA = { alto: 16, mitad: 30, radio: 22 };
 function dibujarBarra() {
     const barra = document.getElementById('tabbar');
     if (!barra || !barra.offsetWidth) return;
     const W = barra.offsetWidth, H = barra.offsetHeight;
+    const y0 = BARRA.alto, w = BARRA.mitad, r = BARRA.radio;
     const act = barra.querySelector('.tab.activo');
     let cx = null;
-    if (act) {
-        const min = BARRA.radio + BARRA.mitad, max = W - min;
-        cx = Math.max(min, Math.min(max, act.offsetLeft + act.offsetWidth / 2));
+    if (act) cx = Math.max(r + w, Math.min(W - r - w, act.offsetLeft + act.offsetWidth / 2));
+    const curva = cx == null ? '' : `L${cx - w} ${y0} C${cx - w * 0.55} ${y0} ${cx - w * 0.42} 1.5 ${cx} 1.5 C${cx + w * 0.42} 1.5 ${cx + w * 0.55} ${y0} ${cx + w} ${y0} `;
+    const silueta = `M${r} ${y0} ${curva}L${W - r} ${y0} A${r} ${r} 0 0 1 ${W} ${y0 + r} L${W} ${H - r} A${r} ${r} 0 0 1 ${W - r} ${H} L${r} ${H} A${r} ${r} 0 0 1 0 ${H - r} L0 ${y0 + r} A${r} ${r} 0 0 1 ${r} ${y0} Z`;
+    // Relleno de la curva: baja un poco dentro de la cápsula para que no se vea la unión.
+    const joroba = cx == null ? '' : `M${cx - w} ${y0 + 3} L${cx - w} ${y0} C${cx - w * 0.55} ${y0} ${cx - w * 0.42} 1.5 ${cx} 1.5 C${cx + w * 0.42} 1.5 ${cx + w * 0.55} ${y0} ${cx + w} ${y0} L${cx + w} ${y0 + 3} Z`;
+    for (const [sel, d] of [['.tb-borde', silueta], ['.tb-joroba', joroba]]) {
+        const svg = barra.querySelector(sel);
+        if (svg) { svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.querySelector('path').setAttribute('d', d); }
     }
-    const d = siluetaBarra(W, H, cx);
-    const fondo = barra.querySelector('.tb-fondo');
-    if (fondo) fondo.style.clipPath = fondo.style.webkitClipPath = `path('${d}')`;
-    const borde = barra.querySelector('.tb-borde');
-    if (borde) { borde.setAttribute('viewBox', `0 0 ${W} ${H}`); borde.querySelector('path').setAttribute('d', d); }
 }
 // Se redibuja cuando la barra cambia de tamaño (también al mostrarse la app).
 if ('ResizeObserver' in window) {
