@@ -400,3 +400,17 @@ if ('serviceWorker' in navigator && !['localhost', '127.0.0.1'].includes(locatio
         } catch { /* sin service worker: la app funciona igual, sin modo sin conexión */ }
     });
 }
+
+// Cristal: al bajar, la barra de pestañas se compacta; al subir, vuelve.
+{
+    let ultimo = 0, pendiente = false;
+    window.addEventListener('scroll', () => {
+        if (pendiente) return;
+        pendiente = true;
+        requestAnimationFrame(() => {
+            const y = window.scrollY, barra = document.getElementById('tabbar');
+            if (barra && Math.abs(y - ultimo) > 8) { barra.classList.toggle('compacta', y > ultimo && y > 80); ultimo = y; }
+            pendiente = false;
+        });
+    }, { passive: true });
+}

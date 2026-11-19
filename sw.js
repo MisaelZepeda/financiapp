@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v44'; // v44: Inicio más limpio y registro rápido
+const CACHE_NAME = 'morralla-cache-v45'; // v45: Estilo cristal (Liquid Glass)
 
 const urlsToCache = [
     './',
@@ -9,6 +9,7 @@ const urlsToCache = [
     './icon-512x512.png',
     './css/base.css',
     './css/components.css',
+    './css/cristal.css',
     './css/tokens.css',
     './css/views.css',
     './js/app.js',
