@@ -37,3 +37,6 @@ export function resumenAlcancia(cuentas, saldos, transacciones, hoy = new Date()
         dias: Object.keys(porDia).length,
     };
 }
+
+// La meta que la app crea sola para la alcancía (las primeras no llevaban la marca `auto`).
+export const esMetaAuto = (m) => !!(m && (m.auto || (m.cuentaId && m.nombre === 'Alcancía de morralla')));

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v53'; // v53: api v2, encabezado y alcancia en metas
+const CACHE_NAME = 'morralla-cache-v54'; // v54: alcancia suma a la meta elegida
 
 const urlsToCache = [
     './',

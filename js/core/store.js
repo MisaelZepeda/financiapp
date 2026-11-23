@@ -5,6 +5,7 @@
 import { calcularSaldos, patrimonio, porCobrar, msiPorVenir } from '../domain/saldos.js';
 import { construirAvisos } from '../domain/notificaciones.js';
 import { categoriasDelMes } from '../domain/topes.js';
+import { esMetaAuto } from '../domain/alcancia.js';
 import { mesKey } from '../domain/fechas.js';
 
 const listeners = new Set();
@@ -75,9 +76,14 @@ export const sel = {
     saldos: () => memorizar('saldos', () => calcularSaldos(Object.values(store.datos.cuentas), Object.values(store.datos.transacciones))),
     saldo: (id) => sel.saldos()[id] || 0,
     patrimonio: () => memorizar('patrimonio', () => patrimonio(Object.values(store.datos.cuentas), sel.saldos(), porCobrar(sel.transacciones(), Object.values(store.datos.cuentas)), msiPorVenir(Object.values(store.datos.cuentas), sel.transacciones()))),
-    // Una meta ligada a una cuenta (la Alcancía) lleva como avance el saldo de esa cuenta.
+    // Una meta ligada a una cuenta (la Alcancía) suma el saldo de esa cuenta a lo que ya llevas
+    // abonado; `deCuenta` es esa parte.
     metas: () => memorizar('metas', () => Object.values(store.datos.metas)
-        .map(m => (m.cuentaId && store.datos.cuentas[m.cuentaId] ? { ...m, montoActual: sel.saldo(m.cuentaId) } : m))
+        .map(m => {
+            if (!m.cuentaId || !store.datos.cuentas[m.cuentaId]) return m;
+            const deCuenta = sel.saldo(m.cuentaId);
+            return { ...m, deCuenta, auto: esMetaAuto(m), montoActual: Math.round(((Number(m.montoActual) || 0) + deCuenta) * 100) / 100 };
+        })
         .sort((a, b) => (a.fechaLimite || '9999').localeCompare(b.fechaLimite || '9999'))),
     plantillas: () => memorizar('plantillas', () => Object.values(store.datos.plantillas).sort((a, b) => (a.creadoEn || 0) - (b.creadoEn || 0))),
     retos: () => memorizar('retos', () => Object.values(store.datos.retos).sort((a, b) => (b.inicio || '').localeCompare(a.inicio || ''))),

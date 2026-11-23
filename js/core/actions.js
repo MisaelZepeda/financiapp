@@ -7,6 +7,7 @@ import { store, sel } from './store.js';
 import { generarOcurrencia, primeraFecha } from '../domain/recurrentes.js';
 import { slugCategoria, iconoSugerido } from '../domain/categorias.js';
 import { hoyISO, mesKey } from '../domain/fechas.js';
+import { esMetaAuto } from '../domain/alcancia.js';
 import { ultimoCorte } from '../domain/tarjetas.js';
 import { normalizarNombre } from '../domain/applepay.js';
 
@@ -52,13 +53,13 @@ export function descartarPorRevisar(id) {
 // Al editar el saldo, se ajusta saldoInicial para que el saldo calculado sea
 // el que el usuario escribió (sus movimientos no cambian).
 // Alcancía: crea la cuenta la primera vez y registra el traspaso desde `origenId`.
-export async function echarMonedas(monto, origenId) {
+// `metaId`: meta a la que suma la alcancía ('propia' = su meta "Alcancía de morralla").
+export async function echarMonedas(monto, origenId, metaId = null) {
     let alcancia = Object.entries(datos().cuentas).find(([, c]) => c?.alcancia)?.[0];
     if (!alcancia) alcancia = await guardarCuenta({ nombre: 'Alcancía', banco: 'Alcancía', tipo: 'efectivo', alcancia: true }, 0);
-    // Su meta de ahorro: avanza sola con el saldo de la alcancía (ver sel.metas).
-    if (!Object.values(datos().metas || {}).some(m => m?.cuentaId === alcancia)) {
-        await guardarMeta({ nombre: 'Alcancía de morralla', icono: 'coin', montoObjetivo: 1000, montoActual: 0, cuentaId: alcancia });
-    }
+    // Meta de ahorro: la elegida, o si no hay ninguna ligada, su propia meta (ver sel.metas).
+    if (metaId) await ligarAlcancia(metaId, alcancia);
+    else if (!Object.values(datos().metas || {}).some(m => m?.cuentaId === alcancia)) await ligarAlcancia('propia', alcancia);
     return guardarTransaccion({ tipo: 'transferencia', subtipo: 'alcancia', monto, fecha: hoyISO(), desc: 'Monedas a la alcancía', cuentaId: origenId, cuentaDestinoId: alcancia });
 }
 
@@ -126,6 +127,25 @@ export function guardarMeta(meta) {
 }
 
 export function borrarMeta(id) { return actualizar({ [`metas/${id}`]: null }); }
+
+// Liga la alcancía a una meta (su saldo se suma a esa meta). Solo una meta a la vez;
+// la meta automática "Alcancía de morralla" se quita si deja de usarse y no tiene abonos.
+export async function ligarAlcancia(metaId, alcanciaId = Object.entries(datos().cuentas).find(([, c]) => c?.alcancia)?.[0]) {
+    if (!alcanciaId) return;
+    const metas = datos().metas || {};
+    const updates = {};
+    let destino = metaId === 'propia' ? Object.entries(metas).find(([, m]) => esMetaAuto(m))?.[0] : metaId;
+    Object.entries(metas).forEach(([id, m]) => {
+        if (!m || id === destino || m.cuentaId !== alcanciaId) return;
+        if (esMetaAuto(m) && !(Number(m.montoActual) > 0)) updates[`metas/${id}`] = null;
+        else updates[`metas/${id}/cuentaId`] = null;
+    });
+    if (!destino) {
+        destino = nuevoId();
+        updates[`metas/${destino}`] = { nombre: 'Alcancía de morralla', icono: 'coin', montoObjetivo: 1000, montoActual: 0, cuentaId: alcanciaId, auto: true };
+    } else updates[`metas/${destino}/cuentaId`] = alcanciaId;
+    return actualizar(updates);
+}
 
 // Abono (positivo) o retiro (negativo). Solo mueve el avance de la meta.
 export function moverMeta(id, delta) {
