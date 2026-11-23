@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v61'; // v61: mas fintech, secciones, logo de alcancia
+const CACHE_NAME = 'morralla-cache-v62'; // v62: inicio sin cuentas en ceros
 
 const urlsToCache = [
     './',

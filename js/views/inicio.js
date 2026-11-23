@@ -48,12 +48,17 @@ function heroHTML() {
 function cuentasHTML() {
     const cuentas = sel.cuentas();
     if (!cuentas.length) return `<section class="card">${vacioHTML('landmark', 'Agrega tu primera cuenta para empezar.', '<a class="btn btn-primary btn-sm" href="#/cuentas">Agregar cuenta</a>')}</section>`;
-    const deb = cuentas.filter(c => c.tipo !== 'credito');
-    const cre = cuentas.filter(c => c.tipo === 'credito');
+    // En Inicio no se muestran las cuentas en ceros (en Cuentas sí).
+    const enCeros = (c) => Math.abs(sel.saldo(c.id)) < 0.005;
+    const visibles = cuentas.filter(c => !enCeros(c));
+    const ocultas = cuentas.length - visibles.length;
+    const deb = visibles.filter(c => c.tipo !== 'credito');
+    const cre = visibles.filter(c => c.tipo === 'credito');
     const bloque = (titulo, lista) => lista.length ? `<div><p class="lista-label">${titulo}</p><div class="lista">${lista.map(c => cuentaFilaHTML(c)).join('')}</div></div>` : '';
     return `<section class="card">
         <div class="card-head"><h2 class="card-title">Cuentas</h2><a class="link" href="#/cuentas">Administrar${icon('chevron-right')}</a></div>
         <div class="cuentas-cols">${bloque('Débito y efectivo', deb)}${bloque('Crédito', cre)}</div>
+        ${ocultas ? `<a class="hint cuentas-ocultas" href="#/cuentas">${ocultas === 1 ? '1 cuenta en ceros no se muestra' : `${ocultas} cuentas en ceros no se muestran`} · verlas en Cuentas</a>` : ''}
         <button class="btn btn-soft btn-sm" data-action="nuevaCuenta" style="margin-top:12px;">${icon('plus')}Agregar cuenta</button>
     </section>`;
 }
