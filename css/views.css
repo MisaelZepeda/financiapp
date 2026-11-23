@@ -500,3 +500,4 @@ input.alc-monto { height: 56px; font-family: var(--font-num); font-size: 28px; f
 .m-clasico i:last-child { background: #5b3df5; box-shadow: none; }
 :root[data-estilo="neumorfico"] .estilo-op { background: var(--bg); box-shadow: var(--neu-xs); }
 :root[data-estilo="neumorfico"] .estilo-op.activo { border-color: transparent; box-shadow: var(--neu-in-sm); color: var(--accent-ink); }
+.alc-op { width: 100%; text-align: left; }

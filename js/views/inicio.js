@@ -9,7 +9,7 @@ import { resumenMes, serieMensual, variacion } from '../domain/analisis.js';
 import { estadoPago } from '../domain/tarjetas.js';
 import { resumenPendiente } from '../components/resumen-mes.js';
 import { contar } from '../components/efectos.js';
-import { tarjetaAlcanciaHTML, abrirAlcancia } from '../components/alcancia.js';
+import { tarjetaAlcanciaHTML, abrirAlcancia, alcanciaSinMeta, abrirMetaAlcancia } from '../components/alcancia.js';
 import { deudasTerceros } from '../domain/terceros.js';
 import { proyectarFinDeMes } from '../domain/proyeccion.js';
 import { pendientes, proximos } from '../domain/recurrentes.js';
@@ -177,6 +177,7 @@ function pendientesHTML() {
     });
     const key = resumenPendiente();
     if (key) items.push({ attrs: `data-action="anResumen" data-mes="${key}" data-pendiente`, icono: 'sparkle', tono: 'accent', titulo: `Tu ${nombreMes(key).toLowerCase()} en resumen`, sub: 'Ya está listo' });
+    if (alcanciaSinMeta()) items.push({ attrs: 'data-action="abrirMetaAlcancia"', icono: 'coin', tono: 'accent', titulo: 'Tu alcancía no suma a ninguna meta', sub: 'Toca para elegir la meta' });
     if (!items.length) return '';
     return `<div class="pendientes ${items.length === 1 ? 'uno' : ''}">${items.map(it => `<button class="pendiente" ${it.attrs}>
         <span class="pendiente-ico tono-${it.tono}">${icon(it.icono)}</span>
@@ -201,6 +202,7 @@ let netoMostrado = null;
 export function montar(el, params = {}) {
     // Desde el aviso de las 9 pm (#/inicio?alcancia=1): abre la hoja una sola vez.
     if (params.alcancia) { location.replace('#/inicio'); setTimeout(abrirAlcancia, 250); }
+    if (params.alcanciaMeta) { location.replace('#/inicio'); setTimeout(() => { if (alcanciaSinMeta()) abrirMetaAlcancia(); }, 250); }
     const neto = sel.patrimonio().neto;
     if (netoMostrado != null && Math.abs(netoMostrado - neto) > 0.009) contar(document.getElementById('hero-total'), netoMostrado, neto);
     netoMostrado = neto;

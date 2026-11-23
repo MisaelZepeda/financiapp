@@ -58,6 +58,35 @@ function metaHTML() {
         <span class="hint">Todo lo que hay en la alcancía cuenta como avance de esa meta.</span></div>`;
 }
 
+// ¿La alcancía ya suma a alguna meta? (las alcancías creadas antes de las metas no)
+export function alcanciaSinMeta() {
+    const alc = sel.cuentas().find(esAlcancia);
+    return !!alc && !sel.metas().some(m => m.cuentaId === alc.id);
+}
+
+export function abrirMetaAlcancia() {
+    estado = { metaId: 'propia' };
+    const metas = sel.metas().filter(m => !m.auto);
+    const opciones = [['propia', 'Su propia meta', 'Se crea "Alcancía de morralla"'], ...metas.map(m => [m.id, m.nombre, `Lleva ${money(m.montoActual)}`])];
+    const cuerpo = () => `<div class="alc-hoja"><div class="alc-hoja-cerdito">${ALCANCIA}</div>
+        <p class="hint" style="text-align:center; margin:0 0 12px;">Todo lo que hay en tu alcancía (<b class="privado">${money(resumen()?.total || 0)}</b>) contará como avance de la meta que elijas.</p>
+        <div class="lista">${opciones.map(([v, t, d]) => `<button type="button" class="fila fila-link alc-op ${estado.metaId === v ? 'activo' : ''}" data-action="alcMetaElegir" data-v="${escapeHtml(v)}">
+            <div class="fila-ico ${estado.metaId === v ? 'tono-accent' : ''}">${icon(estado.metaId === v ? 'check' : v === 'propia' ? 'coin' : 'target')}</div>
+            <div class="fila-body"><div class="fila-titulo">${escapeHtml(t)}</div><div class="fila-sub">${d}</div></div></button>`).join('')}</div>
+        <div class="hoja-foot"><button class="btn btn-primary" data-action="alcMetaGuardar">Ligar a esta meta</button></div></div>`;
+    repintarMeta = () => { const el = hojaAbierta()?.querySelector('#alc-meta-body'); if (el) el.innerHTML = cuerpo(); };
+    abrirHoja({ titulo: '¿A qué meta suma tu alcancía?', html: `<div id="alc-meta-body">${cuerpo()}</div>`, alCerrar: () => { estado = null; } });
+}
+let repintarMeta = () => {};
+on('alcMetaElegir', (el) => { if (!estado) return; estado.metaId = el.dataset.v; repintarMeta(); });
+on('abrirMetaAlcancia', () => abrirMetaAlcancia());
+on('alcMetaGuardar', async () => {
+    if (!estado?.metaId) return;
+    await ligarAlcancia(estado.metaId);
+    cerrarHoja();
+    toast('Listo: tu alcancía ya suma a tu meta de ahorro');
+});
+
 export function abrirAlcancia() {
     const origen = origenAlcancia(sel.cuentas());
     if (!origen) return toast('Primero agrega tu cuenta de Efectivo en Cuentas', { tipo: 'error' });

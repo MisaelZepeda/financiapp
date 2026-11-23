@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v54'; // v54: alcancia suma a la meta elegida
+const CACHE_NAME = 'morralla-cache-v55'; // v55: aviso para ligar la alcancia a una meta
 
 const urlsToCache = [
     './',

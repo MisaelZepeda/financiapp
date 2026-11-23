@@ -69,7 +69,7 @@ function configuracion() {
 function recordatorios() {
     return calcularRecordatorios({
         cuentas: sel.cuentas(), saldos: sel.saldos(), transacciones: sel.transacciones(),
-        recurrentes: sel.recurrentes(), categorias: sel.categorias(),
+        recurrentes: sel.recurrentes(), categorias: sel.categorias(), metas: sel.metas(),
     });
 }
 

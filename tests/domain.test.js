@@ -680,3 +680,13 @@ test('alcancía: total, lo de hoy, racha y aviso de las 9 pm', () => {
     assert.equal(sinHoy[0].id, 'alc:2026-09-28');
     assert.equal(resumenAlcancia([efe, alc], saldos, txs.slice(0, 2), HOY).racha, 2);   // termina ayer
 });
+
+test('alcancía sin meta: aviso una sola vez; con meta ligada, no', () => {
+    const efe = { id: 'efe', tipo: 'efectivo', saldoInicial: 100 };
+    const alc = { id: 'alc', tipo: 'efectivo', alcancia: true, saldoInicial: 0, aviso: false };
+    const sin = calcularRecordatorios({ cuentas: [efe, alc], metas: [] }, HOY).filter(a => a.id.startsWith('m:alcmeta'));
+    assert.equal(sin.length, 1);
+    assert.equal(sin[0].url, '#/inicio?alcanciaMeta=1');
+    const con = calcularRecordatorios({ cuentas: [efe, alc], metas: [{ id: 'f', cuentaId: 'alc' }] }, HOY).filter(a => a.id.startsWith('m:alcmeta'));
+    assert.equal(con.length, 0);
+});

@@ -33,7 +33,7 @@ export function proximoMomento(ahora) {
     return momento(dia, 9);
 }
 
-export function calcularRecordatorios({ cuentas = [], saldos = {}, transacciones = [], recurrentes = [], categorias = [] }, ahora = new Date()) {
+export function calcularRecordatorios({ cuentas = [], saldos = {}, transacciones = [], recurrentes = [], categorias = [], metas = null }, ahora = new Date()) {
     const h = hoyISO(ahora);
     const hasta = sumarDias(h, DIAS);
     const desdeMs = ahora.getTime() - 60000;
@@ -106,6 +106,9 @@ export function calcularRecordatorios({ cuentas = [], saldos = {}, transacciones
 
     // Alcancía: a las 9 pm, si ese día aún no echaste monedas (hoy y los siguientes 13 días).
     const alcancia = cuentas.find(esAlcancia);
+    if (alcancia && metas && !metas.some(m => m.cuentaId === alcancia.id)) {
+        agregar({ id: `m:alcmeta:${alcancia.id}`, at: proximoMomento(ahora), title: 'Tu alcancía no suma a ninguna meta', body: 'Toca para elegir a qué meta de ahorro se suman tus monedas.', url: '#/inicio?alcanciaMeta=1' });
+    }
     if (alcancia && alcancia.aviso !== false) {
         const yaHoy = transacciones.some(t => t.tipo === 'transferencia' && t.cuentaDestinoId === alcancia.id && t.fecha === h);
         for (let f = yaHoy ? sumarDias(h, 1) : h; f <= hasta; f = sumarDias(f, 1)) {
