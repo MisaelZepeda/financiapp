@@ -478,3 +478,25 @@
 .alc-card .btn { flex-shrink: 0; }
 .alc-hoja-cerdito { width: 92px; height: 76px; margin: 0 auto 6px; }
 input.alc-monto { height: 56px; font-family: var(--font-num); font-size: 28px; font-weight: 600; text-align: center; }
+
+/* ---------- Selector de estilo (Ajustes) ---------- */
+.estilos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.estilo-op { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px 12px; border-radius: 18px; background: var(--surface); border: 2px solid transparent; color: var(--text); cursor: pointer; text-align: center; }
+.estilo-op.activo { border-color: var(--accent); }
+.estilo-op b { font-size: 13.5px; }
+.estilo-op small { font-size: 11.5px; color: var(--muted); line-height: 1.25; }
+.estilo-muestra { position: relative; width: 100%; height: 58px; border-radius: 12px; overflow: hidden; margin-bottom: 4px; }
+.estilo-muestra i { position: absolute; left: 12%; right: 12%; border-radius: 8px; }
+.estilo-muestra i:first-child { top: 10px; height: 18px; }
+.estilo-muestra i:last-child { top: 34px; height: 12px; right: 45%; border-radius: 6px; }
+.m-neumorfico { background: #e8ecf2; }
+.m-neumorfico i { background: #e8ecf2; box-shadow: 3px 3px 6px #c3cad6, -3px -3px 6px #ffffff; }
+.m-neumorfico i:last-child { background: linear-gradient(135deg, #6f93ff, #2f62ff); box-shadow: 2px 2px 5px rgba(47, 98, 255, .35); }
+.m-cristal { background: radial-gradient(60% 80% at 15% 10%, #b9a6ff, transparent 70%), radial-gradient(60% 80% at 90% 90%, #9fe6f2, transparent 70%), #f3f0ff; }
+.m-cristal i { background: rgba(255, 255, 255, .6); border: 1px solid rgba(255, 255, 255, .85); }
+.m-cristal i:last-child { background: #5b3df5; border: 0; }
+.m-clasico { background: #f6f5fa; }
+.m-clasico i { background: #ffffff; box-shadow: 0 0 0 1px #ebe8f2; }
+.m-clasico i:last-child { background: #5b3df5; box-shadow: none; }
+:root[data-estilo="neumorfico"] .estilo-op { background: var(--bg); box-shadow: var(--neu-xs); }
+:root[data-estilo="neumorfico"] .estilo-op.activo { border-color: transparent; box-shadow: var(--neu-in-sm); color: var(--accent-ink); }

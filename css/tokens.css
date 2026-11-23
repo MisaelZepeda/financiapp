@@ -1,8 +1,9 @@
 /* ==========================================================================
-   TOKENS — Morralla: blanco y violeta
-   Claro por defecto; oscuro (violeta noche) como alternativa (data-theme="dark").
-   Acento elegible (data-accent): violeta (predeterminado), latón, cobre,
-   menta y cielo. --accent es el relleno; --accent-ink es el acento usado
+   TOKENS — Morralla: neumorfismo gris azulado con acento azul
+   Claro por defecto; oscuro como alternativa (data-theme="dark"). Las
+   superficies y sombras viven en neumorfismo.css.
+   Acento elegible (data-accent): azul (predeterminado), violeta, latón,
+   cobre, menta y cielo. --accent es el relleno; --accent-ink es el acento usado
    como texto/ícono sobre superficies.
    ========================================================================== */
 
@@ -23,8 +24,8 @@
     --muted: #6b6585;
     --overlay: rgba(26, 21, 48, 0.42);
 
-    --accent: #5b3df5;
-    --accent-ink: #4f30e6;
+    --accent: #2f62ff;
+    --accent-ink: #2453e6;
     --on-accent: #ffffff;
     --cobre: #d9773a;
 
@@ -74,8 +75,8 @@
     --muted: #a59ec0;
     --overlay: rgba(6, 4, 14, 0.66);
 
-    --accent: #6a4dff;
-    --accent-ink: #a99aff;
+    --accent: #3b6cff;
+    --accent-ink: #8fb0ff;
     --on-accent: #ffffff;
 
     --pos: #5fd3a2;
@@ -90,7 +91,15 @@
     --shadow-pop: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
-/* Acentos alternativos (el predeterminado es violeta) */
+/* Cristal y Clásico se diseñaron en violeta: es su acento si no eliges otro. */
+:root[data-estilo="cristal"]:not([data-accent]), :root[data-estilo="clasico"]:not([data-accent]) { --accent: #5b3df5; --accent-ink: #4f30e6; --on-accent: #ffffff; }
+:root[data-theme="dark"][data-estilo="cristal"]:not([data-accent]), :root[data-theme="dark"][data-estilo="clasico"]:not([data-accent]) { --accent: #6a4dff; --accent-ink: #a99aff; }
+
+/* Acentos alternativos (el predeterminado depende del estilo) */
+:root[data-accent="azul"] { --accent: #2f62ff; --accent-ink: #2453e6; --on-accent: #ffffff; }
+:root[data-theme="dark"][data-accent="azul"] { --accent: #3b6cff; --accent-ink: #8fb0ff; }
+:root[data-accent="violeta"] { --accent: #5b3df5; --accent-ink: #4f30e6; --on-accent: #ffffff; }
+:root[data-theme="dark"][data-accent="violeta"] { --accent: #6a4dff; --accent-ink: #a99aff; }
 :root[data-accent="laton"] { --accent: #f2b544; --accent-ink: #9a5b0b; --on-accent: #1a1206; }
 :root[data-accent="cobre"] { --accent: #e8894a; --accent-ink: #b4501c; --on-accent: #1a1206; }
 :root[data-accent="menta"] { --accent: #2fb89a; --accent-ink: #0f766e; --on-accent: #062a22; }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v51'; // v51: alcancia de morralla
+const CACHE_NAME = 'morralla-cache-v52'; // v52: estilo neumorfico y selector de estilo
 
 const urlsToCache = [
     './',
@@ -8,8 +8,10 @@ const urlsToCache = [
     './icon-192x192.png',
     './icon-512x512.png',
     './css/base.css',
+    './css/clasico.css',
     './css/components.css',
     './css/cristal.css',
+    './css/neumorfismo.css',
     './css/tokens.css',
     './css/views.css',
     './js/app.js',

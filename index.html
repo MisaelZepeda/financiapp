@@ -8,11 +8,12 @@
         // Tema y acento antes de pintar (evita el parpadeo).
         (function () {
             try {
-                var ap = JSON.parse(localStorage.getItem('morralla_apariencia_v2')) || {};
+                var ap = JSON.parse(localStorage.getItem('morralla_apariencia_v3')) || {};
                 var sesion = sessionStorage.getItem('financiapp_tema_sesion');
                 var oscuro = sesion ? sesion === 'oscuro' : (ap.tema === 'oscuro' || (ap.tema === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches));
                 document.documentElement.setAttribute('data-theme', oscuro ? 'dark' : 'light');
-                if (['laton', 'cobre', 'menta', 'cielo'].indexOf(ap.acento) >= 0) document.documentElement.setAttribute('data-accent', ap.acento);
+                if (['azul', 'violeta', 'laton', 'cobre', 'menta', 'cielo'].indexOf(ap.acento) >= 0) document.documentElement.setAttribute('data-accent', ap.acento);
+                document.documentElement.setAttribute('data-estilo', ['cristal', 'clasico'].indexOf(ap.estilo) >= 0 ? ap.estilo : 'neumorfico');
             } catch (e) {}
         })();
     </script>
@@ -25,9 +26,18 @@
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/views.css">
-    <link rel="stylesheet" href="css/cristal.css">
+    <!-- Estilos elegibles en Ajustes › Apariencia: solo uno queda activo. -->
+    <link rel="stylesheet" href="css/neumorfismo.css" id="estilo-neumorfico">
+    <link rel="stylesheet" href="css/cristal.css" id="estilo-cristal">
+    <link rel="stylesheet" href="css/clasico.css" id="estilo-clasico">
+    <script>
+        (function () {
+            var e = document.documentElement.getAttribute('data-estilo') || 'neumorfico';
+            ['neumorfico', 'cristal', 'clasico'].forEach(function (n) { document.getElementById('estilo-' + n).disabled = n !== e; });
+        })();
+    </script>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#f6f5fa">
+    <meta name="theme-color" content="#e8ecf2">
 </head>
 <body>
     <!-- Sprite de íconos: formas rellenas y redondeadas (24x24) referenciadas

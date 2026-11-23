@@ -142,8 +142,8 @@ function alRecibirDatos(datos, uid) {
     if (uid) { try { localStorage.setItem(CACHE(uid), JSON.stringify(datos)); } catch { /* sin espacio */ } }
     const aj = datos.ajustes || {};
     const ap = leerApariencia();
-    const guardada = aj.apariencia || {};
-    if ((guardada.tema && guardada.tema !== ap.tema) || (guardada.acento && guardada.acento !== ap.acento)) aplicarApariencia({ tema: guardada.tema, acento: guardada.acento });
+    const guardada = aj.apariencia3 || {};   // apariencia3: estilo neumórfico
+    if ((guardada.tema && guardada.tema !== ap.tema) || (guardada.acento !== undefined && (guardada.acento || null) !== (ap.acento || null)) || (guardada.estilo && guardada.estilo !== ap.estilo)) aplicarApariencia({ tema: guardada.tema, acento: guardada.acento || null, estilo: guardada.estilo });
     setDatos(datos);
     mostrarApp();
 }

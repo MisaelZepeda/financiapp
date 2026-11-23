@@ -9,7 +9,7 @@ import { avatarHTML, icoCat } from '../components/piezas.js';
 import { toast, confirmar, abrirHoja, cerrarHoja } from '../components/capas.js';
 import { exportarRespaldo } from '../lib/exportar.js';
 import { migrarV1 } from '../domain/migracion.js';
-import { aplicarApariencia, leerApariencia, temaElegido, elegirTema, hayTemaDeSesion, temaEfectivo } from '../lib/apariencia.js';
+import { aplicarApariencia, leerApariencia, temaElegido, elegirTema, hayTemaDeSesion, temaEfectivo, estiloElegido, acentoDelEstilo } from '../lib/apariencia.js';
 import * as Push from '../lib/push.js';
 
 export const titulo = () => ({ titulo: 'Ajustes', atras: '#/mas' });
@@ -20,13 +20,13 @@ export function selectorTema(tema) {
         .map(([v, i, t]) => `<button class="${tema === v ? 'activo' : ''}" data-action="ajTema" data-v="${v}">${icon(i)} ${t}</button>`).join('')}</div>`;
 }
 
-const ACENTOS = [['violeta', '#5b3df5', 'Violeta'], ['cielo', '#3b8cf0', 'Cielo'], ['menta', '#2fb89a', 'Menta'], ['cobre', '#e8894a', 'Cobre'], ['laton', '#f2b544', 'Latón']];
+const ACENTOS = [['azul', '#2f62ff', 'Azul'], ['violeta', '#5b3df5', 'Violeta'], ['cielo', '#3b8cf0', 'Cielo'], ['menta', '#2fb89a', 'Menta'], ['cobre', '#e8894a', 'Cobre'], ['laton', '#f2b544', 'Latón']];
 
 export function render() {
     const p = sel.perfil();
     const aj = sel.ajustes();
     const tema = temaElegido();
-    const acento = ACENTOS.some(a => a[0] === leerApariencia().acento) ? leerApariencia().acento : 'violeta';
+    const acento = ACENTOS.some(a => a[0] === leerApariencia().acento) ? leerApariencia().acento : acentoDelEstilo();
     return `<div class="ajustes">
         <section class="card">
             <h2 class="card-title" style="margin-bottom:14px;">Perfil</h2>
@@ -40,6 +40,10 @@ export function render() {
 
         <section class="card">
             <h2 class="card-title" style="margin-bottom:14px;">Apariencia</h2>
+            <div class="field"><span class="label">Estilo</span><div class="estilos">
+                ${[['neumorfico', 'Neumórfico', 'Suave, gris y azul'], ['cristal', 'Cristal', 'Translúcido, como iOS'], ['clasico', 'Clásico', 'Blanco y violeta']].map(([v, t, d]) =>
+                    `<button class="estilo-op ${estiloElegido() === v ? 'activo' : ''}" data-action="ajEstilo" data-v="${v}" aria-pressed="${estiloElegido() === v}"><span class="estilo-muestra m-${v}"><i></i><i></i></span><b>${t}</b><small>${d}</small></button>`).join('')}
+            </div></div>
             <div class="field"><span class="label">Tema</span>${selectorTema(tema)}
                 <span class="hint">Automático sigue la configuración de tu teléfono o computadora.${hayTemaDeSesion() ? ` Ahora ves el tema ${temaEfectivo()} solo en esta sesión (botón del encabezado).` : ''}</span></div>
             <div class="field" style="margin:0;"><span class="label">Color de acento</span><div class="acentos">
@@ -347,7 +351,9 @@ on('fotoPerfil', async (el) => {
 }, 'change');
 
 // Se guarda en ajustes/apariencia (las claves tema y acento eran del estilo anterior).
-const guardarApariencia = () => { const { tema, acento } = leerApariencia(); return A.guardarAjustes({ apariencia: { tema: tema || 'claro', acento: acento || 'violeta' } }); };
+const guardarApariencia = () => { const { tema, acento, estilo } = leerApariencia(); return A.guardarAjustes({ apariencia3: { tema: tema || 'claro', acento: acento || null, estilo: estilo || 'neumorfico' } }); };
+// Al cambiar de estilo se usa su acento propio (puedes elegir otro después).
+on('ajEstilo', async (el) => { aplicarApariencia({ estilo: el.dataset.v, acento: null }); await guardarApariencia(); });
 on('ajTema', async (el) => { elegirTema(el.dataset.v); await guardarApariencia(); });
 on('ajAcento', async (el) => { aplicarApariencia({ acento: el.dataset.v }); await guardarApariencia(); });
 

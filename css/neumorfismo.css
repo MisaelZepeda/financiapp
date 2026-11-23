@@ -1,0 +1,160 @@
+/* ==========================================================================
+   NEUMORFISMO — superficies suaves del mismo color que el fondo que "salen"
+   (sombra clara arriba a la izquierda, oscura abajo a la derecha) y campos
+   hundidos; acento azul en degradado. Va al final: solo sobrescribe estilos,
+   la estructura (barra flotante con círculo, hojas centradas) es la misma.
+   ========================================================================== */
+
+:root {
+    --bg: #e8ecf2;
+    --surface: #e8ecf2;
+    --surface-2: #e1e6ee;
+    --surface-3: #d7dde7;
+    --line: rgba(60, 72, 100, 0.10);
+    --line-strong: rgba(60, 72, 100, 0.18);
+    --text: #262c3a;
+    --text-2: #444c5e;
+    --muted: #7d8699;
+    --chart-grid: rgba(60, 72, 100, 0.10);
+
+    --sombra-osc: #c3cad6;
+    --sombra-luz: #ffffff;
+    --neu: 8px 8px 18px var(--sombra-osc), -8px -8px 18px var(--sombra-luz);
+    --neu-sm: 4px 4px 10px var(--sombra-osc), -4px -4px 10px var(--sombra-luz);
+    --neu-xs: 2px 2px 5px var(--sombra-osc), -2px -2px 5px var(--sombra-luz);
+    --neu-in: inset 4px 4px 9px var(--sombra-osc), inset -4px -4px 9px var(--sombra-luz);
+    --neu-in-sm: inset 2px 2px 5px var(--sombra-osc), inset -2px -2px 5px var(--sombra-luz);
+    --degradado: linear-gradient(135deg, color-mix(in srgb, var(--accent) 72%, #ffffff) 0%, var(--accent) 55%, color-mix(in srgb, var(--accent) 82%, #000000) 100%);
+    --sombra-acento: 6px 6px 14px color-mix(in srgb, var(--accent) 35%, transparent), -4px -4px 10px var(--sombra-luz);
+}
+:root[data-theme="dark"] {
+    --bg: #2a2e36;
+    --surface: #2a2e36;
+    --surface-2: #30353e;
+    --surface-3: #383e48;
+    --line: rgba(255, 255, 255, 0.07);
+    --line-strong: rgba(255, 255, 255, 0.13);
+    --text: #e9edf4;
+    --text-2: #c9cfda;
+    --muted: #949cad;
+    --chart-grid: rgba(255, 255, 255, 0.07);
+    --sombra-osc: #1d2026;
+    --sombra-luz: #373c46;
+}
+
+body { background: var(--bg); }
+
+/* ---------- Superficies que salen del fondo ---------- */
+.card, .pendiente, .modal, .aviso-actualizacion, .mas-item, .mas-perfil {
+    background: var(--bg); border: 0; box-shadow: var(--neu);
+}
+.card { border-radius: 26px; }
+.pendiente { border-radius: 20px; }
+:root[data-theme="light"] .card:not(.hero) { box-shadow: var(--neu); }
+
+/* La tarjeta principal: el acento en degradado, como el botón de la referencia. */
+.hero { background: var(--degradado); border: 0; box-shadow: 10px 10px 24px color-mix(in srgb, var(--accent) 30%, transparent), -8px -8px 18px var(--sombra-luz); }
+
+/* Íconos de las filas: pastillas que salen un poco. */
+.fila-ico { background: var(--bg); box-shadow: var(--neu-xs); }
+.fila-ico.tono-pos, .fila-ico.tono-accent, .fila-ico.tono-danger, .fila-ico.tono-warning, .fila-ico.tono-info { box-shadow: var(--neu-xs); }
+.card .fila-link:hover { background: color-mix(in srgb, var(--sombra-osc) 18%, transparent); }
+.swipe-fila { background: var(--bg); }
+
+/* ---------- Encabezado ---------- */
+.top { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+@media (min-width: 1024px) { .top { background: transparent; } }
+.top .icon-btn, .top .avatar-btn { background: var(--bg); border: 0; box-shadow: var(--neu-sm); }
+.top .icon-btn:active, .top .avatar-btn:active { box-shadow: var(--neu-in-sm); }
+
+/* ---------- Barra de pestañas flotante ---------- */
+.tabbar {
+    left: 12px; right: 12px; bottom: calc(8px + env(safe-area-inset-bottom));
+    height: calc(64px + 22px); padding: 22px 26px 0; border-radius: 0;
+    background: none; border: 0; box-shadow: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    transition: transform var(--t) var(--ease);
+}
+.tb-forma { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; overflow: visible; pointer-events: none;
+    filter: drop-shadow(7px 7px 10px var(--sombra-osc)) drop-shadow(-6px -6px 10px var(--sombra-luz)); }
+.tb-relleno { fill: var(--bg); }
+:root[data-theme="dark"] .tb-relleno { fill: var(--bg); }
+.tb-linea { fill: none; stroke: none; }
+.tb-burbuja {
+    position: absolute; left: 0; top: 0; width: 44px; height: 44px; border-radius: 50%; z-index: 1; pointer-events: none;
+    display: grid; place-items: center; color: var(--on-accent);
+    background: var(--degradado); box-shadow: var(--sombra-acento);
+    transition: transform 380ms cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+.tb-burbuja .icon { width: 22px; height: 22px; }
+.tab { position: relative; align-self: stretch; justify-content: center; transition: color var(--t) var(--ease); }
+.tab.activo { color: var(--accent-ink); justify-content: flex-end; padding-bottom: 12px; }
+.tab.activo .icon { visibility: hidden; height: 0; }
+.tab.activo span { font-weight: 650; }
+.tab-add { border-radius: 18px; background: var(--degradado); box-shadow: var(--sombra-acento); }
+.tabbar.compacta { transform: translateY(6px) scale(0.94); }
+.tabbar.compacta .tab:not(.activo) span { display: none; }
+.vista { padding-bottom: calc(var(--tabbar) + 76px + env(safe-area-inset-bottom)); }
+@media (min-width: 1024px) { .vista { padding-bottom: 64px; } }
+
+/* ---------- Barra lateral (computadora) ---------- */
+@media (min-width: 1024px) {
+    .sidebar { background: var(--bg); border-right: 0; box-shadow: 6px 0 18px var(--sombra-osc); }
+    .side-link:hover { background: transparent; box-shadow: var(--neu-xs); }
+    .side-link.activo { background: var(--bg); color: var(--accent-ink); box-shadow: var(--neu-in-sm); }
+    .side-add { background: var(--degradado); box-shadow: var(--sombra-acento); }
+}
+
+/* ---------- Hojas centradas ---------- */
+.capa {
+    align-items: center; padding: calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--bg) 55%, transparent);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.hoja {
+    margin: auto; width: 100%; max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    border-radius: 30px; padding: 8px 18px 20px;
+    background: var(--bg); border: 0;
+    box-shadow: 14px 14px 34px var(--sombra-osc), -10px -10px 26px var(--sombra-luz);
+    animation: pop var(--t) var(--ease);
+}
+.hoja-grip { display: none; }
+.hoja-head .icon-btn { background: var(--bg); box-shadow: var(--neu-sm); }
+.modal { border-radius: 28px; }
+
+/* ---------- Controles ---------- */
+.btn { border-radius: 16px; border: 0; }
+.btn-primary { background: var(--degradado); color: var(--on-accent); box-shadow: var(--sombra-acento); }
+.btn-primary:active { box-shadow: inset 3px 3px 8px rgba(0, 0, 0, 0.22); }
+.btn-soft, .btn-ghost, .btn-danger-soft { background: var(--bg); box-shadow: var(--neu-sm); }
+.btn-soft:active, .btn-ghost:active, .btn-danger-soft:active { box-shadow: var(--neu-in-sm); }
+.icon-btn:active { box-shadow: var(--neu-in-sm); }
+
+.chip { background: var(--bg); border: 0; box-shadow: var(--neu-xs); }
+.chip:hover { background: var(--bg); }
+.chip.activo { background: var(--degradado); color: var(--on-accent); box-shadow: var(--sombra-acento); }
+.chip-outline.activo { background: var(--bg); color: var(--accent-ink); box-shadow: var(--neu-in-sm); }
+
+/* Selector segmentado: una ranura hundida con la opción activa saliendo. */
+.seg { background: var(--bg); box-shadow: var(--neu-in); border: 0; }
+.seg button.activo, :root[data-theme="light"] .seg button.activo { background: var(--bg); color: var(--accent-ink); box-shadow: var(--neu-sm); }
+
+/* Campos hundidos. */
+.input, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea {
+    background: var(--bg); border: 0; box-shadow: var(--neu-in);
+}
+input:focus, select:focus, textarea:focus { background: var(--bg); box-shadow: var(--neu-in), 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+.search { background: var(--bg); box-shadow: var(--neu-in); border: 0; }
+.search input { box-shadow: none; background: transparent; }
+
+/* Barras de progreso: ranura hundida con relleno en degradado. */
+.barra { background: var(--bg); box-shadow: var(--neu-in-sm); }
+.barra > i { background: var(--degradado); }
+
+/* Teclado del registro: teclas que salen y se hunden al tocar. */
+.teclado button { background: var(--bg); border: 0; box-shadow: var(--neu-sm); }
+.teclado button:active { box-shadow: var(--neu-in-sm); }
+.teclado .tecla-op { color: var(--accent-ink); }
+
+/* Tarjetas de bancos y elementos con color propio conservan su estilo. */
+.tarjeta-visual { box-shadow: 8px 8px 20px var(--sombra-osc), -6px -6px 16px var(--sombra-luz); }
