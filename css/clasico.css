@@ -11,7 +11,7 @@ body { background: var(--bg); }
 .pendiente { border-radius: 18px; }
 .hero { background: var(--accent); box-shadow: none; }
 
-.top { background: color-mix(in srgb, var(--bg) 92%, transparent); }
+.top { background: var(--bg); box-shadow: 0 1px 0 var(--line); }
 .top .icon-btn, .top .avatar-btn { background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
 
 /* Barra de pestañas flotante (misma estructura que los otros estilos, sólida). */

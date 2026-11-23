@@ -1,10 +1,14 @@
 /* API personal de Morralla (HTTPS, con llave). Vive en el mismo Worker que los avisos.
  *
- *   GET    /api/movimientos?mes=AAAA-MM   movimientos del mes
+ *   GET    /api/movimientos?mes=AAAA-MM   movimientos del mes (filtros: q, cuenta, categoria, tipo,
+ *                                          desde, hasta, montoMin, montoMax, paraQuien)
  *   GET    /api/cuentas                    saldos, deuda, corte y próximo pago
+ *   POST   /api/cuentas                    dar de alta una cuenta
+ *   PATCH  /api/cuentas/{id}               corregir nombre, banco, dígitos y datos de crédito
  *   GET    /api/presupuestos?mes=AAAA-MM   tope, gastado y restante por categoría
- *   GET    /api/te-deben                   quién te debe, cuánto y su próxima mensualidad
- *   POST   /api/movimientos                registrar gasto, ingreso o transferencia
+ *   PATCH  /api/presupuestos?mes=AAAA-MM   cambiar topes a partir de ese mes
+ *   GET    /api/te-deben?persona=Nombre    quién te debe, cuánto, compras y abonos
+ *   POST   /api/movimientos                registrar gasto (con partes), ingreso (con abonoDe) o transferencia
  *   PATCH  /api/movimientos/{id}           corregir un movimiento
  *   DELETE /api/movimientos/{id}           borrar un movimiento
  *
@@ -19,7 +23,8 @@
 import { calcularSaldos } from '../../js/domain/saldos.js';
 import { estadoPago, ultimoCorte } from '../../js/domain/tarjetas.js';
 import { resumenMes } from '../../js/domain/analisis.js';
-import { deudasTerceros } from '../../js/domain/terceros.js';
+import { deudasTerceros, pendientesPorCompra } from '../../js/domain/terceros.js';
+import { topeEnMes, SIN_TOPE } from '../../js/domain/topes.js';
 import { sugerirCategoria, buscarPorNombre } from '../../js/domain/autocategoria.js';
 import { fechaEnMes, sumarMeses, mesKey, hoyISO } from '../../js/domain/fechas.js';
 
@@ -34,8 +39,13 @@ export const ahoraLocal = (tz = 360) => new Date(Date.now() - tz * 60000);
 
 // ---------------------------------------------------------------- respuestas (puras)
 export function datosDe(v4) {
-    return { cuentas: lista(v4?.cuentas), transacciones: lista(v4?.transacciones), categorias: lista(v4?.categorias) };
+    return { cuentas: lista(v4?.cuentas), transacciones: lista(v4?.transacciones), categorias: lista(v4?.categorias), topes: v4?.topes || {} };
 }
+
+const norm = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+// Cuentas y categorías por id o por nombre; ante ambigüedad gana el id.
+const cuentaPor = (d, x) => (x == null || x === '' ? null : d.cuentas.find(c => c.id === x) || buscarPorNombre(String(x), d.cuentas));
+const categoriaPor = (d, x) => (x == null || x === '' ? null : d.categorias.find(c => c.id === x) || buscarPorNombre(String(x), d.categorias));
 
 export function movimientoPublico(t, d) {
     const cuenta = (id) => { const c = d.cuentas.find(x => x.id === id); return c ? { id: c.id, nombre: c.nombre } : (id ? { id, nombre: null } : null); };
@@ -50,24 +60,66 @@ export function movimientoPublico(t, d) {
         etiquetas: Array.isArray(t.etiquetas) ? t.etiquetas : [],
         msi: Number(t.msi) > 1 ? Number(t.msi) : null,
         paraQuien: t.paraTercero || null,
-        abonoDe: t.abonoDe || null,
+        // abonoDe: id de la compra que salda; abonoPersona: a quién se le abonó.
+        abonoDe: t.tipo === 'ingreso' && t.abonoDe ? (t.abonoCompra || null) : null,
+        abonoPersona: t.tipo === 'ingreso' ? (t.abonoDe || null) : null,
         creadoEn: t.creadoEn ? new Date(t.creadoEn).toISOString() : null,
     };
 }
 
-export function respMovimientos(v4, mes) {
+// Filtros opcionales de GET /movimientos (se combinan con AND). → { filtros } o { error }.
+const FILTROS = ['q', 'cuenta', 'categoria', 'tipo', 'desde', 'hasta', 'montoMin', 'montoMax', 'paraQuien'];
+export function leerFiltros(params) {
+    const f = {};
+    FILTROS.forEach(k => { const v = params.get(k); if (v !== null && v !== '') f[k] = v; });
+    for (const k of ['desde', 'hasta']) if (f[k] && !FECHA.test(f[k])) return { error: `${k} debe tener el formato AAAA-MM-DD` };
+    if (f.desde && f.hasta && f.hasta < f.desde) return { error: 'hasta no puede ser anterior a desde' };
+    for (const k of ['montoMin', 'montoMax']) if (k in f) { const n = Number(f[k]); if (!Number.isFinite(n) || n < 0) return { error: `${k} debe ser un número mayor o igual a 0` }; f[k] = n; }
+    if ('montoMin' in f && 'montoMax' in f && f.montoMax < f.montoMin) return { error: 'montoMax no puede ser menor que montoMin' };
+    if (f.tipo && !['gasto', 'ingreso', 'transferencia'].includes(f.tipo)) return { error: 'tipo debe ser gasto, ingreso o transferencia' };
+    return { filtros: f };
+}
+
+export function respMovimientos(v4, mes, filtros = {}) {
     const d = datosDe(v4);
-    const movs = d.transacciones.filter(t => t.fecha?.startsWith(mes))
-        .sort((a, b) => b.fecha.localeCompare(a.fecha) || (b.creadoEn || 0) - (a.creadoEn || 0))
+    const f = filtros;
+    const rango = f.desde || f.hasta;
+    let error = null;
+    const cuenta = f.cuenta ? cuentaPor(d, f.cuenta) : null;
+    if (f.cuenta && !cuenta) error = 'cuenta no encontrada (usa su id o su nombre; GET /api/cuentas)';
+    const cat = f.categoria ? categoriaPor(d, f.categoria) : null;
+    if (f.categoria && !cat) error = 'categoría no encontrada (usa su id o su nombre; GET /api/presupuestos)';
+    if (error) return { error };
+    const q = f.q ? norm(f.q) : null;
+    const movs = d.transacciones.filter(t => {
+        if (!t.fecha) return false;
+        if (rango) { if (f.desde && t.fecha < f.desde) return false; if (f.hasta && t.fecha > f.hasta) return false; }
+        else if (!t.fecha.startsWith(mes)) return false;
+        if (q && !norm(t.desc).includes(q)) return false;
+        if (cuenta && t.cuentaId !== cuenta.id && t.cuentaDestinoId !== cuenta.id) return false;
+        if (cat && (t.tipo !== 'gasto' || !(t.categoriaId === cat.id || (t.partes || []).some(p => p.categoriaId === cat.id)))) return false;
+        if (f.tipo && t.tipo !== f.tipo) return false;
+        const m = Number(t.monto) || 0;
+        if ('montoMin' in f && m < f.montoMin) return false;
+        if ('montoMax' in f && m > f.montoMax) return false;
+        if (f.paraQuien && norm(t.paraTercero) !== norm(f.paraQuien)) return false;
+        return true;
+    }).sort((a, b) => b.fecha.localeCompare(a.fecha) || (b.creadoEn || 0) - (a.creadoEn || 0))
         .map(t => movimientoPublico(t, d));
-    return { mes, total: movs.length, movimientos: movs };
+    const resp = { mes: rango ? null : mes, total: movs.length, movimientos: movs };
+    if (Object.keys(f).length) resp.filtros = f;
+    return resp;
 }
 
 export function respCuentas(v4, hoy) {
     const d = datosDe(v4);
     const saldos = calcularSaldos(d.cuentas, d.transacciones);
     return {
-        cuentas: d.cuentas.map(c => {
+        cuentas: d.cuentas.map(c => cuentaPublica(c, d, saldos, hoy)),
+    };
+}
+
+export function cuentaPublica(c, d, saldos, hoy) {
             const base = { id: c.id, nombre: c.nombre, banco: c.banco || null, tipo: c.tipo, digitos: c.digitos || null };
             if (c.tipo !== 'credito') return { ...base, saldo: r2(saldos[c.id] || 0) };
             const deuda = r2(saldos[c.id] || 0);
@@ -81,39 +133,102 @@ export function respCuentas(v4, hoy) {
                 ultimoCorte: corte, proximoCorte,
                 proximoPago: e ? { fechaLimite: e.fechaPago, monto: e.pago, abonado: e.abonado, pendiente: e.pendiente, pagado: e.pagada } : null,
             };
-        }),
-    };
+}
+
+// Alta (previo = null) o corrección de una cuenta. → { cuenta } para guardar o { error }.
+// No cambia tipo ni saldos: el saldo solo se mueve con movimientos (saldoInicial solo al crear).
+export function validarCuenta(entrada, v4, { previo = null, hoy = new Date() } = {}) {
+    const d = datosDe(v4);
+    const b = entrada && typeof entrada === 'object' && !Array.isArray(entrada) ? entrada : {};
+    const permitidos = previo ? ['nombre', 'banco', 'digitos', 'limite', 'diaCorte', 'diaPago'] : ['nombre', 'banco', 'digitos', 'tipo', 'limite', 'diaCorte', 'diaPago', 'saldoInicial'];
+    const extra = Object.keys(b).filter(k => !permitidos.includes(k));
+    if (extra.length) return { error: previo ? `No se puede cambiar ${extra.join(', ')} por API (tipo y saldos se mueven con movimientos)` : `Campos no reconocidos: ${extra.join(', ')}` };
+    if (previo && !Object.keys(b).length) return { error: 'Manda al menos un campo a cambiar' };
+    const tipo = previo ? previo.tipo : b.tipo;
+    if (!['debito', 'efectivo', 'credito'].includes(tipo)) return { error: 'tipo es obligatorio: debito, efectivo o credito' };
+    const nombre = 'nombre' in b ? String(b.nombre || '').trim().slice(0, 40) : previo?.nombre;
+    if (!nombre) return { error: 'nombre es obligatorio' };
+    if (d.cuentas.some(c => c.id !== previo?.id && norm(c.nombre) === norm(nombre))) return { error: `Ya existe una cuenta llamada "${nombre}"` };
+    const c = { ...(previo || {}), nombre, tipo };
+    delete c.id;
+    if ('banco' in b) c.banco = b.banco ? String(b.banco).trim().slice(0, 40) : null;
+    if ('digitos' in b) {
+        if (b.digitos === null || b.digitos === '') c.digitos = null;
+        else { const dg = String(b.digitos); if (!/^\d{4}$/.test(dg)) return { error: 'digitos deben ser 4 números, como texto ("0582")' }; c.digitos = dg; }
+    }
+    const credito = ['limite', 'diaCorte', 'diaPago'].filter(k => k in b);
+    if (credito.length && tipo !== 'credito') return { error: `${credito.join(', ')} solo aplican a tarjetas de crédito` };
+    if ('limite' in b) { const n = Number(b.limite); if (b.limite !== null && !(n > 0)) return { error: 'limite debe ser mayor que 0' }; c.limite = b.limite === null ? null : r2(n); }
+    for (const k of ['diaCorte', 'diaPago']) if (k in b) {
+        const n = Number(b[k]);
+        if (b[k] !== null && !(Number.isInteger(n) && n >= 1 && n <= 31)) return { error: `${k} debe ser un día del 1 al 31` };
+        c[k] = b[k] === null ? null : n;
+    }
+    if (!previo) {
+        const si = 'saldoInicial' in b ? Number(b.saldoInicial) : 0;
+        if (!Number.isFinite(si)) return { error: 'saldoInicial debe ser un número' };
+        c.saldoInicial = r2(si);
+        c.fechaInicial = hoyISO(hoy);
+    }
+    return { cuenta: c };
 }
 
 export function respPresupuestos(v4, mes) {
     const d = datosDe(v4);
     const { porCategoria } = resumenMes(d.transacciones, mes);
     const filas = d.categorias.map(c => {
-        const tope = Number(c.presupuesto) || 0;
+        // Tope del mes (cambios con fecha de inicio; ver topes.js). 0 es un tope válido.
+        const tope = topeEnMes(c, d.topes, mes);
         const gastado = r2(porCategoria[c.id] || 0);
-        return { categoria: { id: c.id, nombre: c.nombre }, tope: tope || null, gastado, restante: tope ? r2(tope - gastado) : null, porcentaje: tope ? Math.round(gastado / tope * 100) : null };
-    }).sort((a, b) => (b.tope ? 1 : 0) - (a.tope ? 1 : 0) || b.gastado - a.gastado);
-    const conTope = filas.filter(f => f.tope);
+        const con = tope !== null;
+        return { categoria: { id: c.id, nombre: c.nombre }, tope, gastado, restante: con ? r2(tope - gastado) : null, porcentaje: con ? (tope ? Math.round(gastado / tope * 100) : (gastado > 0 ? null : 0)) : null };
+    }).sort((a, b) => (b.tope !== null ? 1 : 0) - (a.tope !== null ? 1 : 0) || b.gastado - a.gastado);
+    const conTope = filas.filter(f => f.tope !== null);
     return {
         mes, presupuestos: filas,
         total: { tope: r2(conTope.reduce((a, f) => a + f.tope, 0)), gastado: r2(conTope.reduce((a, f) => a + f.gastado, 0)), restante: r2(conTope.reduce((a, f) => a + f.restante, 0)) },
     };
 }
 
-export function respTeDeben(v4, hoy) {
+export function respTeDeben(v4, hoy, persona = null) {
     const d = datosDe(v4);
-    const deudas = deudasTerceros(d.cuentas, d.transacciones, hoy).map(x => ({
-        nombre: x.nombre, total: x.total, pagado: x.abonado, pendiente: x.pendiente, vencido: x.vencido, saldado: x.saldada,
-        proximaMensualidad: x.proximo ? { fecha: x.proximo.fecha, monto: x.proximo.monto } : null,
-        compras: x.compras.map(t => ({ id: t.id, fecha: t.fecha, descripcion: t.desc || '', monto: Number(t.monto) || 0, msi: Number(t.msi) > 1 ? Number(t.msi) : null })),
-    }));
+    const porCompra = pendientesPorCompra(d.transacciones);
+    const cuenta = (id) => { const c = d.cuentas.find(x => x.id === id); return c ? { id: c.id, nombre: c.nombre } : (id ? { id, nombre: null } : null); };
+    const deudas = deudasTerceros(d.cuentas, d.transacciones, hoy)
+        .filter(x => !persona || norm(x.nombre) === norm(persona))
+        .map(x => ({
+            nombre: x.nombre, total: x.total, pagado: x.abonado, pendiente: x.pendiente, vencido: x.vencido, saldado: x.saldada,
+            proximaMensualidad: x.proximo ? { fecha: x.proximo.fecha, monto: x.proximo.monto } : null,
+            compras: x.compras.map(t => ({ id: t.id, fecha: t.fecha, descripcion: t.desc || '', monto: Number(t.monto) || 0, msi: Number(t.msi) > 1 ? Number(t.msi) : null, pendiente: porCompra[t.id]?.pendiente ?? null })),
+            // Ingresos con abonoDe de esta persona, del más reciente al más antiguo.
+            abonos: x.abonos.slice().sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || (b.creadoEn || 0) - (a.creadoEn || 0))
+                .map(t => ({ id: t.id, fecha: t.fecha, monto: Number(t.monto) || 0, cuenta: cuenta(t.cuentaId), abonoDe: t.abonoCompra || null, descripcion: t.desc || '' })),
+        }));
     return { totalPendiente: r2(deudas.reduce((a, x) => a + x.pendiente, 0)), personas: deudas };
+}
+
+// PATCH /presupuestos: valida la lista completa (atómico). → { cambios: { catId: tope|-1 } } o { error }.
+export function validarTopes(entrada, v4) {
+    const d = datosDe(v4);
+    const topes = entrada?.topes;
+    if (!Array.isArray(topes) || !topes.length) return { error: 'Manda "topes": [{ "categoria": "...", "tope": 1000 }, …]' };
+    const cambios = {};
+    for (const [i, t] of topes.entries()) {
+        const cat = categoriaPor(d, t?.categoria);
+        if (!cat) return { error: `topes[${i}]: categoría "${t?.categoria}" no encontrada` };
+        if (!('tope' in (t || {}))) return { error: `topes[${i}] (${cat.nombre}): falta tope (número ≥ 0, o null para quitarlo)` };
+        if (t.tope === null) { cambios[cat.id] = SIN_TOPE; continue; }
+        const n = Number(t.tope);
+        if (!Number.isFinite(n) || n < 0) return { error: `topes[${i}] (${cat.nombre}): el tope debe ser un número mayor o igual a 0` };
+        cambios[cat.id] = r2(n);
+    }
+    return { cambios };
 }
 
 // ---------------------------------------------------------------- validar escrituras (pura)
 // Mismos campos y reglas que el formulario de Morralla. `previo` = movimiento a corregir (PATCH).
 // → { tx } listo para guardar en Firebase, o { error }.
-export function validarMovimiento(entrada, v4, { previo = null, hoy = new Date() } = {}) {
+export function validarMovimiento(entrada, v4, { previo = null, previoId = null, hoy = new Date() } = {}) {
     const d = datosDe(v4);
     const b = entrada && typeof entrada === 'object' ? entrada : {};
     const val = (k, deprevio) => (k in b ? b[k] : deprevio);
@@ -134,6 +249,8 @@ export function validarMovimiento(entrada, v4, { previo = null, hoy = new Date()
     const etiquetas = (etiquetasIn || []).map(e => String(e).replace(/^#/, '').trim().toLowerCase().replace(/\s+/g, '-').slice(0, 30)).filter(Boolean).slice(0, 10);
 
     const tx = { tipo, monto, fecha, cuentaId: cuenta.id, desc, etiquetas: etiquetas.length ? etiquetas : null, creadoEn: previo?.creadoEn || Date.now() };
+    if (b.partes != null && tipo !== 'gasto') return { error: 'partes solo aplica a gastos' };
+    if (b.abonoDe != null && tipo !== 'ingreso') return { error: 'abonoDe solo aplica a ingresos (el pago de alguien que te debe)' };
 
     if (tipo === 'gasto') {
         const paraQuien = String(val('paraQuien', previo?.paraTercero) || '').trim().slice(0, 40);
@@ -152,8 +269,29 @@ export function validarMovimiento(entrada, v4, { previo = null, hoy = new Date()
         if (msi && cuenta.tipo !== 'credito') return { error: 'los meses sin intereses solo aplican a tarjetas de crédito' };
         tx.msi = msi > 1 ? msi : null;
         tx.paraTercero = paraQuien || null;
-        // Si se cambia monto o categoría, las partes de un gasto dividido ya no cuadran: se quitan.
-        tx.partes = previo?.partes && !('monto' in b) && !('categoria' in b) ? previo.partes : null;
+        if (b.partes != null) {
+            // Gasto dividido: cada parte cuenta en su categoría (presupuestos y análisis).
+            if (!Array.isArray(b.partes) || b.partes.length < 2) return { error: 'partes debe ser una lista de al menos 2: [{ "categoria", "monto" }]' };
+            const partes = [];
+            for (const [i, p] of b.partes.entries()) {
+                const c = categoriaPor(d, p?.categoria);
+                if (!c) return { error: `partes[${i}]: categoría "${p?.categoria}" no encontrada` };
+                const m = r2(Number(p?.monto));
+                if (!(m > 0)) return { error: `partes[${i}] (${c.nombre}): el monto debe ser mayor que 0` };
+                if (partes.some(x => x.categoriaId === c.id)) return { error: `partes: la categoría ${c.nombre} está repetida` };
+                partes.push({ categoriaId: c.id, monto: m });
+            }
+            const suma = r2(partes.reduce((a, p) => a + p.monto, 0));
+            if (Math.abs(suma - monto) > 0.001) return { error: `La suma de las partes (${suma}) debe ser igual al monto (${monto})` };
+            tx.partes = partes;
+            // Categoría principal: la indicada o la de la parte mayor (como en la app).
+            if (!catIn) tx.categoriaId = partes.reduce((a, p) => (p.monto > a.monto ? p : a), partes[0]).categoriaId;
+        } else if ('partes' in b) {
+            tx.partes = null;   // "partes": null quita la división
+        } else {
+            // Si se cambia monto o categoría, las partes de un gasto dividido ya no cuadran: se quitan.
+            tx.partes = previo?.partes && !('monto' in b) && !('categoria' in b) ? previo.partes : null;
+        }
     } else if (tipo === 'ingreso') {
         const sub = val('subtipo', previo?.subtipo) || null;
         if (sub && !['cashback', 'rendimiento'].includes(sub)) return { error: 'subtipo de ingreso debe ser cashback o rendimiento' };
@@ -162,6 +300,23 @@ export function validarMovimiento(entrada, v4, { previo = null, hoy = new Date()
         tx.subtipo = sub;
         if (!tx.desc) tx.desc = sub === 'cashback' ? 'Cashback' : sub === 'rendimiento' ? 'Rendimiento' : 'Ingreso';
         tx.abonoDe = previo?.abonoDe || null;
+        tx.abonoCompra = previo?.abonoCompra || null;
+        if ('abonoDe' in b) {
+            if (b.abonoDe === null) { tx.abonoDe = null; tx.abonoCompra = null; }   // desliga el abono
+            else {
+                const compra = d.transacciones.find(t => t.id === String(b.abonoDe));
+                if (!compra) return { error: `abonoDe: no existe el movimiento ${b.abonoDe}` };
+                if (compra.tipo !== 'gasto' || !compra.paraTercero) return { error: 'abonoDe debe ser el id de una compra para alguien más (un gasto con paraQuien)' };
+                tx.abonoDe = compra.paraTercero;
+                tx.abonoCompra = compra.id;
+            }
+        }
+        if (tx.abonoCompra && ('abonoDe' in b || 'monto' in b)) {
+            const pend = pendientesPorCompra(d.transacciones, previoId)[tx.abonoCompra]?.pendiente ?? 0;
+            if (pend <= 0.009) return { error: `Esa compra de ${tx.abonoDe} ya está saldada` };
+            if (monto > pend + 0.009) return { error: `El abono (${monto}) supera lo pendiente de esa compra (${pend})` };
+        }
+        if (tx.abonoDe && tx.subtipo) return { error: 'Un abono de Te deben no lleva subtipo' };
     } else {
         const destino = encontrarCuenta(val('cuentaDestino', previo?.cuentaDestinoId));
         if (!destino || destino.id === cuenta.id) return { error: 'cuentaDestino no encontrada o igual a la cuenta de origen' };
@@ -200,8 +355,8 @@ async function firebase(env, uid, token, ruta, metodo = 'GET', cuerpo) {
 
 // Solo lo necesario de v4 (la foto de perfil y los ajustes no hacen falta).
 async function leerV4(env, uid, token) {
-    const [cuentas, transacciones, categorias] = await Promise.all(['cuentas', 'transacciones', 'categorias'].map(n => firebase(env, uid, token, n)));
-    return { cuentas, transacciones, categorias };
+    const [cuentas, transacciones, categorias, topes] = await Promise.all(['cuentas', 'transacciones', 'categorias', 'topes'].map(n => firebase(env, uid, token, n)));
+    return { cuentas, transacciones, categorias, topes };
 }
 
 // ---------------------------------------------------------------- HTTP
@@ -222,28 +377,68 @@ export async function manejarApi(req, env, url, ctx) {
 
     const ruta = url.pathname.replace(/^\/api\/?/, '').replace(/\/+$/, '');
     const [recurso, id, extra] = ruta.split('/');
-    if (extra || (id && recurso !== 'movimientos')) return json({ error: 'Ruta no encontrada' }, 404);
+    if (extra || (id && !['movimientos', 'cuentas'].includes(recurso))) return json({ error: 'Ruta no encontrada' }, 404);
 
     try {
         const token = await idTokenDe(env, uid, u.api, async (nuevo) => { u.api.refresh = nuevo; await ctx.putUser(uid, u); });
         const mes = url.searchParams.get('mes') || mesKey(hoy);
         const pideMes = recurso === 'movimientos' || recurso === 'presupuestos';
-        if (req.method === 'GET' && pideMes && !MES.test(mes)) return json({ error: 'mes debe tener el formato AAAA-MM' }, 400);
+        if (pideMes && !MES.test(mes)) return json({ error: 'mes debe tener el formato AAAA-MM' }, 400);
 
         if (req.method === 'GET') {
-            if (id) return json({ error: 'Usa GET /api/movimientos?mes=AAAA-MM' }, 404);
+            if (id) return json({ error: `Usa GET /api/${recurso}` }, 404);
             const v4 = await leerV4(env, uid, token);
-            if (recurso === 'movimientos') return json(respMovimientos(v4, mes));
+            if (recurso === 'movimientos') {
+                const f = leerFiltros(url.searchParams);
+                if (f.error) return json({ error: f.error }, 400);
+                const r = respMovimientos(v4, mes, f.filtros);
+                return r.error ? json({ error: r.error }, 400) : json(r);
+            }
             if (recurso === 'cuentas') return json(respCuentas(v4, hoy));
             if (recurso === 'presupuestos') return json(respPresupuestos(v4, mes));
-            if (recurso === 'te-deben') return json(respTeDeben(v4, hoy));
+            if (recurso === 'te-deben') return json(respTeDeben(v4, hoy, url.searchParams.get('persona')));
             return json({ error: 'Ruta no encontrada' }, 404);
         }
-        if (recurso !== 'movimientos') return json({ error: 'Ruta no encontrada' }, 404);
+        if (!['movimientos', 'cuentas', 'presupuestos'].includes(recurso)) return json({ error: 'Ruta no encontrada' }, 404);
 
         let cuerpo = {};
         if (req.method === 'POST' || req.method === 'PATCH') {
             try { cuerpo = await req.json(); } catch { return json({ error: 'El cuerpo debe ser JSON' }, 400); }
+        }
+
+        // ---- Presupuestos: topes a partir de un mes (atómico: o todos o ninguno) ----
+        if (recurso === 'presupuestos') {
+            if (req.method !== 'PATCH' || id) return json({ error: 'Método no permitido' }, 405);
+            const v4 = await leerV4(env, uid, token);
+            const r = validarTopes(cuerpo, v4);
+            if (r.error) return json({ error: r.error }, 400);
+            await firebase(env, uid, token, `topes/${mes}`, 'PATCH', r.cambios);
+            const nuevo = { ...v4, topes: { ...(v4.topes || {}), [mes]: { ...((v4.topes || {})[mes] || {}), ...r.cambios } } };
+            return json(respPresupuestos(nuevo, mes));
+        }
+
+        // ---- Cuentas: alta y corrección (sin borrar) ----
+        if (recurso === 'cuentas') {
+            const v4 = await leerV4(env, uid, token);
+            if (req.method === 'POST' && !id) {
+                const r = validarCuenta(cuerpo, v4, { hoy });
+                if (r.error) return json({ error: r.error }, 400);
+                const { name } = await firebase(env, uid, token, 'cuentas', 'POST', limpiar(r.cuenta));
+                const nuevo = { ...v4, cuentas: { ...(v4.cuentas || {}), [name]: r.cuenta } };
+                const d = datosDe(nuevo);
+                return json(cuentaPublica({ ...r.cuenta, id: name }, d, calcularSaldos(d.cuentas, d.transacciones), hoy), 201);
+            }
+            if (req.method === 'PATCH' && id) {
+                const previo = v4.cuentas?.[id];
+                if (!previo) return json({ error: 'Cuenta no encontrada' }, 404);
+                const r = validarCuenta(cuerpo, v4, { previo: { ...previo, id }, hoy });
+                if (r.error) return json({ error: r.error }, 400);
+                await firebase(env, uid, token, `cuentas/${id}`, 'PUT', limpiar(r.cuenta));
+                const nuevo = { ...v4, cuentas: { ...v4.cuentas, [id]: r.cuenta } };
+                const d = datosDe(nuevo);
+                return json(cuentaPublica({ ...r.cuenta, id }, d, calcularSaldos(d.cuentas, d.transacciones), hoy));
+            }
+            return json({ error: 'Método no permitido' }, 405);
         }
 
         if (req.method === 'POST' && !id) {
@@ -259,7 +454,7 @@ export async function manejarApi(req, env, url, ctx) {
 
         if (req.method === 'PATCH') {
             const v4 = await leerV4(env, uid, token);
-            const r = validarMovimiento(cuerpo, v4, { previo, hoy });
+            const r = validarMovimiento(cuerpo, v4, { previo, previoId: id, hoy });
             if (r.error) return json({ error: r.error }, 400);
             // PUT del registro completo: así se quitan campos que ya no aplican (p. ej. msi al cambiar de cuenta).
             await firebase(env, uid, token, `transacciones/${id}`, 'PUT', limpiar(r.tx));

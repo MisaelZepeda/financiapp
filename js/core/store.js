@@ -4,6 +4,8 @@
 
 import { calcularSaldos, patrimonio, porCobrar, msiPorVenir } from '../domain/saldos.js';
 import { construirAvisos } from '../domain/notificaciones.js';
+import { categoriasDelMes } from '../domain/topes.js';
+import { mesKey } from '../domain/fechas.js';
 
 const listeners = new Set();
 
@@ -17,7 +19,7 @@ export const store = {
 };
 
 function vacio() {
-    return { meta: null, perfil: {}, ajustes: {}, cuentas: {}, categorias: {}, transacciones: {}, metas: {}, recurrentes: {}, plantillas: {}, retos: {}, notifDescartadas: {}, porRevisar: {} };
+    return { meta: null, perfil: {}, ajustes: {}, cuentas: {}, categorias: {}, transacciones: {}, metas: {}, recurrentes: {}, plantillas: {}, retos: {}, notifDescartadas: {}, porRevisar: {}, topes: {} };
 }
 
 // Asegura objetos y que cada elemento tenga su id (la clave de Firebase).
@@ -65,14 +67,18 @@ export const sel = {
         .sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || (b.creadoEn || 0) - (a.creadoEn || 0) || String(b.id).localeCompare(String(a.id)))),
     transaccion: (id) => store.datos.transacciones[id] || null,
     porRevisar: () => store.datos.porRevisar || {},
-    categorias: () => memorizar('cats', () => Object.values(store.datos.categorias).sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99) || a.nombre.localeCompare(b.nombre))),
+    // `presupuesto` de cada categoría = su tope en el mes actual (topes.js: cambios con fecha de inicio).
+    categorias: () => memorizar('cats', () => categoriasDelMes(Object.values(store.datos.categorias), store.datos.topes, mesKey()).sort((a, b) => (a.orden ?? 99) - (b.orden ?? 99) || a.nombre.localeCompare(b.nombre))),
     categoria: (id) => store.datos.categorias[id] || { id, nombre: id ? id.charAt(0).toUpperCase() + id.slice(1) : 'Sin categoría', icono: 'tag', orden: 99 },
     // Índice fijo de color por categoría (sigue a la categoría, no a su ranking).
     indiceCategoria: (id) => memorizar('idxcat', () => Object.fromEntries(sel.categorias().map((c, i) => [c.id, i])))[id] ?? 99,
     saldos: () => memorizar('saldos', () => calcularSaldos(Object.values(store.datos.cuentas), Object.values(store.datos.transacciones))),
     saldo: (id) => sel.saldos()[id] || 0,
     patrimonio: () => memorizar('patrimonio', () => patrimonio(Object.values(store.datos.cuentas), sel.saldos(), porCobrar(sel.transacciones(), Object.values(store.datos.cuentas)), msiPorVenir(Object.values(store.datos.cuentas), sel.transacciones()))),
-    metas: () => memorizar('metas', () => Object.values(store.datos.metas).sort((a, b) => (a.fechaLimite || '9999').localeCompare(b.fechaLimite || '9999'))),
+    // Una meta ligada a una cuenta (la Alcancía) lleva como avance el saldo de esa cuenta.
+    metas: () => memorizar('metas', () => Object.values(store.datos.metas)
+        .map(m => (m.cuentaId && store.datos.cuentas[m.cuentaId] ? { ...m, montoActual: sel.saldo(m.cuentaId) } : m))
+        .sort((a, b) => (a.fechaLimite || '9999').localeCompare(b.fechaLimite || '9999'))),
     plantillas: () => memorizar('plantillas', () => Object.values(store.datos.plantillas).sort((a, b) => (a.creadoEn || 0) - (b.creadoEn || 0))),
     retos: () => memorizar('retos', () => Object.values(store.datos.retos).sort((a, b) => (b.inicio || '').localeCompare(a.inicio || ''))),
     recurrentes: () => memorizar('recs', () => Object.values(store.datos.recurrentes).sort((a, b) => (a.proximaFecha || '').localeCompare(b.proximaFecha || ''))),

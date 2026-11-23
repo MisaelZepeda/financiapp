@@ -357,6 +357,7 @@ async function guardar(otro) {
         tx = { tipo: 'ingreso', monto, fecha: r.fecha, desc: desc || (sub === 'cashback' ? 'Cashback' : sub === 'rendimiento' ? 'Rendimiento' : 'Ingreso'), cuentaId: r.cuentaId };
         if (sub) tx.subtipo = sub;
         if (r.original?.abonoDe) tx.abonoDe = r.original.abonoDe;   // al editar un abono de Te deben, sigue siéndolo
+        if (r.original?.abonoCompra) tx.abonoCompra = r.original.abonoCompra;
     } else {
         const dest = sel.cuenta(r.cuentaDestinoId);
         if (!dest || dest.id === r.cuentaId) return toast('Elige la cuenta destino', { tipo: 'error' });

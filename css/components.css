@@ -57,7 +57,8 @@
 .top-back { margin-left: -8px; }
 .avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: var(--surface-3); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: var(--text); overflow: hidden; flex-shrink: 0; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
-.avatar-btn { margin-left: 4px; border-radius: 50%; }
+/* Tamaño fijo y redondo: si no, la sombra del botón forma un bloque detrás de la foto. */
+.avatar-btn { margin-left: 4px; border-radius: 50%; width: 38px; height: 38px; padding: 0; display: grid; place-items: center; flex-shrink: 0; overflow: visible; }
 
 /* ---------- Tarjetas ---------- */
 .card { background: var(--surface); border-radius: var(--r-xl); padding: 18px; }

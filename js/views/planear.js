@@ -106,12 +106,14 @@ function metasHTML() {
         }
         return `<section class="card meta">
             <div class="meta-top"><div class="fila-ico tono-accent">${icon(m.icono || 'target')}</div>
-                <div class="fila-body"><div class="fila-titulo">${escapeHtml(m.nombre)}</div><div class="fila-sub">${m.fechaLimite ? `Para el ${fechaLarga(m.fechaLimite)}` : 'Sin fecha límite'}</div></div>
+                <div class="fila-body"><div class="fila-titulo">${escapeHtml(m.nombre)}</div><div class="fila-sub">${m.cuentaId ? 'Se llena con tu alcancía' : m.fechaLimite ? `Para el ${fechaLarga(m.fechaLimite)}` : 'Sin fecha límite'}</div></div>
                 <button class="icon-btn" data-action="editarMeta" data-id="${escapeHtml(m.id)}" aria-label="Editar meta">${icon('edit')}</button></div>
             <p class="meta-monto"><span class="num privado">${money(m.montoActual)}</span> <span class="muted num privado">/ ${money(m.montoObjetivo)}</span></p>
             <div class="barra"><i style="width:${p}%; ${p >= 100 ? 'background:var(--pos)' : ''}"></i></div>
             <div class="meta-pie"><span>${Math.round(p)}%</span><span>${p >= 100 ? '<span class="pos">¡Meta lograda!</span>' : ritmo || `Faltan <span class="privado">${money(falta)}</span>`}</span></div>
-            <div class="meta-btns"><button class="btn btn-primary btn-sm" data-action="abonarMeta" data-id="${escapeHtml(m.id)}">${icon('plus')}Abonar</button><button class="btn btn-soft btn-sm" data-action="retirarMeta" data-id="${escapeHtml(m.id)}">Retirar</button></div>
+            <div class="meta-btns">${m.cuentaId
+                ? `<button class="btn btn-primary btn-sm" data-action="abrirAlcancia">${icon('coin')}Echar monedas</button>`
+                : `<button class="btn btn-primary btn-sm" data-action="abonarMeta" data-id="${escapeHtml(m.id)}">${icon('plus')}Abonar</button><button class="btn btn-soft btn-sm" data-action="retirarMeta" data-id="${escapeHtml(m.id)}">Retirar</button>`}</div>
         </section>`;
     }).join('');
     return `<div class="acciones-top"><button class="btn btn-primary" data-action="nuevaMeta">${icon('plus')}Nueva meta</button></div>

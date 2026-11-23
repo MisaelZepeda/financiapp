@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v52'; // v52: estilo neumorfico y selector de estilo
+const CACHE_NAME = 'morralla-cache-v53'; // v53: api v2, encabezado y alcancia en metas
 
 const urlsToCache = [
     './',
@@ -53,6 +53,7 @@ const urlsToCache = [
     './js/domain/salud.js',
     './js/domain/tarjetas.js',
     './js/domain/terceros.js',
+    './js/domain/topes.js',
     './js/firebase-init.js',
     './js/lib/apariencia.js',
     './js/lib/compartir.js',

@@ -292,17 +292,19 @@ function apiDocHTML(llave) {
         <p class="hint">Manda la llave en el encabezado <code>Authorization: Bearer mrl_…</code>. Respuestas en JSON.</p>
         <h3>Leer</h3>
         <ul class="pasos">
-            <li><b>GET /movimientos?mes=2026-11</b> · fecha, tipo, monto, cuenta, categoría, descripción, etiquetas, MSI y para quién.</li>
+            <li><b>GET /movimientos?mes=2026-11</b> · fecha, tipo, monto, cuenta, categoría, descripción, etiquetas, MSI y para quién. Filtros: <code>q</code>, <code>cuenta</code>, <code>categoria</code>, <code>tipo</code>, <code>desde</code>/<code>hasta</code>, <code>montoMin</code>/<code>montoMax</code>, <code>paraQuien</code>.</li>
             <li><b>GET /cuentas</b> · saldo de débito; deuda, disponible, corte y próximo pago de crédito.</li>
             <li><b>GET /presupuestos?mes=2026-11</b> · tope, gastado y restante por categoría.</li>
-            <li><b>GET /te-deben</b> · quién te debe, cuánto y su próxima mensualidad.</li>
+            <li><b>GET /te-deben</b> · quién te debe, cuánto, sus compras y cada abono (<code>?persona=</code> para una sola).</li>
         </ul>
         ${bloque(`curl "${url}/cuentas" ${auth}`)}
         <h3>Escribir</h3>
         <ul class="pasos">
-            <li><b>POST /movimientos</b> · <code>tipo</code> (gasto, ingreso, transferencia), <code>monto</code>, <code>cuenta</code> (id o nombre), <code>fecha</code> (AAAA-MM-DD; si no, hoy), <code>categoria</code> (gastos; si no, se sugiere con la descripción), <code>descripcion</code>, <code>etiquetas</code>, <code>msi</code> (crédito), <code>paraQuien</code> (Te deben), <code>subtipo</code> (cashback o rendimiento) y <code>cuentaDestino</code> (transferencias).</li>
+            <li><b>POST /movimientos</b> · <code>tipo</code> (gasto, ingreso, transferencia), <code>monto</code>, <code>cuenta</code> (id o nombre), <code>fecha</code> (AAAA-MM-DD; si no, hoy), <code>categoria</code> (gastos; si no, se sugiere con la descripción), <code>descripcion</code>, <code>etiquetas</code>, <code>msi</code> (crédito), <code>paraQuien</code> (Te deben), <code>subtipo</code> (cashback o rendimiento), <code>cuentaDestino</code> (transferencias), <code>partes</code> (gasto dividido) y <code>abonoDe</code> (id de la compra que salda un abono).</li>
             <li><b>PATCH /movimientos/{id}</b> · manda solo lo que quieras corregir.</li>
             <li><b>DELETE /movimientos/{id}</b> · borra un movimiento.</li>
+            <li><b>PATCH /presupuestos?mes=2026-12</b> · <code>{"topes": [{"categoria", "tope"}]}</code>: cambia topes a partir de ese mes.</li>
+            <li><b>POST /cuentas</b> y <b>PATCH /cuentas/{id}</b> · dar de alta o corregir nombre, banco, dígitos y datos de crédito.</li>
         </ul>
         ${bloque(`curl -X POST "${url}/movimientos" ${auth} \\\n  -H "Content-Type: application/json" \\\n  -d '{"tipo":"gasto","monto":250,"cuenta":"Nómina","descripcion":"Oxxo"}'`)}
         <p class="hint">Si cambias tu contraseña, la llave deja de funcionar: crea una nueva aquí. Si alguien más la ve, revócala.</p>

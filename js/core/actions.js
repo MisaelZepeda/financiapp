@@ -55,6 +55,10 @@ export function descartarPorRevisar(id) {
 export async function echarMonedas(monto, origenId) {
     let alcancia = Object.entries(datos().cuentas).find(([, c]) => c?.alcancia)?.[0];
     if (!alcancia) alcancia = await guardarCuenta({ nombre: 'Alcancía', banco: 'Alcancía', tipo: 'efectivo', alcancia: true }, 0);
+    // Su meta de ahorro: avanza sola con el saldo de la alcancía (ver sel.metas).
+    if (!Object.values(datos().metas || {}).some(m => m?.cuentaId === alcancia)) {
+        await guardarMeta({ nombre: 'Alcancía de morralla', icono: 'coin', montoObjetivo: 1000, montoActual: 0, cuentaId: alcancia });
+    }
     return guardarTransaccion({ tipo: 'transferencia', subtipo: 'alcancia', monto, fecha: hoyISO(), desc: 'Monedas a la alcancía', cuentaId: origenId, cuentaDestinoId: alcancia });
 }
 
@@ -83,7 +87,7 @@ export function guardarCategoria(cat) {
     const orden = previo.orden ?? Object.keys(datos().categorias).length;
     const registro = { ...previo, ...cat, id: undefined, icono: cat.icono || previo.icono || iconoSugerido(cat.nombre), orden };
     if (!(Number(registro.presupuesto) > 0)) registro.presupuesto = null;
-    return actualizar({ [`categorias/${id}`]: registro }).then(() => id);
+    return actualizar({ [`categorias/${id}`]: registro, ...topeDesdeEsteMes(id, registro.presupuesto) }).then(() => id);
 }
 
 function slugUnico(nombre) {
@@ -99,8 +103,19 @@ export function borrarCategoria(id) {
 
 export function guardarPresupuestos(mapa) {
     const updates = {};
-    Object.entries(mapa).forEach(([id, v]) => { updates[`categorias/${id}/presupuesto`] = Number(v) > 0 ? Number(v) : null; });
+    Object.entries(mapa).forEach(([id, v]) => {
+        const tope = Number(v) > 0 ? Number(v) : null;
+        updates[`categorias/${id}/presupuesto`] = tope;
+        Object.assign(updates, topeDesdeEsteMes(id, tope));
+    });
     return actualizar(updates);
+}
+
+// Si hay topes con fecha (p. ej. puestos por la API para un mes), un cambio en la app
+// aplica desde el mes actual para no quedar tapado por uno anterior.
+function topeDesdeEsteMes(id, tope) {
+    if (!Object.keys(datos().topes || {}).length) return {};
+    return { [`topes/${mesKey()}/${id}`]: tope > 0 ? tope : -1 };
 }
 
 // ---------- Metas ----------

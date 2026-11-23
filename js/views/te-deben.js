@@ -11,7 +11,7 @@ import { vacioHTML } from '../components/piezas.js';
 import { abrirHoja, cerrarHoja, toast } from '../components/capas.js';
 import { confeti, monedaAlcancia } from '../components/efectos.js';
 import { abrirRegistro } from '../components/registro.js';
-import { deudasTerceros, totalTeDeben } from '../domain/terceros.js';
+import { deudasTerceros, totalTeDeben, compraPorSaldar } from '../domain/terceros.js';
 import { hoyISO } from '../domain/fechas.js';
 
 export const titulo = () => ({ titulo: 'Te deben', atras: '#/mas' });
@@ -98,7 +98,9 @@ on('tdGuardar', async () => {
     const monto = Math.round((abono.monto || 0) * 100) / 100;
     if (!(monto > 0)) return toast('Escribe el monto del abono', { tipo: 'error' });
     if (!abono.cuentaId) return toast('Elige la cuenta donde entró', { tipo: 'error' });
-    await guardarTransaccion({ tipo: 'ingreso', monto, fecha: hoyISO(), desc: `Abono de ${abono.nombre}`, cuentaId: abono.cuentaId, abonoDe: abono.nombre });
+    // Se liga a la compra más antigua con pendiente (así la API sabe qué compra salda).
+    const compra = compraPorSaldar(sel.transacciones(), abono.nombre);
+    await guardarTransaccion({ tipo: 'ingreso', monto, fecha: hoyISO(), desc: `Abono de ${abono.nombre}`, cuentaId: abono.cuentaId, abonoDe: abono.nombre, ...(compra ? { abonoCompra: compra.id } : {}) });
     cerrarHoja();
     if (monto >= abono.pendiente - 0.009) { toast(`¡${abono.nombre} terminó de pagarte!`); confeti(); }
     else { toast(`Abono de ${money(monto)} registrado`); monedaAlcancia(); }

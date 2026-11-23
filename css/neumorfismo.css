@@ -62,9 +62,11 @@ body { background: var(--bg); }
 .swipe-fila { background: var(--bg); }
 
 /* ---------- Encabezado ---------- */
-.top { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
-@media (min-width: 1024px) { .top { background: transparent; } }
-.top .icon-btn, .top .avatar-btn { background: var(--bg); border: 0; box-shadow: var(--neu-sm); }
+/* Encabezado sólido del color del fondo: al deslizar, el contenido pasa por debajo sin encimarse. */
+.top { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: 0 8px 14px -10px var(--sombra-osc); }
+@media (min-width: 1024px) { .top { background: var(--bg); } }
+.top .icon-btn, .top .avatar-btn { background: var(--bg); border: 0; box-shadow: var(--neu-xs); }
+.top .avatar-btn .avatar { width: 34px; height: 34px; }
 .top .icon-btn:active, .top .avatar-btn:active { box-shadow: var(--neu-in-sm); }
 
 /* ---------- Barra de pestañas flotante ---------- */

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Morralla</title>
+    <meta name="theme-color" content="#e8ecf2">
     <script>
         // Tema y acento antes de pintar (evita el parpadeo).
         (function () {
@@ -14,6 +15,9 @@
                 document.documentElement.setAttribute('data-theme', oscuro ? 'dark' : 'light');
                 if (['azul', 'violeta', 'laton', 'cobre', 'menta', 'cielo'].indexOf(ap.acento) >= 0) document.documentElement.setAttribute('data-accent', ap.acento);
                 document.documentElement.setAttribute('data-estilo', ['cristal', 'clasico'].indexOf(ap.estilo) >= 0 ? ap.estilo : 'neumorfico');
+                // Color de la barra de estado del iPhone desde el arranque (el iPhone no siempre lo cambia después).
+                var neu = ['cristal', 'clasico'].indexOf(ap.estilo) < 0;
+                document.querySelector('meta[name="theme-color"]').setAttribute('content', oscuro ? (neu ? '#2a2e36' : '#110e1c') : (neu ? '#e8ecf2' : '#f6f5fa'));
             } catch (e) {}
         })();
     </script>
@@ -37,7 +41,6 @@
         })();
     </script>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#e8ecf2">
 </head>
 <body>
     <!-- Sprite de íconos: formas rellenas y redondeadas (24x24) referenciadas

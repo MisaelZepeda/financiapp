@@ -72,3 +72,38 @@ export function deudasTerceros(cuentas, transacciones, hoy = new Date()) {
 }
 
 export const totalTeDeben = (deudas) => r2(deudas.reduce((a, d) => a + d.pendiente, 0));
+
+// Pendiente de cada compra para alguien más: { [compraId]: { nombre, monto, abonado, pendiente } }.
+// Los abonos ligados a una compra (`abonoCompra`) cuentan para esa compra; los que solo
+// dicen la persona (`abonoDe`) se reparten de la compra más antigua a la más nueva.
+// `excluir`: id de un abono que no se cuenta (al corregirlo).
+export function pendientesPorCompra(transacciones, excluir = null) {
+    const compras = transacciones.filter(t => t.tipo === 'gasto' && t.paraTercero && t.id)
+        .sort((a, b) => (a.fecha || '').localeCompare(b.fecha || '') || (a.creadoEn || 0) - (b.creadoEn || 0));
+    const res = {};
+    compras.forEach(c => { res[c.id] = { nombre: c.paraTercero, monto: Number(c.monto) || 0, abonado: 0, pendiente: Number(c.monto) || 0 }; });
+    const abonos = transacciones.filter(t => t.tipo === 'ingreso' && t.abonoDe && t.id !== excluir);
+    const sueltos = {};
+    abonos.forEach(a => {
+        const m = Number(a.monto) || 0;
+        if (a.abonoCompra && res[a.abonoCompra]) res[a.abonoCompra].abonado += m;
+        else { const k = clave(a.abonoDe); sueltos[k] = (sueltos[k] || 0) + m; }
+    });
+    compras.forEach(c => {
+        const r = res[c.id], k = clave(c.paraTercero);
+        const libre = Math.max(0, r.monto - r.abonado);
+        const toma = Math.min(libre, sueltos[k] || 0);
+        r.abonado = r2(r.abonado + toma);
+        sueltos[k] = r2((sueltos[k] || 0) - toma);
+        r.pendiente = r2(Math.max(0, r.monto - r.abonado));
+    });
+    return res;
+}
+
+// La compra que salda un abono nuevo de `nombre`: la más antigua que aún tiene pendiente.
+export function compraPorSaldar(transacciones, nombre) {
+    const p = pendientesPorCompra(transacciones);
+    const k = clave(nombre);
+    return transacciones.filter(t => t.tipo === 'gasto' && t.paraTercero && clave(t.paraTercero) === k && p[t.id]?.pendiente > 0.009)
+        .sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''))[0] || null;
+}
