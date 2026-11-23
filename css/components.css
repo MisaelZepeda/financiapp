@@ -355,3 +355,8 @@ input.etiqueta-input { width: 130px; height: 30px; padding: 0 11px; border-radiu
 .bib-logo { width: 56px; height: 56px; border-radius: 16px; font-size: 20px; }
 .bib-vs { color: var(--muted); }
 .bib-vs .icon { width: 18px; height: 18px; }
+
+.inst-grupo { grid-column: 1 / -1; margin: 8px 2px 0; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.inst-grupo:first-child { margin-top: 0; }
+.inst-vacio { grid-column: 1 / -1; }
+.inst-grid { max-height: 360px; }

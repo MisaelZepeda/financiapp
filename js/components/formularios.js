@@ -8,7 +8,7 @@ import { icon } from '../lib/icons.js';
 import { escapeHtml, money } from '../lib/format.js';
 import { ICONOS_CATEGORIA, COLORES_CATEGORIA } from '../domain/categorias.js';
 import { colorCategoria, logoImgHTML } from './piezas.js';
-import { INSTITUCIONES, COLORES_CUENTA, institucionDe, institucionPorId, logoDeInstitucion, buscarInstituciones } from '../domain/instituciones.js';
+import { INSTITUCIONES, COLORES_CUENTA, GRUPOS_INSTITUCION, institucionDe, institucionPorId, logoDeInstitucion, buscarInstituciones } from '../domain/instituciones.js';
 import { FRECUENCIAS } from '../domain/recurrentes.js';
 import { navegar } from '../core/router.js';
 import { confeti, monedaAlcancia } from './efectos.js';
@@ -38,10 +38,19 @@ function instHTML() {
         ${inst ? '' : `<input id="fc-banco" name="banco" placeholder="Nombre de la institución (si no está en la lista)" value="${escapeHtml(fc.banco || '')}" data-input="fcBancoTxt" style="margin-top:8px;">`}`;
 }
 
+// Por secciones (Bancos, Apps y fintech…) y en orden alfabético; al buscar, una sola lista.
 function gridInst(q) {
-    const lista = buscarInstituciones(q);
-    return lista.map(i => `<button type="button" class="inst-op ${i.id === fc.inst ? 'activo' : ''}" data-action="fcInst" data-id="${i.id}">${logoInst(i)}<span>${escapeHtml(i.nombre)}</span></button>`).join('')
-        + `<button type="button" class="inst-op" data-action="fcInst" data-id="">${icon('edit')}<span>Otra</span></button>`;
+    const op = (i) => `<button type="button" class="inst-op ${i.id === fc.inst ? 'activo' : ''}" data-action="fcInst" data-id="${i.id}">${logoInst(i)}<span>${escapeHtml(i.nombre)}</span></button>`;
+    const otra = `<button type="button" class="inst-op" data-action="fcInst" data-id="">${icon('edit')}<span>Otra</span></button>`;
+    const orden = (a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
+    if (q.trim()) {
+        const lista = buscarInstituciones(q).sort(orden);
+        return (lista.length ? lista.map(op).join('') : '<p class="hint inst-vacio">No está en la biblioteca: usa "Otra".</p>') + otra;
+    }
+    return GRUPOS_INSTITUCION.map(([g, titulo]) => {
+        const lista = INSTITUCIONES.filter(i => i.grupo === g).sort(orden);
+        return lista.length ? `<p class="inst-grupo">${titulo}</p>${lista.map(op).join('')}` : '';
+    }).join('') + otra;
 }
 
 function coloresHTML() {

@@ -56,7 +56,7 @@ export function descartarPorRevisar(id) {
 // `metaId`: meta a la que suma la alcancía ('propia' = su meta "Alcancía de morralla").
 export async function echarMonedas(monto, origenId, metaId = null) {
     let alcancia = Object.entries(datos().cuentas).find(([, c]) => c?.alcancia)?.[0];
-    if (!alcancia) alcancia = await guardarCuenta({ nombre: 'Alcancía', banco: 'Alcancía', tipo: 'efectivo', alcancia: true }, 0);
+    if (!alcancia) alcancia = await guardarCuenta({ nombre: 'Alcancía', banco: 'Alcancía', tipo: 'efectivo', alcancia: true, institucion: 'alcancia' }, 0);
     // Meta de ahorro: la elegida, o si no hay ninguna ligada, su propia meta (ver sel.metas).
     if (metaId) await ligarAlcancia(metaId, alcancia);
     else if (!Object.values(datos().metas || {}).some(m => m?.cuentaId === alcancia)) await ligarAlcancia('propia', alcancia);

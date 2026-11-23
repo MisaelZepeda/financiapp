@@ -10,16 +10,17 @@ import { icon } from '../lib/icons.js';
 import { escapeHtml } from '../lib/format.js';
 import { abrirHoja, cerrarHoja, hojaAbierta, toast } from './capas.js';
 import { logoImgHTML } from './piezas.js';
-import { cuentasParaBiblioteca, institucionDe, logoDeInstitucion, colorDeCuenta } from '../domain/instituciones.js';
+import { cuentasParaBiblioteca, institucionDe, logoDeInstitucion, colorDeCuenta, RONDA_BIBLIOTECA } from '../domain/instituciones.js';
 import { hoyISO } from '../domain/fechas.js';
 
 // ¿Se ofrece hoy? Solo el primer día en que hay algo que decidir.
 export function bibliotecaPendiente() {
     const lista = cuentasParaBiblioteca(sel.cuentas());
     if (!lista.length) return 0;
-    const dia = sel.ajustes().bibliotecaDia;
+    const clave = `bibliotecaDia${RONDA_BIBLIOTECA}`;   // cada ronda se ofrece un solo día
+    const dia = sel.ajustes()[clave];
     if (dia && dia !== hoyISO()) return 0;
-    if (!dia) guardarAjustes({ bibliotecaDia: hoyISO() });   // se registra el día en que se ofreció
+    if (!dia) guardarAjustes({ [clave]: hoyISO() });   // se registra el día en que se ofreció
     return lista.length;
 }
 
@@ -44,7 +45,7 @@ function cuerpoHTML() {
     const lista = cuentasParaBiblioteca(sel.cuentas());
     if (!lista.length) return `<p class="hint" style="text-align:center;">¡Listo! Todas tus cuentas quedaron como las elegiste.</p>
         <div class="hoja-foot"><button class="btn btn-primary" data-action="cerrarHoja">Cerrar</button></div>`;
-    return `<p class="hint" style="margin-top:0;">Llegó la biblioteca de instituciones con logos y colores oficiales. Estas cuentas tienen un logo que pusiste tú: elige cuál quieres en cada una. Solo te lo pregunto hoy.</p>
+    return `<p class="hint" style="margin-top:0;">La biblioteca de instituciones ahora tiene más bancos, apps y fintech con sus logos y colores. Estas cuentas tienen un logo que pusiste tú: elige cuál quieres en cada una. Solo te lo pregunto hoy.</p>
         <div class="bib-lista">${lista.map(filaHTML).join('')}</div>
         <div class="hoja-foot"><button class="btn btn-soft" data-action="bibTodas" data-usar="0">Conservar todos</button>
             <button class="btn btn-primary" data-action="bibTodas" data-usar="1">Biblioteca en todas</button></div>`;
@@ -56,8 +57,8 @@ function cambios(c, usar) {
     const inst = institucionDe(c);
     const base = `cuentas/${c.id}`;
     return usar
-        ? { [`${base}/institucion`]: inst.id, [`${base}/icono`]: null, [`${base}/color`]: null, [`${base}/bibliotecaDecidida`]: true }
-        : { [`${base}/institucion`]: inst.id, [`${base}/bibliotecaDecidida`]: true };
+        ? { [`${base}/institucion`]: inst.id, [`${base}/icono`]: null, [`${base}/color`]: null, [`${base}/bibliotecaRonda`]: RONDA_BIBLIOTECA }
+        : { [`${base}/institucion`]: inst.id, [`${base}/bibliotecaRonda`]: RONDA_BIBLIOTECA };
 }
 
 export function abrirBiblioteca() {

@@ -714,8 +714,17 @@ test('biblioteca: solo pregunta por cuentas con logo propio que están en la bib
     const cuentas = [
         { id: 'a', banco: 'BBVA', icono: 'https://mi.logo/bbva.png' },          // se pregunta
         { id: 'b', banco: 'Nu' },                                               // ya usa la biblioteca
-        { id: 'c', banco: 'Caja Popular', icono: 'https://mi.logo/caja.png' },  // no está en la biblioteca
-        { id: 'd', banco: 'Rappi', icono: 'x', bibliotecaDecidida: true },      // ya decidió
+        { id: 'c', banco: 'Mi Caja Ahorro', icono: 'https://mi.logo/caja.png' }, // no está en la biblioteca
+        { id: 'd', banco: 'Rappi', icono: 'x', bibliotecaDecidida: true },      // decidió en la ronda 1: se vuelve a preguntar
+        { id: 'e', banco: 'Klar', icono: 'x', bibliotecaRonda: 2 },            // ya decidió en esta ronda
     ];
-    assert.deepEqual(cuentasParaBiblioteca(cuentas).map(c => c.id), ['a']);
+    assert.deepEqual(cuentasParaBiblioteca(cuentas).map(c => c.id), ['a', 'd']);
+});
+
+test('alcancía: usa su ícono de la biblioteca por omisión', async () => {
+    const { institucionDe, logoDeInstitucion } = await import('../js/domain/instituciones.js');
+    const inst = institucionDe({ nombre: 'Alcancía', banco: 'Alcancía', tipo: 'efectivo', alcancia: true });
+    assert.equal(inst.id, 'alcancia');
+    assert.equal(logoDeInstitucion(inst), 'logos/alcancia.svg');
+    assert.equal(institucionDe({ tipo: 'efectivo' }).id, 'efectivo');   // el efectivo normal no cambia
 });

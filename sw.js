@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v60'; // v60: icono propio de Efectivo
+const CACHE_NAME = 'morralla-cache-v61'; // v61: mas fintech, secciones, logo de alcancia
 
 const urlsToCache = [
     './',
@@ -7,6 +7,7 @@ const urlsToCache = [
     './logo.svg',
     './icon-192x192.png',
     './icon-512x512.png',
+    './logos/alcancia.svg',
     './logos/efectivo.svg',
     './css/base.css',
     './css/clasico.css',
