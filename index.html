@@ -14,10 +14,11 @@
                 var oscuro = sesion ? sesion === 'oscuro' : (ap.tema === 'oscuro' || (ap.tema === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches));
                 document.documentElement.setAttribute('data-theme', oscuro ? 'dark' : 'light');
                 if (['azul', 'violeta', 'laton', 'cobre', 'menta', 'cielo'].indexOf(ap.acento) >= 0) document.documentElement.setAttribute('data-accent', ap.acento);
-                document.documentElement.setAttribute('data-estilo', ['cristal', 'clasico'].indexOf(ap.estilo) >= 0 ? ap.estilo : 'neumorfico');
+                var estilo = ['papercut', 'cristal', 'clasico'].indexOf(ap.estilo) >= 0 ? ap.estilo : 'neumorfico';
+                document.documentElement.setAttribute('data-estilo', estilo);
                 // Color de la barra de estado del iPhone desde el arranque (el iPhone no siempre lo cambia después).
-                var neu = ['cristal', 'clasico'].indexOf(ap.estilo) < 0;
-                document.querySelector('meta[name="theme-color"]').setAttribute('content', oscuro ? (neu ? '#2a2e36' : '#110e1c') : (neu ? '#e8ecf2' : '#f6f5fa'));
+                var fondo = { neumorfico: ['#e8ecf2', '#2a2e36'], papercut: ['#f6d2b4', '#2c3046'], cristal: ['#f6f5fa', '#110e1c'], clasico: ['#f6f5fa', '#110e1c'] }[estilo];
+                document.querySelector('meta[name="theme-color"]').setAttribute('content', fondo[oscuro ? 1 : 0]);
             } catch (e) {}
         })();
     </script>
@@ -32,12 +33,13 @@
     <link rel="stylesheet" href="css/views.css">
     <!-- Estilos elegibles en Ajustes › Apariencia: solo uno queda activo. -->
     <link rel="stylesheet" href="css/neumorfismo.css" id="estilo-neumorfico">
+    <link rel="stylesheet" href="css/papercut.css" id="estilo-papercut">
     <link rel="stylesheet" href="css/cristal.css" id="estilo-cristal">
     <link rel="stylesheet" href="css/clasico.css" id="estilo-clasico">
     <script>
         (function () {
             var e = document.documentElement.getAttribute('data-estilo') || 'neumorfico';
-            ['neumorfico', 'cristal', 'clasico'].forEach(function (n) { document.getElementById('estilo-' + n).disabled = n !== e; });
+            ['neumorfico', 'papercut', 'cristal', 'clasico'].forEach(function (n) { document.getElementById('estilo-' + n).disabled = n !== e; });
         })();
     </script>
     <link rel="manifest" href="manifest.json">

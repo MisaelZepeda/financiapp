@@ -41,7 +41,7 @@ export function render() {
         <section class="card">
             <h2 class="card-title" style="margin-bottom:14px;">Apariencia</h2>
             <div class="field"><span class="label">Estilo</span><div class="estilos">
-                ${[['neumorfico', 'Neumórfico', 'Suave, gris y azul'], ['cristal', 'Cristal', 'Translúcido, como iOS'], ['clasico', 'Clásico', 'Blanco y violeta']].map(([v, t, d]) =>
+                ${[['neumorfico', 'Neumórfico', 'Suave, con textura de papel'], ['papercut', 'Papel recortado', 'Capas de papel y cartulina'], ['cristal', 'Cristal', 'Translúcido, como iOS'], ['clasico', 'Clásico', 'Blanco y violeta']].map(([v, t, d]) =>
                     `<button class="estilo-op ${estiloElegido() === v ? 'activo' : ''}" data-action="ajEstilo" data-v="${v}" aria-pressed="${estiloElegido() === v}"><span class="estilo-muestra m-${v}"><i></i><i></i></span><b>${t}</b><small>${d}</small></button>`).join('')}
             </div></div>
             <div class="field"><span class="label">Tema</span>${selectorTema(tema)}

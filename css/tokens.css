@@ -91,6 +91,9 @@
     --shadow-pop: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
+/* Papel recortado va en cobre si no eliges otro acento. */
+:root[data-estilo="papercut"]:not([data-accent]) { --accent: #dd7a3c; --accent-ink: #a8501a; --on-accent: #ffffff; }
+:root[data-theme="dark"][data-estilo="papercut"]:not([data-accent]) { --accent: #e8894a; --accent-ink: #f0a06a; }
 /* Cristal y Clásico se diseñaron en violeta: es su acento si no eliges otro. */
 :root[data-estilo="cristal"]:not([data-accent]), :root[data-estilo="clasico"]:not([data-accent]) { --accent: #5b3df5; --accent-ink: #4f30e6; --on-accent: #ffffff; }
 :root[data-theme="dark"][data-estilo="cristal"]:not([data-accent]), :root[data-theme="dark"][data-estilo="clasico"]:not([data-accent]) { --accent: #6a4dff; --accent-ink: #a99aff; }

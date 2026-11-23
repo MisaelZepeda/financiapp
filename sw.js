@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v55'; // v55: aviso para ligar la alcancia a una meta
+const CACHE_NAME = 'morralla-cache-v56'; // v56: textura de papel y estilo papel recortado
 
 const urlsToCache = [
     './',
@@ -12,6 +12,7 @@ const urlsToCache = [
     './css/components.css',
     './css/cristal.css',
     './css/neumorfismo.css',
+    './css/papercut.css',
     './css/tokens.css',
     './css/views.css',
     './js/app.js',

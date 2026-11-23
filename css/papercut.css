@@ -1,0 +1,151 @@
+/* ==========================================================================
+   PAPEL RECORTADO (papercut) — capas de papel recortado encimadas: fondo de
+   papel crema con grano, ondas de papel arriba, tarjetas como hojas con canto
+   y sombra, botones de cartulina. Elegible en Ajustes › Apariencia
+   (data-estilo="papercut"). Va al final: solo sobrescribe estilos.
+   ========================================================================== */
+
+:root {
+    --bg: #f3ebde;
+    --surface: #fffaf1;
+    --surface-2: #f6eee1;
+    --surface-3: #ebdfcd;
+    --line: rgba(110, 76, 40, 0.13);
+    --line-strong: rgba(110, 76, 40, 0.22);
+    --text: #33261b;
+    --text-2: #5a4636;
+    --muted: #8b7562;
+    --chart-grid: rgba(110, 76, 40, 0.12);
+    --canto: #e2d4bf;                 /* el borde grueso de la hoja de papel */
+    --sombra-hoja: rgba(90, 56, 22, 0.28);
+    --onda-1: #f6d2b4; --onda-2: #efb48b; --onda-3: #e3925e;
+    --papel: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .4 0 0 0 0 .3 0 0 0 0 .2 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .35' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .4 0 0 0 0 .3 0 0 0 0 .2 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+    /* Ondas de papel recortado (tres capas con su sombra) para la parte de arriba. */
+    --ondas: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='s' x='-5%25' y='-5%25' width='110%25' height='130%25'%3E%3CfeDropShadow dx='0' dy='4' stdDeviation='4' flood-color='%235a3816' flood-opacity='.28'/%3E%3C/filter%3E%3C/defs%3E%3Cpath filter='url(%23s)' fill='%23f6d2b4' d='M0 0h400v150c-50 22-95-18-150 2s-110 30-160 6-60-14-90-10z'/%3E%3Cpath filter='url(%23s)' fill='%23efb48b' d='M0 0h400v104c-60 26-110-22-170-2s-100 28-150 8-55-16-80-12z'/%3E%3Cpath filter='url(%23s)' fill='%23e3925e' d='M0 0h400v58c-45 18-90-16-145 0s-105 24-160 6-60-12-95-8z'/%3E%3C/svg%3E");
+}
+:root[data-theme="dark"] {
+    --bg: #1d1f2b;
+    --surface: #282b3a;
+    --surface-2: #2f3344;
+    --surface-3: #393e52;
+    --line: rgba(255, 255, 255, 0.08);
+    --line-strong: rgba(255, 255, 255, 0.14);
+    --text: #f1ebe2;
+    --text-2: #d6cdbf;
+    --muted: #a49a8c;
+    --chart-grid: rgba(255, 255, 255, 0.07);
+    --canto: #171923;
+    --sombra-hoja: rgba(0, 0, 0, 0.55);
+    --ondas: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200' preserveAspectRatio='none'%3E%3Cdefs%3E%3Cfilter id='s' x='-5%25' y='-5%25' width='110%25' height='130%25'%3E%3CfeDropShadow dx='0' dy='4' stdDeviation='4' flood-color='%23000' flood-opacity='.5'/%3E%3C/filter%3E%3C/defs%3E%3Cpath filter='url(%23s)' fill='%232c3046' d='M0 0h400v150c-50 22-95-18-150 2s-110 30-160 6-60-14-90-10z'/%3E%3Cpath filter='url(%23s)' fill='%233a3352' d='M0 0h400v104c-60 26-110-22-170-2s-100 28-150 8-55-16-80-12z'/%3E%3Cpath filter='url(%23s)' fill='%23563b52' d='M0 0h400v58c-45 18-90-16-145 0s-105 24-160 6-60-12-95-8z'/%3E%3C/svg%3E");
+}
+
+/* ---------- Fondo: papel con grano y ondas recortadas arriba ---------- */
+body { background-color: var(--bg); background-image: var(--papel); }
+body::before {
+    content: ''; position: fixed; left: 0; right: 0; top: 0; height: calc(190px + env(safe-area-inset-top)); z-index: -1; pointer-events: none;
+    background: var(--ondas) no-repeat top / 100% 100%;
+}
+
+/* ---------- Hojas de papel: canto grueso abajo y sombra suave ---------- */
+.card, .pendiente, .modal, .aviso-actualizacion, .mas-item, .mas-perfil {
+    background-color: var(--surface); background-image: var(--papel); border: 0;
+    box-shadow: 0 3px 0 var(--canto), 0 10px 22px -12px var(--sombra-hoja);
+}
+.card { border-radius: 20px; }
+.pendiente { border-radius: 16px; }
+
+/* La tarjeta principal: cartulina del acento con capas recortadas dentro. */
+.hero {
+    position: relative; overflow: hidden; isolation: isolate;
+    background-color: var(--accent); background-image: var(--papel);
+    box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 62%, #000), 0 14px 26px -12px var(--sombra-hoja);
+}
+.hero::before, .hero::after { content: ''; position: absolute; z-index: -1; left: -10%; right: -10%; border-radius: 50%; pointer-events: none; }
+.hero::before { bottom: -62%; height: 110%; background: color-mix(in srgb, var(--accent) 82%, #fff); box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.14); }
+.hero::after { bottom: -78%; height: 100%; left: 20%; right: -30%; background: color-mix(in srgb, var(--accent) 88%, #000); box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.16); }
+
+/* Íconos de las filas: recortes de papel. */
+.fila-ico { box-shadow: 0 2px 0 var(--canto); }
+.swipe-fila { background: var(--surface); }
+
+/* ---------- Encabezado: la primera capa de papel (mismo color que la onda de arriba) ---------- */
+.top { background: var(--onda-1); box-shadow: none; }
+:root[data-theme="dark"] .top { background: #2c3046; }
+@media (min-width: 1024px) { .top { background: transparent; } }
+.top .icon-btn, .top .avatar-btn { background: var(--surface); box-shadow: 0 2px 0 var(--canto), 0 6px 12px -8px var(--sombra-hoja); }
+.top .icon-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--canto); }
+
+/* ---------- Barra de pestañas flotante: tira de papel ---------- */
+.tabbar {
+    left: 12px; right: 12px; bottom: calc(8px + env(safe-area-inset-bottom));
+    height: calc(64px + 22px); padding: 22px 26px 0; border-radius: 0;
+    background: none; border: 0; box-shadow: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    transition: transform var(--t) var(--ease);
+}
+.tb-forma { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; overflow: visible; pointer-events: none;
+    filter: drop-shadow(0 3px 0 var(--canto)) drop-shadow(0 10px 14px var(--sombra-hoja)); }
+.tb-relleno { fill: var(--surface); }
+.tb-linea { fill: none; stroke: none; }
+.tb-burbuja {
+    position: absolute; left: 0; top: 0; width: 44px; height: 44px; border-radius: 50%; z-index: 1; pointer-events: none;
+    display: grid; place-items: center; color: var(--on-accent); background: var(--accent);
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 60%, #000), 0 8px 14px -6px var(--sombra-hoja);
+    transition: transform 380ms cubic-bezier(0.34, 1.4, 0.5, 1);
+}
+.tb-burbuja .icon { width: 22px; height: 22px; }
+.tab { position: relative; align-self: stretch; justify-content: center; transition: color var(--t) var(--ease); }
+.tab.activo { color: var(--accent-ink); justify-content: flex-end; padding-bottom: 12px; }
+.tab.activo .icon { visibility: hidden; height: 0; }
+.tab.activo span { font-weight: 700; }
+.tab-add { border-radius: 18px; background: var(--accent); box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 60%, #000), 0 10px 16px -8px var(--sombra-hoja); }
+.tabbar.compacta { transform: translateY(6px) scale(0.94); }
+.tabbar.compacta .tab:not(.activo) span { display: none; }
+.vista { padding-bottom: calc(var(--tabbar) + 76px + env(safe-area-inset-bottom)); }
+@media (min-width: 1024px) { .vista { padding-bottom: 64px; } }
+
+@media (min-width: 1024px) {
+    .sidebar { background-color: var(--surface); background-image: var(--papel); border-right: 0; box-shadow: 3px 0 0 var(--canto), 10px 0 24px -14px var(--sombra-hoja); }
+    .side-link.activo { background: var(--bg); color: var(--accent-ink); box-shadow: 0 2px 0 var(--canto); }
+    .side-add { background: var(--accent); box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 60%, #000); }
+}
+
+/* ---------- Ventanas: una hoja grande al centro ---------- */
+.capa {
+    align-items: center; padding: calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, #3a2410 30%, transparent);
+}
+.hoja {
+    margin: auto; width: 100%; max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    border-radius: 24px; padding: 8px 18px 20px; border: 0;
+    background-color: var(--surface); background-image: var(--papel);
+    box-shadow: 0 4px 0 var(--canto), 0 24px 50px -16px var(--sombra-hoja);
+    animation: pop var(--t) var(--ease);
+}
+.hoja-grip { display: none; }
+
+/* ---------- Controles de cartulina: se hunden al tocar ---------- */
+.btn { border-radius: 14px; border: 0; transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease); }
+.btn-primary { background: var(--accent); color: var(--on-accent); box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 60%, #000); }
+.btn-soft, .btn-ghost, .btn-danger-soft { background: var(--surface); box-shadow: 0 3px 0 var(--canto); }
+.btn:active { transform: translateY(3px); box-shadow: 0 0 0 transparent; }
+.chip { background: var(--surface); border: 0; box-shadow: 0 2px 0 var(--canto); }
+.chip.activo { background: var(--accent); color: var(--on-accent); box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 60%, #000); }
+.chip-outline.activo { background: var(--surface); color: var(--accent-ink); box-shadow: inset 0 0 0 2px var(--accent); }
+.seg { background: var(--surface-3); box-shadow: inset 0 2px 3px rgba(80, 50, 20, 0.12); }
+.seg button.activo, :root[data-theme="light"] .seg button.activo { background: var(--surface); color: var(--accent-ink); box-shadow: 0 2px 0 var(--canto); }
+
+/* Campos: un corte en el papel. */
+.input, input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea {
+    background: var(--surface-2); border: 0; box-shadow: inset 0 2px 4px rgba(80, 50, 20, 0.14);
+}
+input:focus, select:focus, textarea:focus { background: var(--surface); box-shadow: inset 0 2px 4px rgba(80, 50, 20, 0.14), 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent); }
+.search { background: var(--surface-2); box-shadow: inset 0 2px 4px rgba(80, 50, 20, 0.14); border: 0; }
+.search input { box-shadow: none; background: transparent; }
+
+.barra { background: var(--surface-3); box-shadow: inset 0 1px 2px rgba(80, 50, 20, 0.18); }
+.teclado button { background: var(--surface); border: 0; box-shadow: 0 3px 0 var(--canto); }
+.teclado button:active { transform: translateY(3px); box-shadow: none; }
+.teclado .tecla-op { color: var(--accent-ink); }
+.tarjeta-visual { box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18), 0 14px 24px -12px var(--sombra-hoja); }

@@ -16,11 +16,11 @@ const sistemaOscuro = window.matchMedia('(prefers-color-scheme: dark)');
 export const ACENTOS_ALTERNOS = ['azul', 'violeta', 'laton', 'cobre', 'menta', 'cielo'];
 
 // Estilos de interfaz: cada uno es una hoja de estilos (index.html) y solo una queda activa.
-export const ESTILOS = ['neumorfico', 'cristal', 'clasico'];
+export const ESTILOS = ['neumorfico', 'papercut', 'cristal', 'clasico'];
 export const estiloElegido = () => (ESTILOS.includes(leerApariencia().estilo) ? leerApariencia().estilo : 'neumorfico');
 // Acento propio de cada estilo cuando no eliges uno.
-export const acentoDelEstilo = (estilo = estiloElegido()) => (estilo === 'neumorfico' ? 'azul' : 'violeta');
-const FONDO = { neumorfico: ['#e8ecf2', '#2a2e36'], cristal: ['#f6f5fa', '#110e1c'], clasico: ['#f6f5fa', '#110e1c'] };
+export const acentoDelEstilo = (estilo = estiloElegido()) => ({ neumorfico: 'azul', papercut: 'cobre' }[estilo] || 'violeta');
+const FONDO = { neumorfico: ['#e8ecf2', '#2a2e36'], papercut: ['#f6d2b4', '#2c3046'], cristal: ['#f6f5fa', '#110e1c'], clasico: ['#f6f5fa', '#110e1c'] };
 
 export function leerApariencia() {
     try { return JSON.parse(localStorage.getItem(CLAVE)) || {}; } catch { return {}; }
