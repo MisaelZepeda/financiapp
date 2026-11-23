@@ -690,3 +690,21 @@ test('alcancía sin meta: aviso una sola vez; con meta ligada, no', () => {
     const con = calcularRecordatorios({ cuentas: [efe, alc], metas: [{ id: 'f', cuentaId: 'alc' }] }, HOY).filter(a => a.id.startsWith('m:alcmeta'));
     assert.equal(con.length, 0);
 });
+
+// ---------- Instituciones ----------
+import { institucionDe, colorDeCuenta, buscarInstituciones } from '../js/domain/instituciones.js';
+
+test('instituciones: se reconocen por el nombre del banco y el color elegido manda', () => {
+    assert.equal(institucionDe({ banco: 'Banco del Bienestar' }).id, 'bienestar');
+    assert.equal(institucionDe({ banco: 'BaBien' }).id, 'bienestar');
+    assert.equal(institucionDe({ banco: 'OpenBank' }).id, 'openbank');
+    assert.equal(institucionDe({ banco: 'Nu' }).id, 'nu');
+    assert.equal(institucionDe({ banco: 'MercadoPago' }).id, 'mercadopago');
+    assert.equal(institucionDe({ banco: 'Rappi' }).id, 'rappi');
+    assert.equal(institucionDe({ banco: 'Nuevo banco' }), null);          // "Nu" no se confunde
+    assert.equal(institucionDe({ tipo: 'efectivo' }).id, 'efectivo');
+    assert.equal(institucionDe({ institucion: 'plata', banco: 'BBVA' }).id, 'plata');   // la elegida manda
+    assert.equal(colorDeCuenta({ banco: 'BBVA' }), '#004481');
+    assert.equal(colorDeCuenta({ banco: 'Plata', color: '#6b7280' }), '#6b7280');
+    assert.deepEqual(buscarInstituciones('mercado').map(i => i.id), ['mercadopago']);
+});

@@ -1,7 +1,8 @@
 // Piezas de HTML reutilizadas por varias vistas.
 
 import { icon } from '../lib/icons.js';
-import { money, moneyPartes, escapeHtml, colorBanco, TIPO_CUENTA, etiquetaDia } from '../lib/format.js';
+import { money, moneyPartes, escapeHtml, TIPO_CUENTA, etiquetaDia } from '../lib/format.js';
+import { institucionDe, colorDeCuenta, logoDeInstitucion } from '../domain/instituciones.js';
 import { sel } from '../core/store.js';
 import { accionesSwipeHTML } from './gestos.js';
 
@@ -9,12 +10,18 @@ export function vacioHTML(ico, texto, extra = '') {
     return `<div class="vacio">${icon(ico)}<div>${escapeHtml(texto)}</div>${extra}</div>`;
 }
 
+// Ícono de una cuenta: tu logo (enlace), el de su institución o su inicial con su color.
+// Si el logo no carga (o el servicio devuelve el ícono genérico de 16 px), queda la inicial.
+export function logoImgHTML(src, inicial) {
+    return `<img src="${escapeHtml(src)}" alt="" data-fallback="${inicial}" loading="lazy" referrerpolicy="no-referrer"
+        onload="if (this.naturalWidth && this.naturalWidth < 32) this.onerror()" onerror="this.onerror=null; this.onload=null; this.replaceWith(document.createTextNode(this.dataset.fallback));">`;
+}
 export function monogramaHTML(cuenta) {
-    const color = colorBanco(cuenta.banco);
-    const inicial = escapeHtml((cuenta.banco || cuenta.nombre || '?').charAt(0).toUpperCase());
-    const contenido = cuenta.icono
-        ? `<img src="${escapeHtml(cuenta.icono)}" alt="" data-fallback="${inicial}" onerror="this.onerror=null; this.replaceWith(document.createTextNode(this.dataset.fallback));">`
-        : inicial;
+    const color = colorDeCuenta(cuenta);
+    const inst = institucionDe(cuenta);
+    const inicial = escapeHtml((inst?.nombre || cuenta.banco || cuenta.nombre || '?').charAt(0).toUpperCase());
+    const logo = cuenta.icono || logoDeInstitucion(inst);
+    const contenido = logo ? logoImgHTML(logo, inicial) : inicial;
     return `<div class="fila-ico" style="background:color-mix(in srgb, ${color} 18%, transparent); color:color-mix(in srgb, ${color} 60%, var(--text));">${contenido}</div>`;
 }
 
@@ -24,11 +31,12 @@ export function monogramaHTML(cuenta) {
 const CHIP = '<svg class="tv-chip" viewBox="0 0 34 26" aria-hidden="true"><rect x="0.5" y="0.5" width="33" height="25" rx="5" fill="#e9c46a" stroke="#b8923a"/><path d="M0.5 9h10v8h-10M33.5 9h-10v8h10M10.5 0.5v25M23.5 0.5v25M10.5 13h13" stroke="#b8923a" fill="none"/></svg>';
 export function tarjetaVisualHTML(c, { enlace = false } = {}) {
     const saldo = sel.saldo(c.id);
-    const color = colorBanco(c.banco);
+    const color = colorDeCuenta(c);
     const cred = c.tipo === 'credito';
     const p = moneyPartes(saldo);
     const etiqueta = cred ? 'Deuda' : c.tipo === 'efectivo' ? 'En la cartera' : 'Saldo';
-    const banco = escapeHtml(c.banco && c.banco.toLowerCase() !== 'efectivo' ? c.banco : (c.tipo === 'efectivo' ? 'Efectivo' : c.nombre));
+    const inst = institucionDe(c);
+    const banco = escapeHtml(c.banco && c.banco.toLowerCase() !== 'efectivo' ? c.banco : (inst?.nombre || (c.tipo === 'efectivo' ? 'Efectivo' : c.nombre)));
     const inner = `
         <div class="tv-top"><span class="tv-banco">${banco}</span><span class="tv-tipo">${TIPO_CUENTA[c.tipo] || ''}</span></div>
         ${c.tipo === 'efectivo' ? `<span class="tv-chip tv-billete">${icon('coin')}</span>` : CHIP}

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v56'; // v56: textura de papel y estilo papel recortado
+const CACHE_NAME = 'morralla-cache-v57'; // v57: biblioteca de instituciones
 
 const urlsToCache = [
     './',
@@ -43,6 +43,7 @@ const urlsToCache = [
     './js/domain/consejos.js',
     './js/domain/fechas.js',
     './js/domain/historias.js',
+    './js/domain/instituciones.js',
     './js/domain/migracion.js',
     './js/domain/msi.js',
     './js/domain/notificaciones.js',

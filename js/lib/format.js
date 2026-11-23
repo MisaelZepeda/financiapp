@@ -54,17 +54,5 @@ export function escapeHtml(str) {
     return String(str ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// Color de identidad por institución (monograma y tarjeta para compartir).
-const BANCOS = {
-    nu: '#8b5cf6', klar: '#8b5cf6', stori: '#8b5cf6',
-    bbva: '#3b82f6', azteca: '#3b82f6', bienestar: '#3b82f6',
-    santander: '#ef4444', banorte: '#ef4444', scotiabank: '#ef4444',
-    hey: '#22c55e', mercadopago: '#22c55e', efectivo: '#a3a3a3',
-};
-export function colorBanco(banco) {
-    const b = (banco || '').toLowerCase();
-    for (const k in BANCOS) if (b.includes(k)) return BANCOS[k];
-    return '#14b8a6';
-}
 
 export const TIPO_CUENTA = { debito: 'Débito', credito: 'Crédito', efectivo: 'Efectivo' };

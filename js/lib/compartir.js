@@ -1,7 +1,7 @@
 // Imagen con los datos de depósito de una cuenta (para compartir o descargar).
 
 import { sel } from '../core/store.js';
-import { colorBanco } from './format.js';
+import { colorDeCuenta } from '../domain/instituciones.js';
 import { toast } from '../components/capas.js';
 
 // Aclara/oscurece un color hex (para el degradado de la tarjeta).
@@ -18,7 +18,7 @@ export function compartirTarjeta(id) {
     const canvas = document.createElement('canvas');
     canvas.width = 1080; canvas.height = 680;
     const ctx = canvas.getContext('2d');
-    const base = colorBanco(c.banco);
+    const base = colorDeCuenta(c);
     const colA = ajustar(base, 1), colB = ajustar(base, 0.62);
     const grad = ctx.createLinearGradient(0, 0, 1080, 680);
     grad.addColorStop(0, colA); grad.addColorStop(1, colB);

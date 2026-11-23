@@ -326,3 +326,20 @@ input.etiqueta-input { width: 130px; height: 30px; padding: 0 11px; border-radiu
 .reg-opciones.abierto .chev { transform: rotate(-90deg); }
 .reg-mas { animation: fadeIn var(--t) var(--ease); }
 .chip-reciente { color: var(--text-2); }
+
+/* ---------- Institución de la cuenta (biblioteca) ---------- */
+.inst-elegida { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px 8px 8px; border-radius: var(--r-md); background: var(--surface-2); border: 0; color: var(--text); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.inst-elegida > span:not(.inst-logo) { flex: 1; min-width: 0; }
+.inst-elegida .chev { color: var(--muted); transform: rotate(90deg); }
+.inst-logo { width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0; display: grid; place-items: center; overflow: hidden; font-weight: 700; font-size: 15px;
+    background: color-mix(in srgb, var(--ic) 18%, var(--surface)); color: color-mix(in srgb, var(--ic) 70%, var(--text)); box-shadow: inset 0 0 0 2px var(--ic); }
+.inst-logo img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+#fc-inst-panel { margin-top: 10px; }
+.inst-buscar { margin-bottom: 10px; }
+.inst-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; max-height: 300px; overflow-y: auto; padding: 2px; }
+.inst-op { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border-radius: var(--r-md); background: var(--surface-2); border: 2px solid transparent; color: var(--text-2); font: inherit; font-size: 11.5px; text-align: center; cursor: pointer; line-height: 1.2; }
+.inst-op.activo { border-color: var(--accent); color: var(--accent-ink); }
+.inst-op > .icon { width: 36px; height: 36px; padding: 8px; }
+.colores-cuenta { flex-wrap: wrap; margin-bottom: 6px; }
+.fc-mas { margin: 4px 0 14px; }
+.fc-mas summary { cursor: pointer; font-size: 13.5px; color: var(--accent-ink); font-weight: 600; }

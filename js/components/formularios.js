@@ -7,7 +7,8 @@ import { abrirHoja, cerrarHoja, hojaAbierta, toast, confirmar } from './capas.js
 import { icon } from '../lib/icons.js';
 import { escapeHtml, money } from '../lib/format.js';
 import { ICONOS_CATEGORIA, COLORES_CATEGORIA } from '../domain/categorias.js';
-import { colorCategoria } from './piezas.js';
+import { colorCategoria, logoImgHTML } from './piezas.js';
+import { INSTITUCIONES, COLORES_CUENTA, institucionDe, institucionPorId, logoDeInstitucion, buscarInstituciones } from '../domain/instituciones.js';
 import { FRECUENCIAS } from '../domain/recurrentes.js';
 import { navegar } from '../core/router.js';
 import { confeti, monedaAlcancia } from './efectos.js';
@@ -16,9 +17,71 @@ const v = (form, name) => form.elements[name]?.value.trim() ?? '';
 const n = (form, name) => parseFloat(v(form, name)) || 0;
 
 // ---------- Cuenta ----------
+// ---------- Institución y color de la cuenta ----------
+let fc = null;   // { inst: id|null, color: hex|null, banco: texto libre }
+
+function logoInst(inst, banco = '') {
+    const inicial = escapeHtml((inst?.nombre || banco || '?').charAt(0).toUpperCase());
+    const src = logoDeInstitucion(inst);
+    const color = fc?.color || inst?.color || '#14b8a6';
+    return `<span class="inst-logo" style="--ic:${color}">${src ? logoImgHTML(src, inicial) : inicial}</span>`;
+}
+
+function instHTML() {
+    const inst = institucionPorId(fc.inst);
+    return `<button type="button" class="inst-elegida" data-action="fcInstAbrir">${logoInst(inst, fc.banco)}
+            <span>${escapeHtml(inst?.nombre || fc.banco || 'Elegir institución')}</span>${icon('chevron-right', 'chev')}</button>
+        <div id="fc-inst-panel" hidden>
+            <input id="fc-inst-q" class="inst-buscar" placeholder="Buscar banco, tarjeta o tienda" autocomplete="off" data-input="fcInstBuscar">
+            <div class="inst-grid" id="fc-inst-grid">${gridInst('')}</div>
+        </div>
+        ${inst ? '' : `<input id="fc-banco" name="banco" placeholder="Nombre de la institución (si no está en la lista)" value="${escapeHtml(fc.banco || '')}" data-input="fcBancoTxt" style="margin-top:8px;">`}`;
+}
+
+function gridInst(q) {
+    const lista = buscarInstituciones(q);
+    return lista.map(i => `<button type="button" class="inst-op ${i.id === fc.inst ? 'activo' : ''}" data-action="fcInst" data-id="${i.id}">${logoInst(i)}<span>${escapeHtml(i.nombre)}</span></button>`).join('')
+        + `<button type="button" class="inst-op" data-action="fcInst" data-id="">${icon('edit')}<span>Otra</span></button>`;
+}
+
+function coloresHTML() {
+    const inst = institucionPorId(fc.inst);
+    const delBanco = inst?.color;
+    return `<div class="acentos colores-cuenta">
+        ${delBanco ? `<button type="button" class="acento ${!fc.color ? 'activo' : ''}" style="--c:${delBanco}" data-action="fcColor" data-c="" title="Color de ${escapeHtml(inst.nombre)}" aria-label="Color de ${escapeHtml(inst.nombre)}"></button>` : ''}
+        ${COLORES_CUENTA.filter(c => c !== delBanco).map(c => `<button type="button" class="acento ${fc.color === c ? 'activo' : ''}" style="--c:${c}" data-action="fcColor" data-c="${c}" aria-label="Color ${c}"></button>`).join('')}
+    </div>
+    <span class="hint">${delBanco ? `El primero es el color de ${escapeHtml(inst.nombre)}.` : 'Elige un color para identificarla.'}</span>`;
+}
+
+const repintarFc = (sel_, html) => { const el = hojaAbierta()?.querySelector(sel_); if (el) el.innerHTML = html; };
+
+on('fcInstAbrir', () => {
+    const p = hojaAbierta()?.querySelector('#fc-inst-panel');
+    if (!p) return;
+    p.hidden = !p.hidden;
+    if (!p.hidden) p.querySelector('#fc-inst-q')?.focus();
+});
+on('fcInstBuscar', (el) => repintarFc('#fc-inst-grid', gridInst(el.value)), 'input');
+on('fcInst', (el) => {
+    fc.inst = el.dataset.id || null;
+    if (fc.inst) fc.banco = institucionPorId(fc.inst).nombre;
+    repintarFc('#fc-inst', instHTML());
+    repintarFc('#fc-colores', coloresHTML());
+    if (!fc.inst) hojaAbierta()?.querySelector('#fc-banco')?.focus();
+});
+on('fcBancoTxt', (el) => { fc.banco = el.value; }, 'input');
+on('fcColor', (el) => {
+    fc.color = el.dataset.c || null;
+    repintarFc('#fc-colores', coloresHTML());
+    repintarFc('#fc-inst', instHTML());
+});
+
 export function abrirFormCuenta(id = null) {
     const c = id ? sel.cuenta(id) : null;
     const tipo = c?.tipo || 'debito';
+    // Institución: la guardada o la que se reconozca por el texto del banco.
+    fc = { inst: c ? (institucionDe(c)?.id || null) : null, color: c?.color || null, banco: c?.banco || '' };
     abrirHoja({
         titulo: c ? 'Editar cuenta' : 'Nueva cuenta',
         html: `<form data-submit="guardarCuenta" data-id="${escapeHtml(id || '')}">
@@ -26,7 +89,8 @@ export function abrirFormCuenta(id = null) {
                 ${['debito', 'credito', 'efectivo'].map(t => `<button type="button" class="${t === tipo ? 'activo' : ''}" data-action="fcTipo" data-t="${t}">${{ debito: 'Débito', credito: 'Crédito', efectivo: 'Efectivo' }[t]}</button>`).join('')}
             </div><input type="hidden" name="tipo" value="${tipo}"></div>
             <div class="field"><label for="fc-nombre">Nombre</label><input id="fc-nombre" name="nombre" required placeholder="Ej. Nómina" value="${escapeHtml(c?.nombre || '')}"></div>
-            <div class="field"><label for="fc-banco">Banco</label><input id="fc-banco" name="banco" placeholder="Ej. BBVA, Nu" value="${escapeHtml(c?.banco || '')}"></div>
+            <div class="field"><span class="label">Institución</span><div id="fc-inst">${instHTML()}</div></div>
+            <div class="field"><span class="label">Color</span><div id="fc-colores">${coloresHTML()}</div></div>
             <div class="field"><label for="fc-saldo" data-solo="deb">Saldo actual</label><label for="fc-saldo" data-solo="cre">Deuda actual</label>
                 <input id="fc-saldo" name="saldo" inputmode="decimal" required placeholder="0.00" value="${c ? sel.saldo(c.id) : ''}">
                 ${c ? '<span class="hint">Si lo cambias, se ajusta el saldo sin tocar tus movimientos.</span>' : ''}</div>
@@ -39,7 +103,9 @@ export function abrirFormCuenta(id = null) {
                 <div class="field"><label for="fc-pago">Día de pago</label><input id="fc-pago" name="diaPago" type="number" min="1" max="31" value="${c?.diaPago || ''}"></div>
             </div>
             <div class="field" data-solo="deb-only"><label for="fc-clabe">CLABE (opcional)</label><input id="fc-clabe" name="clabe" inputmode="numeric" maxlength="18" pattern="\\d{18}" placeholder="18 dígitos" value="${escapeHtml(c?.clabe || '')}"></div>
-            <div class="field"><label for="fc-logo">Logo (enlace, opcional)</label><input id="fc-logo" name="icono" type="url" placeholder="https://…" value="${escapeHtml(c?.icono || '')}"></div>
+            <details class="fc-mas"><summary>Logo propio (opcional)</summary>
+                <div class="field" style="margin-top:8px;"><label for="fc-logo">Enlace a una imagen</label><input id="fc-logo" name="icono" type="url" placeholder="https://…" value="${escapeHtml(c?.icono || '')}">
+                <span class="hint">Si lo pones, se usa en lugar del logo de la institución.</span></div></details>
             <div class="hoja-foot">
                 ${c ? '<button type="button" class="btn btn-danger-soft" data-action="fcBorrar" style="flex:0 0 auto;">' + icon('trash') + '</button>' : ''}
                 <button type="submit" class="btn btn-primary">${c ? 'Guardar cambios' : 'Agregar cuenta'}</button>
@@ -59,7 +125,9 @@ function aplicarTipoCuenta(hoja, tipo) {
 on('fcTipo', (el) => aplicarTipoCuenta(hojaAbierta(), el.dataset.t));
 on('guardarCuenta', async (form) => {
     const tipo = v(form, 'tipo');
-    const cuenta = { id: form.dataset.id || undefined, tipo, nombre: v(form, 'nombre'), banco: v(form, 'banco') || (tipo === 'efectivo' ? 'Efectivo' : '') };
+    const inst = institucionPorId(fc?.inst);
+    const banco = inst ? inst.nombre : (fc?.banco || '').trim();
+    const cuenta = { id: form.dataset.id || undefined, tipo, nombre: v(form, 'nombre'), banco: banco || (tipo === 'efectivo' ? 'Efectivo' : ''), institucion: inst?.id || null, color: fc?.color || null };
     const icono = v(form, 'icono'); cuenta.icono = icono || null;
     cuenta.digitos = tipo !== 'efectivo' ? v(form, 'digitos') || null : null;
     cuenta.clabe = tipo === 'debito' ? v(form, 'clabe') || null : null;
