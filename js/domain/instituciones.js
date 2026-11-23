@@ -1,5 +1,5 @@
 // Biblioteca de instituciones financieras (México): nombre, color de marca y dominio
-// para su logo. Las cuentas guardan `institucion` (id) y, si quieres otro tono,
+// (o `logo`) para su logo. Las cuentas guardan `institucion` (id) y, si quieres otro tono,
 // `color`. Las cuentas viejas se reconocen por el texto de `banco`.
 
 export const INSTITUCIONES = [
@@ -11,7 +11,8 @@ export const INSTITUCIONES = [
     { id: 'hsbc', nombre: 'HSBC', color: '#db0011', dominio: 'hsbc.com.mx', alias: ['hsbc'] },
     { id: 'scotiabank', nombre: 'Scotiabank', color: '#ec111a', dominio: 'scotiabank.com.mx', alias: ['scotiabank', 'scotia'] },
     { id: 'azteca', nombre: 'Banco Azteca', color: '#00965e', dominio: 'bancoazteca.com.mx', alias: ['azteca'] },
-    { id: 'bienestar', nombre: 'Banco del Bienestar', color: '#1e7b4b', dominio: 'bancodelbienestar.gob.mx', alias: ['bienestar', 'babien'] },
+    { id: 'bienestar', nombre: 'Banco del Bienestar', color: '#1e7b4b', dominio: 'bancodelbienestar.gob.mx', alias: ['bienestar', 'babien'],
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Logo_Banco_del_Bienestar.png/330px-Logo_Banco_del_Bienestar.png' },
     { id: 'bancoppel', nombre: 'BanCoppel', color: '#0057a8', dominio: 'bancoppel.com', alias: ['bancoppel'] },
     { id: 'inbursa', nombre: 'Inbursa', color: '#003b71', dominio: 'www.inbursa.com', alias: ['inbursa'] },
     { id: 'banregio', nombre: 'Banregio', color: '#f37021', dominio: 'banregio.com', alias: ['banregio'] },
@@ -21,7 +22,8 @@ export const INSTITUCIONES = [
     { id: 'amex', nombre: 'American Express', color: '#2e77bc', dominio: 'americanexpress.com', alias: ['amex', 'american express'] },
     // Bancos y tarjetas digitales
     { id: 'nu', nombre: 'Nu', color: '#820ad1', dominio: 'nu.com.mx', alias: ['nu', 'nubank'] },
-    { id: 'hey', nombre: 'Hey Banco', color: '#1d1d1b', dominio: 'heybanco.com', alias: ['hey'] },
+    { id: 'hey', nombre: 'Hey Banco', color: '#1d1d1b', dominio: 'heybanco.com', alias: ['hey'],
+        logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Hey_Banco.svg/330px-Hey_Banco.svg.png' },
     { id: 'openbank', nombre: 'Openbank', color: '#e50014', dominio: 'openbank.mx', alias: ['openbank', 'open bank', 'open'] },
     { id: 'klar', nombre: 'Klar', color: '#111111', dominio: 'klar.mx', alias: ['klar'] },
     { id: 'stori', nombre: 'Stori', color: '#00a19a', dominio: 'storicard.com', alias: ['stori'] },
@@ -76,8 +78,10 @@ export function colorDeCuenta(cuenta) {
     return cuenta?.color || institucionDe(cuenta)?.color || '#14b8a6';
 }
 
-// Logo de la institución (servicio de íconos de sitios; si falla se ve la inicial).
+// Logo de la institución: uno propio de la biblioteca (Wikimedia Commons, para las que el
+// servicio de íconos no tiene) o el ícono de su sitio. Si falla, se ve la inicial.
 export function logoDeInstitucion(inst, tam = 128) {
+    if (inst?.logo) return inst.logo;
     return inst?.dominio ? `https://www.google.com/s2/favicons?domain=${inst.dominio}&sz=${tam}` : null;
 }
 

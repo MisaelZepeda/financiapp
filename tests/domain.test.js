@@ -708,3 +708,21 @@ test('instituciones: se reconocen por el nombre del banco y el color elegido man
     assert.equal(colorDeCuenta({ banco: 'Plata', color: '#6b7280' }), '#6b7280');
     assert.deepEqual(buscarInstituciones('mercado').map(i => i.id), ['mercadopago']);
 });
+
+// ---------- Revisión de cuentas ----------
+import { cuentasPorRevisar } from '../js/domain/revision.js';
+
+test('revisión de cuentas: cada 7 días y aviso una vez por semana', () => {
+    const cuentas = [
+        { id: 'a', nombre: 'Nómina', tipo: 'debito', saldoInicial: 0 },
+        { id: 'b', nombre: 'Nu', tipo: 'debito', saldoInicial: 0, revisada: '2026-09-25' },
+        { id: 'c', nombre: 'Plata', tipo: 'credito', saldoInicial: 0, revisada: '2026-09-20' },
+    ];
+    assert.deepEqual(cuentasPorRevisar(cuentas, HOY).map(c => c.id), ['a', 'c']);   // 'b' hace 3 días
+    const av = calcularRecordatorios({ cuentas }, HOY).filter(a => a.id.startsWith('m:revcuentas'));
+    assert.equal(av.length, 1);
+    assert.equal(av[0].id, 'm:revcuentas:2026-09-28');   // lunes de esa semana
+    assert.match(av[0].body, /2 cuentas/);
+    const todas = cuentas.map(c => ({ ...c, revisada: '2026-09-28' }));
+    assert.equal(calcularRecordatorios({ cuentas: todas }, HOY).filter(a => a.id.startsWith('m:revcuentas')).length, 0);
+});

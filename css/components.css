@@ -343,3 +343,15 @@ input.etiqueta-input { width: 130px; height: 30px; padding: 0 11px; border-radiu
 .colores-cuenta { flex-wrap: wrap; margin-bottom: 6px; }
 .fc-mas { margin: 4px 0 14px; }
 .fc-mas summary { cursor: pointer; font-size: 13.5px; color: var(--accent-ink); font-weight: 600; }
+
+/* ---------- Revisión de cuentas ---------- */
+.rev-lista { display: flex; flex-direction: column; gap: 10px; }
+.rev-fila { padding: 12px; border-radius: var(--r-lg); background: var(--surface-2); }
+.rev-fila.hecha { opacity: .7; }
+.rev-top { display: flex; align-items: center; gap: 12px; }
+.rev-top .fila-body { flex: 1; min-width: 0; }
+.rev-btns { display: flex; gap: 8px; margin-top: 10px; }
+.rev-btns .btn { flex: 1; }
+.rev-corregir { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.rev-in { display: flex; gap: 8px; }
+.rev-in input { flex: 1; }

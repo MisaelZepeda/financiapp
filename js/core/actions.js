@@ -63,6 +63,12 @@ export async function echarMonedas(monto, origenId, metaId = null) {
     return guardarTransaccion({ tipo: 'transferencia', subtipo: 'alcancia', monto, fecha: hoyISO(), desc: 'Monedas a la alcancía', cuentaId: origenId, cuentaDestinoId: alcancia });
 }
 
+// Revisión semanal: estas cuentas coinciden con el banco.
+export function marcarRevisadas(ids) {
+    const h = hoyISO();
+    return actualizar(Object.fromEntries(ids.map(id => [`cuentas/${id}/revisada`, h])));
+}
+
 export function guardarCuenta(cuenta, saldoDeseado) {
     const id = cuenta.id || nuevoId();
     const actual = cuenta.id ? sel.saldo(id) : 0;

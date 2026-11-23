@@ -15,6 +15,7 @@ import { resumenMes } from './analisis.js';
 import { proyectarFinDeMes } from './proyeccion.js';
 import { esDeTercero, deudasTerceros } from './terceros.js';
 import { esAlcancia } from './alcancia.js';
+import { cuentasPorRevisar, semanaDe } from './revision.js';
 
 const DIAS = 14;
 const fmt = (n) => '$' + Number(Math.abs(n) || 0).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -103,6 +104,13 @@ export function calcularRecordatorios({ cuentas = [], saldos = {}, transacciones
         agregar({ id: `cobro:${d.nombre}:${fecha}`, at: cuando === h && fecha < h ? proximoMomento(ahora) : momento(cuando, 10),
             title: `Cóbrale a ${d.nombre}`, body: `${fmt(monto)} de la mensualidad${fecha < h ? ' (ya pasó la fecha)' : ''}. Le faltan ${fmt(d.pendiente)} en total.`, url: '#/te-deben' });
     });
+
+    // Revisión de cuentas: una vez por semana, si hay cuentas sin revisar.
+    const sinRevisar = cuentasPorRevisar(cuentas, ahora);
+    if (sinRevisar.length) {
+        agregar({ id: `m:revcuentas:${semanaDe(ahora)}`, at: proximoMomento(ahora), title: 'Revisa tus cuentas',
+            body: `${sinRevisar.length === 1 ? `${sinRevisar[0].nombre} no se ha revisado` : `${sinRevisar.length} cuentas no se han revisado`} esta semana. ¿Coinciden con tu banco?`, url: '#/inicio?revisar=1' });
+    }
 
     // Alcancía: a las 9 pm, si ese día aún no echaste monedas (hoy y los siguientes 13 días).
     const alcancia = cuentas.find(esAlcancia);

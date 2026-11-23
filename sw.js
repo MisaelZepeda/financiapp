@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v57'; // v57: biblioteca de instituciones
+const CACHE_NAME = 'morralla-cache-v58'; // v58: logos hey y bienestar, revision de cuentas
 
 const urlsToCache = [
     './',
@@ -27,6 +27,7 @@ const urlsToCache = [
     './js/components/por-revisar.js',
     './js/components/registro.js',
     './js/components/resumen-mes.js',
+    './js/components/revision.js',
     './js/components/tlaco.js',
     './js/core/actions.js',
     './js/core/db.js',
@@ -51,6 +52,7 @@ const urlsToCache = [
     './js/domain/recordatorios.js',
     './js/domain/recurrentes.js',
     './js/domain/retos.js',
+    './js/domain/revision.js',
     './js/domain/saldos.js',
     './js/domain/salud.js',
     './js/domain/tarjetas.js',
