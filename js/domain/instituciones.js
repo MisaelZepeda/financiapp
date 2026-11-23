@@ -91,3 +91,9 @@ export function buscarInstituciones(q) {
     if (!t) return INSTITUCIONES;
     return INSTITUCIONES.filter(i => norm(i.nombre).includes(t) || i.alias.some(a => norm(a).includes(t)));
 }
+
+// Cuentas con un logo puesto a mano que también están en la biblioteca y aún no
+// decides cuál usar (la pregunta se hace una sola vez, al llegar la biblioteca).
+export function cuentasParaBiblioteca(cuentas) {
+    return cuentas.filter(c => c.icono && !c.bibliotecaDecidida && logoDeInstitucion(institucionDe(c)));
+}
