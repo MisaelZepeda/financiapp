@@ -8,11 +8,11 @@
   <rect x="22" y="44" width="80" height="46" rx="7" fill="#3f9d5a"/>
   <rect x="27" y="49" width="70" height="36" rx="4" fill="none" stroke="#bfe8cd" stroke-width="2"/>
   <circle cx="62" cy="67" r="11" fill="none" stroke="#bfe8cd" stroke-width="2"/>
-  <path d="M62 60v14M58.5 62.5h5a2.5 2.5 0 0 1 0 5h-3a2.5 2.5 0 0 0 0 5h5.5" stroke="#e9f7ee" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M62 60v14M65.5 62.5h-5a2.5 2.5 0 0 0 0 5h3a2.5 2.5 0 0 1 0 5h-5.5" stroke="#e9f7ee" stroke-width="2" fill="none" stroke-linecap="round"/>
   <circle cx="36" cy="56" r="3" fill="#bfe8cd"/>
   <circle cx="88" cy="78" r="3" fill="#bfe8cd"/>
   <circle cx="90" cy="38" r="17" fill="#a8740e"/>
   <circle cx="90" cy="37" r="14.5" fill="#f2b544"/>
   <circle cx="90" cy="37" r="11" fill="none" stroke="#d99a22" stroke-width="1.6"/>
-  <path d="M90 30.5v13M86.8 33h4.6a2.3 2.3 0 0 1 0 4.6h-2.8a2.3 2.3 0 0 0 0 4.6h5" stroke="#a8740e" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M90 30.5v13M93.2 33h-4.6a2.3 2.3 0 0 0 0 4.6h2.8a2.3 2.3 0 0 1 0 4.6h-5" stroke="#a8740e" stroke-width="1.8" fill="none" stroke-linecap="round"/>
 </svg>

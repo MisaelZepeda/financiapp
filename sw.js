@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v62'; // v62: inicio sin cuentas en ceros
+const CACHE_NAME = 'morralla-cache-v63'; // v63: signo de pesos sin espejo
 
 const urlsToCache = [
     './',

@@ -64,7 +64,7 @@ export const ALCANCIA = `<svg class="alcancia-svg" viewBox="0 0 64 52" aria-hidd
     <path d="M38 13 l4 -6 3 7z" fill="#d9778f"/>
     <rect x="17" y="43" width="6" height="7" rx="2" fill="#c7647d"/><rect x="40" y="43" width="6" height="7" rx="2" fill="#c7647d"/>
 </svg>`;
-const MONEDA = `<svg class="moneda-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#a8740e"/><circle cx="12" cy="12" r="9" fill="#f2b544"/><path d="M12 6v12M9 9h4.5a2 2 0 0 1 0 4H10a2 2 0 0 0 0 4h5" stroke="#a8740e" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>`;
+const MONEDA = `<svg class="moneda-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#a8740e"/><circle cx="12" cy="12" r="9" fill="#f2b544"/><path d="M12 6v12M15 9h-4.5a2 2 0 0 0 0 4H14a2 2 0 0 1 0 4H9" stroke="#a8740e" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>`;
 
 export function monedaAlcancia() {
     if (sinMovimiento()) return;

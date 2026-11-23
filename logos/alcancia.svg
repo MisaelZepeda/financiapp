@@ -18,5 +18,5 @@
   <circle cx="59" cy="27" r="13" fill="#a8740e"/>
   <circle cx="59" cy="26" r="10.8" fill="#f2b544"/>
   <circle cx="59" cy="26" r="8" fill="none" stroke="#d99a22" stroke-width="1.4"/>
-  <path d="M59 20.5v11M56.4 22.6h3.9a1.9 1.9 0 0 1 0 3.8h-2.4a1.9 1.9 0 0 0 0 3.8h4.2" stroke="#a8740e" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <path d="M59 20.5v11M61.6 22.6h-3.9a1.9 1.9 0 0 0 0 3.8h2.4a1.9 1.9 0 0 1 0 3.8h-4.2" stroke="#a8740e" stroke-width="1.6" fill="none" stroke-linecap="round"/>
 </svg>
