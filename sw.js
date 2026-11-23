@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v63'; // v63: signo de pesos sin espejo
+const CACHE_NAME = 'morralla-cache-v64'; // v64: ondas del papel recortado con el acento
 
 const urlsToCache = [
     './',

@@ -71,7 +71,7 @@ body::before {
 
 /* ---------- Encabezado: la primera capa de papel (mismo color que la onda de arriba) ---------- */
 .top { background: var(--onda-1); box-shadow: none; }
-:root[data-theme="dark"] .top { background: #2c3046; }
+:root[data-theme="dark"] { --onda-1: #2c3046; }
 @media (min-width: 1024px) { .top { background: transparent; } }
 .top .icon-btn, .top .avatar-btn { background: var(--surface); box-shadow: 0 2px 0 var(--canto), 0 6px 12px -8px var(--sombra-hoja); }
 .top .icon-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--canto); }
