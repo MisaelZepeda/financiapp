@@ -49,7 +49,7 @@ export const INSTITUCIONES = [
     { id: 'gbm', nombre: 'GBM', color: '#000000', dominio: 'gbm.com', alias: ['gbm'] },
     { id: 'kubo', nombre: 'Kubo Financiero', color: '#0090d4', dominio: 'kubofinanciero.com', alias: ['kubo'] },
     // Sin institución
-    { id: 'efectivo', nombre: 'Efectivo', color: '#3f9d5a', dominio: null, alias: ['efectivo', 'cartera'] },
+    { id: 'efectivo', nombre: 'Efectivo', color: '#3f9d5a', dominio: null, alias: ['efectivo', 'cartera'], logo: 'logos/efectivo.svg' },   // ícono propio de Morralla
 ];
 
 // Colores para elegir a mano (además del de la institución).

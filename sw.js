@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v59'; // v59: elegir logo propio o de la biblioteca, una vez
+const CACHE_NAME = 'morralla-cache-v60'; // v60: icono propio de Efectivo
 
 const urlsToCache = [
     './',
@@ -7,6 +7,7 @@ const urlsToCache = [
     './logo.svg',
     './icon-192x192.png',
     './icon-512x512.png',
+    './logos/efectivo.svg',
     './css/base.css',
     './css/clasico.css',
     './css/components.css',
