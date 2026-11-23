@@ -14,6 +14,7 @@ import { eventosMes } from './calendario.js';
 import { resumenMes } from './analisis.js';
 import { proyectarFinDeMes } from './proyeccion.js';
 import { esDeTercero, deudasTerceros } from './terceros.js';
+import { esAlcancia } from './alcancia.js';
 
 const DIAS = 14;
 const fmt = (n) => '$' + Number(Math.abs(n) || 0).toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -102,6 +103,15 @@ export function calcularRecordatorios({ cuentas = [], saldos = {}, transacciones
         agregar({ id: `cobro:${d.nombre}:${fecha}`, at: cuando === h && fecha < h ? proximoMomento(ahora) : momento(cuando, 10),
             title: `Cóbrale a ${d.nombre}`, body: `${fmt(monto)} de la mensualidad${fecha < h ? ' (ya pasó la fecha)' : ''}. Le faltan ${fmt(d.pendiente)} en total.`, url: '#/te-deben' });
     });
+
+    // Alcancía: a las 9 pm, si ese día aún no echaste monedas (hoy y los siguientes 13 días).
+    const alcancia = cuentas.find(esAlcancia);
+    if (alcancia && alcancia.aviso !== false) {
+        const yaHoy = transacciones.some(t => t.tipo === 'transferencia' && t.cuentaDestinoId === alcancia.id && t.fecha === h);
+        for (let f = yaHoy ? sumarDias(h, 1) : h; f <= hasta; f = sumarDias(f, 1)) {
+            agregar({ id: `alc:${f}`, at: momento(f, 21), title: 'Tlaco quiere su morralla', body: '¿Cuántas monedas juntaste hoy? Échalas a la alcancía.', url: '#/inicio?alcancia=1' });
+        }
+    }
 
     return avisos.sort((a, b) => a.at - b.at);
 }

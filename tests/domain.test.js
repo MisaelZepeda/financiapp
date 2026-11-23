@@ -653,3 +653,30 @@ test('te deben: una compra para alguien más no baja tu patrimonio', async () =>
     assert.equal(p2.teDeben, 500);
     assert.equal(p2.neto, antes);
 });
+
+// ---------- Alcancía ----------
+import { resumenAlcancia, origenAlcancia } from '../js/domain/alcancia.js';
+
+test('alcancía: total, lo de hoy, racha y aviso de las 9 pm', () => {
+    const efe = { id: 'efe', nombre: 'Efectivo', tipo: 'efectivo', saldoInicial: 500 };
+    const alc = { id: 'alc', nombre: 'Alcancía', tipo: 'efectivo', alcancia: true, saldoInicial: 0 };
+    assert.equal(origenAlcancia([alc, efe]).id, 'efe');
+    assert.equal(resumenAlcancia([efe], {}, [], HOY), null);
+    const echar = (monto, fecha) => ({ tipo: 'transferencia', subtipo: 'alcancia', monto, fecha, cuentaId: 'efe', cuentaDestinoId: 'alc' });
+    const txs = [echar(53, '2026-09-26'), echar(20, '2026-09-27'), echar(12.5, '2026-09-28'), echar(8, '2026-09-20')];
+    const saldos = calcularSaldos([efe, alc], txs);
+    const r = resumenAlcancia([efe, alc], saldos, txs, HOY);
+    assert.equal(r.total, 93.5);
+    assert.equal(r.hoy, 12.5);
+    assert.equal(r.racha, 3);                  // 26, 27 y 28
+    assert.equal(saldos.efe, 406.5);           // salen del efectivo
+    assert.equal(resumenMes(txs, '2026-09').gastos, 0);   // no es gasto
+    // Ya echó hoy: el aviso empieza mañana a las 9 pm.
+    const avisos = calcularRecordatorios({ cuentas: [efe, alc], transacciones: txs }, HOY).filter(a => a.id.startsWith('alc:'));
+    assert.equal(avisos[0].id, 'alc:2026-09-29');
+    assert.equal(avisos[0].at, momento('2026-09-29', 21));
+    // Sin monedas hoy: el aviso de hoy sigue.
+    const sinHoy = calcularRecordatorios({ cuentas: [efe, alc], transacciones: txs.slice(0, 2) }, HOY).filter(a => a.id.startsWith('alc:'));
+    assert.equal(sinHoy[0].id, 'alc:2026-09-28');
+    assert.equal(resumenAlcancia([efe, alc], saldos, txs.slice(0, 2), HOY).racha, 2);   // termina ayer
+});

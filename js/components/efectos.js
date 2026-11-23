@@ -55,7 +55,7 @@ export function confeti({ cantidad = 140, duracion = 2600 } = {}) {
 }
 
 // ---------- Moneda a la alcancía ----------
-const ALCANCIA = `<svg class="alcancia-svg" viewBox="0 0 64 52" aria-hidden="true">
+export const ALCANCIA = `<svg class="alcancia-svg" viewBox="0 0 64 52" aria-hidden="true">
     <ellipse cx="32" cy="30" rx="24" ry="18" fill="#e58aa0"/>
     <ellipse cx="32" cy="30" rx="24" ry="18" fill="none" stroke="#c7647d" stroke-width="2"/>
     <rect x="26" y="11" width="12" height="3" rx="1.5" fill="#8a3a50"/>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'morralla-cache-v50'; // v50: Hojas de cristal centradas
+const CACHE_NAME = 'morralla-cache-v51'; // v51: alcancia de morralla
 
 const urlsToCache = [
     './',
@@ -13,6 +13,7 @@ const urlsToCache = [
     './css/tokens.css',
     './css/views.css',
     './js/app.js',
+    './js/components/alcancia.js',
     './js/components/capas.js',
     './js/components/detalle-tx.js',
     './js/components/efectos.js',
@@ -29,6 +30,7 @@ const urlsToCache = [
     './js/core/eventos.js',
     './js/core/router.js',
     './js/core/store.js',
+    './js/domain/alcancia.js',
     './js/domain/analisis.js',
     './js/domain/applepay.js',
     './js/domain/autocategoria.js',

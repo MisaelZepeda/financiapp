@@ -51,6 +51,13 @@ export function descartarPorRevisar(id) {
 // ---------- Cuentas ----------
 // Al editar el saldo, se ajusta saldoInicial para que el saldo calculado sea
 // el que el usuario escribió (sus movimientos no cambian).
+// Alcancía: crea la cuenta la primera vez y registra el traspaso desde `origenId`.
+export async function echarMonedas(monto, origenId) {
+    let alcancia = Object.entries(datos().cuentas).find(([, c]) => c?.alcancia)?.[0];
+    if (!alcancia) alcancia = await guardarCuenta({ nombre: 'Alcancía', banco: 'Alcancía', tipo: 'efectivo', alcancia: true }, 0);
+    return guardarTransaccion({ tipo: 'transferencia', subtipo: 'alcancia', monto, fecha: hoyISO(), desc: 'Monedas a la alcancía', cuentaId: origenId, cuentaDestinoId: alcancia });
+}
+
 export function guardarCuenta(cuenta, saldoDeseado) {
     const id = cuenta.id || nuevoId();
     const actual = cuenta.id ? sel.saldo(id) : 0;

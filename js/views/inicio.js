@@ -9,6 +9,7 @@ import { resumenMes, serieMensual, variacion } from '../domain/analisis.js';
 import { estadoPago } from '../domain/tarjetas.js';
 import { resumenPendiente } from '../components/resumen-mes.js';
 import { contar } from '../components/efectos.js';
+import { tarjetaAlcanciaHTML, abrirAlcancia } from '../components/alcancia.js';
 import { deudasTerceros } from '../domain/terceros.js';
 import { proyectarFinDeMes } from '../domain/proyeccion.js';
 import { pendientes, proximos } from '../domain/recurrentes.js';
@@ -186,6 +187,7 @@ function pendientesHTML() {
 export function render() {
     return `${pendientesHTML()}${heroHTML()}
         <div class="stack" style="margin-top:14px;">
+            ${tarjetaAlcanciaHTML()}
             ${cuentasHTML()}
             ${mesHTML()}
             ${finMesHTML()}
@@ -196,7 +198,9 @@ export function render() {
 // El patrimonio cuenta desde la última cifra que viste cuando cambia.
 let netoMostrado = null;
 
-export function montar() {
+export function montar(el, params = {}) {
+    // Desde el aviso de las 9 pm (#/inicio?alcancia=1): abre la hoja una sola vez.
+    if (params.alcancia) { location.replace('#/inicio'); setTimeout(abrirAlcancia, 250); }
     const neto = sel.patrimonio().neto;
     if (netoMostrado != null && Math.abs(netoMostrado - neto) > 0.009) contar(document.getElementById('hero-total'), netoMostrado, neto);
     netoMostrado = neto;

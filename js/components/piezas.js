@@ -53,7 +53,7 @@ export function cuentaFilaHTML(c, { secundario } = {}) {
     </a>`;
 }
 
-const SUBTIPO = { pago_tdc: 'Pago de tarjeta', traspaso: 'Traspaso', rendimiento: 'Rendimiento', cashback: 'Cashback' };
+const SUBTIPO = { pago_tdc: 'Pago de tarjeta', traspaso: 'Traspaso', alcancia: 'Monedas a la alcancía', rendimiento: 'Rendimiento', cashback: 'Cashback' };
 
 // Ícono, color y textos de un movimiento.
 export function describirTx(tx) {
@@ -61,7 +61,7 @@ export function describirTx(tx) {
     const destino = sel.cuenta(tx.cuentaDestinoId);
     if (tx.tipo === 'transferencia') {
         return {
-            icono: tx.subtipo === 'pago_tdc' ? 'credit-card' : 'repeat', tono: '',
+            icono: tx.subtipo === 'pago_tdc' ? 'credit-card' : tx.subtipo === 'alcancia' ? 'coin' : 'repeat', tono: tx.subtipo === 'alcancia' ? 'tono-accent' : '',
             titulo: tx.desc || SUBTIPO[tx.subtipo] || 'Transferencia',
             sub: `${origen?.nombre || 'Cuenta'} → ${destino?.nombre || 'Cuenta'}`,
             signo: '', clase: '',
